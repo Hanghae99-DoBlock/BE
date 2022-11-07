@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -24,26 +25,13 @@ public class Todo {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(nullable = false)
-    private int year;
 
     @Column(nullable = false)
-    private int month;
+    private LocalDateTime startTime;
 
     @Column(nullable = false)
-    private int day;
+    private LocalDateTime endTime;
 
-    @Column
-    private int startHour;
-
-    @Column
-    private int startMinute;
-
-    @Column
-    private int endHour;
-
-    @Column
-    private int endMinute;
 
     @Column(nullable = false)
     private String todo;
