@@ -28,8 +28,9 @@ out/
 
 ### database file ###
 
-mini.mv.db
-mini.lock.db
+finalProject.mv.db
+finalProject.lock.db
+finalProject.trace.db
 
 ### applicationm.properties ###
 
