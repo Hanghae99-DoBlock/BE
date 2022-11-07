@@ -52,5 +52,4 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleUploadFailException(){
         return new ResponseEntity<>(new ErrorMessage(ErrorCodes.UPLOAD_FAIL.getCode(), ErrorCodes.UPLOAD_FAIL.getMessage()), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
-
 }

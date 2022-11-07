@@ -19,8 +19,6 @@ public enum ErrorCodes {
     NOT_AUTHENTICATION_ENTRY("AUTHENTICATION_ENTRY_ERROR", "접근이 잘못되었습니다."),
     ACCESS_DENIED("AUTHENTICATION_ENTRY_ERROR", "접근이 잘못되었습니다.");
 
-
     private final String code;
     private final String message;
-
 }

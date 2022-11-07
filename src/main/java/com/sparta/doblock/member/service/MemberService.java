@@ -35,10 +35,6 @@ public class MemberService {
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            throw new CustomExceptions.DuplicatedEmailException();
-        }
-
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .nickname(memberRequestDto.getNickname())
@@ -49,6 +45,20 @@ public class MemberService {
         memberRepository.save(member);
 
         return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
+
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+            return new ResponseEntity<>("이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST);
+        } else return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
+
+        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+            return new ResponseEntity<>("이미 사용 중인 닉네임입니다.", HttpStatus.BAD_REQUEST);
+        } else return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
     }
 
     @Transactional

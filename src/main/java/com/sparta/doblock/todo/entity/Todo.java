@@ -7,7 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -26,13 +27,16 @@ public class Todo {
     private Member member;
 
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private LocalDate date;
 
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private String todo;
+    private LocalTime endTime;
+
+    @Column(nullable = false)
+    private String content;
 
     @Column(nullable = false)
     private boolean completed;
