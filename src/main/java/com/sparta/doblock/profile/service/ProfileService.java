@@ -23,9 +23,9 @@ public class ProfileService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public ResponseEntity<?> follow(Long memberId, Member member) {
+    public ResponseEntity<?> follow(String nickname, Member member) {
 
-        Member toMember = memberRepository.findById(memberId).orElseThrow(
+        Member toMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
@@ -48,9 +48,9 @@ public class ProfileService {
         }
     }
 
-    public ResponseEntity<?> getFollowingList(Long memberId, Member member) {
+    public ResponseEntity<?> getFollowingList(String nickname, Member member) {
 
-        Member fromMember = memberRepository.findById(memberId).orElseThrow(
+        Member fromMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
@@ -70,9 +70,9 @@ public class ProfileService {
         return new ResponseEntity<>(followResponseDtoList, HttpStatus.OK);
     }
 
-    public ResponseEntity<?> getFollowerList(Long memberId, Member member) {
+    public ResponseEntity<?> getFollowerList(String nickname, Member member) {
 
-        Member toMember = memberRepository.findById(memberId).orElseThrow(
+        Member toMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 

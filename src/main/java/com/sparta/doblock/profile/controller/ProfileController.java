@@ -14,18 +14,18 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    @PostMapping("/{member_id}/follow")
-    public ResponseEntity<?> follow(@PathVariable(name = "member_id") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
-        return profileService.follow(memberId, memberDetailsimpl.getMember());
+    @PostMapping("/{nickname}/follow")
+    public ResponseEntity<?> follow(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
+        return profileService.follow(nickname, memberDetailsimpl.getMember());
     }
 
-    @GetMapping("/{member_id}/following")
-    public ResponseEntity<?> getFollowingList(@PathVariable(name = "member_id") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
-        return profileService.getFollowingList(memberId, memberDetailsimpl.getMember());
+    @GetMapping("/{nickname}/following")
+    public ResponseEntity<?> getFollowingList(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
+        return profileService.getFollowingList(nickname, memberDetailsimpl.getMember());
     }
 
-    @GetMapping("/{member_id}/follower")
-    public ResponseEntity<?> getFollowerList(@PathVariable(name = "member_id") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
-        return profileService.getFollowerList(memberId, memberDetailsimpl.getMember());
+    @GetMapping("/{nickname}/follower")
+    public ResponseEntity<?> getFollowerList(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
+        return profileService.getFollowerList(nickname, memberDetailsimpl.getMember());
     }
 }
