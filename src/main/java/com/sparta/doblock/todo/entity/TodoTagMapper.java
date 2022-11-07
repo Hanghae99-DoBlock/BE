@@ -1,6 +1,6 @@
-package com.sparta.doblock.profile.entity;
+package com.sparta.doblock.todo.entity;
 
-import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.tag.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,20 +13,16 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Follow {
-
+public class TodoTagMapper {
     @Id
-    @Column(name = "follow_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // memberFollowing 이 memberFollowed 를 팔로우함
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
+    private Tag tag;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_following_id")
-    private Member memberFollowing;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_followed_id")
-    private Member memberFollowed;
+    @JoinColumn(name = "todo_id")
+    private Todo todo;
 }

@@ -1,7 +1,5 @@
 package com.sparta.doblock.todo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,10 +34,10 @@ public class Todo {
     private int day;
 
     @Column
-    private int starHour;
+    private int startHour;
 
     @Column
-    private int starMinute;
+    private int startMinute;
 
     @Column
     private int endHour;
@@ -51,5 +49,9 @@ public class Todo {
     private String todo;
 
     @Column(nullable = false)
-    private boolean completion;
+    private boolean completed;
+
+    public void completeTask() {
+        this.completed = true;
+    }
 }
