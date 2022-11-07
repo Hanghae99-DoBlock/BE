@@ -13,9 +13,6 @@ import com.sparta.doblock.security.token.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +27,6 @@ public class MemberService {
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
@@ -64,20 +60,16 @@ public class MemberService {
     @Transactional
     public ResponseEntity<?> login(MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse) {
 
-        UsernamePasswordAuthenticationToken authenticationToken = memberRequestDto.toAuthentication();
-
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-        Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(
+        Member member = memberRepository.findByEmail(memberRequestDto.getEmail()).orElseThrow(
                 CustomExceptions.NotFoundMemberException::new
         );
 
         if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())) throw new CustomExceptions.NotMatchedPasswordException();
 
-        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
 
         RefreshToken refreshToken = RefreshToken.builder()
-                .key(authentication.getName())
+                .key(member.getEmail())
                 .value(tokenDto.getRefreshToken())
                 .build();
 
