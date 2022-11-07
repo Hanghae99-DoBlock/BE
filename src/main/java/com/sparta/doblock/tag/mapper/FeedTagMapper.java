@@ -1,5 +1,6 @@
-package com.sparta.doblock.feed.entity;
+package com.sparta.doblock.tag.mapper;
 
+import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.tag.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeedTagMapper {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
