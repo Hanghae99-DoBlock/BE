@@ -14,6 +14,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "tag_id", "feed_id" }) })
 public class FeedTagMapper {
 
     @Id

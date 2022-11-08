@@ -38,5 +38,11 @@ public class Feed {
             name = "post_img_url_list",
             joinColumns = @JoinColumn(name = "post_id")
     )
-    private List<String> feedImage;
+    private List<String> feedImageList;
+
+    public void update(List<String> todoList, String content, List<String> feedImageList) {
+        this.todoList = todoList;
+        this.content = content;
+        this.feedImageList = feedImageList;
+    }
 }
