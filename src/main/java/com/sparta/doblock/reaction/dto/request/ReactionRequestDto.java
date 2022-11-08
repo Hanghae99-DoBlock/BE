@@ -1,15 +1,16 @@
 package com.sparta.doblock.reaction.dto.request;
 
-import com.sparta.doblock.reaction.entity.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class ReactionRequestDto {
-    @Enumerated(EnumType.STRING)
-    private ReactionType reactionType;
+    private String type;
+
+    public void capitalize() {
+        this.type = type.toUpperCase();
+    }
 }
