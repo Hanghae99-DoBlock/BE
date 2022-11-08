@@ -11,6 +11,7 @@ import com.sparta.doblock.security.token.RefreshToken;
 import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,12 +29,16 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Value("${profile.image}")
+    private String profileImage;
+
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .nickname(memberRequestDto.getNickname())
+                .profileImage(profileImage)
                 .password(passwordEncoder.encode(memberRequestDto.getPassword()))
                 .authority(Authority.ROLE_MEMBER)
                 .build();

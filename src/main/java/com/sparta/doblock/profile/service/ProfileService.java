@@ -1,13 +1,18 @@
 package com.sparta.doblock.profile.service;
 
+import com.sparta.doblock.exception.CustomExceptions;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
+import com.sparta.doblock.profile.controller.EditProfileRequestDto;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
+import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +26,40 @@ public class ProfileService {
 
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
+    private final S3UploadService s3UploadService;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${profile.image}")
+    private String defaultProfileImage;
+
+    @Transactional
+    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, Member member) {
+
+        if(passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())){
+            throw new CustomExceptions.NotMatchedPasswordException();
+        }
+
+        if(editProfileRequestDto.getProfileImage() != null){
+
+            if(!member.getProfileImage().equals(defaultProfileImage)){
+                s3UploadService.delete(member.getProfileImage());
+            }
+
+            String imageUrl = s3UploadService.uploadImage(editProfileRequestDto.getProfileImage());
+            member.editProfileImage(imageUrl);
+        }
+
+        if(editProfileRequestDto.getNewPassword() != null){
+            member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
+        }
+
+        member.editNickname(editProfileRequestDto.getNickname());
+
+        memberRepository.save(member);
+
+        return new ResponseEntity<>("정보 변경 성공", HttpStatus.OK);
+    }
+
 
     @Transactional
     public ResponseEntity<?> follow(String nickname, Member member) {

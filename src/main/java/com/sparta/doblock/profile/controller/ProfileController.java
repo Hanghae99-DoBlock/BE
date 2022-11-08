@@ -14,6 +14,11 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
+    @PatchMapping("/edit")
+    public ResponseEntity<?> editProfile(@ModelAttribute EditProfileRequestDto editProfileRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
+        return profileService.editProfile(editProfileRequestDto, memberDetailsimpl.getMember());
+    }
+
     @PostMapping("/{nickname}/follow")
     public ResponseEntity<?> follow(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetailsimpl){
         return profileService.follow(nickname, memberDetailsimpl.getMember());
