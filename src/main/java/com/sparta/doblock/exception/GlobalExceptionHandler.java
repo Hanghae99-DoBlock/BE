@@ -2,6 +2,7 @@ package com.sparta.doblock.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -56,6 +57,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomExceptions.DuplicatedEmailException.class)
     public ResponseEntity<?> handleDuplicatedEmailException(){
         return new ResponseEntity<>(new ErrorMessage(ErrorCodes.DUPLICATED_EMAIL.getCode(), ErrorCodes.DUPLICATED_EMAIL.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleNotValidFormatException(){
+        return new ResponseEntity<>(new ErrorMessage(ErrorCodes.NOT_VALID_FORMAT.getCode(), ErrorCodes.NOT_VALID_FORMAT.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(CustomExceptions.NotValidWriterException.class)
