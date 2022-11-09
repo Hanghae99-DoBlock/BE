@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class FeedController {
     private final FeedService feedService;
 
-    @PostMapping("/date")
+    @GetMapping("")
     public ResponseEntity<?> getTodoByDate(@RequestBody DateRequestDto dateRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return feedService.getTodoByDate(dateRequestDto, memberDetails);
     }

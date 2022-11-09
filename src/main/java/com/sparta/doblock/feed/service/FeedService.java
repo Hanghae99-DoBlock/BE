@@ -47,6 +47,9 @@ public class FeedService {
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
+            if (!todo.isCompleted()) {
+                continue;
+            }
             List<String> tagList = new ArrayList<>();
             for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
                 tagList.add(todoTagMapper.getTag().getContent());
