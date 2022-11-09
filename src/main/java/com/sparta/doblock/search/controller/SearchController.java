@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/search")
+@RequestMapping("/api")
 public class SearchController {
     private final SearchService searchService;
 
-    @GetMapping("")
+    @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("keyword") String keyword, @RequestParam("category") String category) {
         // Search by tag
         return searchService.search(keyword, category);
     }
 
-    @GetMapping("")
+    @GetMapping("/feed")
     public ResponseEntity<?> getFollowerFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return searchService.getFollowerFeeds(memberDetails);
     }
