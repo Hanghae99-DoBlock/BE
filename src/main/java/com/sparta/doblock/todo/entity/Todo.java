@@ -1,6 +1,8 @@
 package com.sparta.doblock.todo.entity;
 
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.todo.dto.request.TodoRequestDto;
+import com.sparta.doblock.util.TimeStamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +17,7 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Todo {
+public class Todo extends TimeStamp {
 
     @Id
     @Column(name = "todo_id")
@@ -36,12 +38,16 @@ public class Todo {
     private LocalTime endTime;
 
     @Column(nullable = false)
-    private String content;
+    private String todocontent;
 
     @Column(nullable = false)
     private boolean completed;
 
     public void completeTask() {
         this.completed = true;
+    }
+
+    public void edit(TodoRequestDto todoRequestDto) {
+        this.todocontent = todoRequestDto.getTodocontent();
     }
 }

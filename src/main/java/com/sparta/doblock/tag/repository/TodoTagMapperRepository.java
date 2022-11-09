@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface TodoTagMapperRepository extends JpaRepository<TodoTagMapper, Long> {
     List<TodoTagMapper> findByTodo(Todo todo);
+    void deleteAllByTodo(Todo todo);
 }
