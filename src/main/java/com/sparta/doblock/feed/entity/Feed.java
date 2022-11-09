@@ -1,6 +1,7 @@
 package com.sparta.doblock.feed.entity;
 
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.util.TimeStamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Feed {
+public class Feed extends TimeStamp {
 
     @Id
     @Column(name = "feed_id")

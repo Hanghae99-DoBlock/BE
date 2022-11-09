@@ -35,7 +35,6 @@ public class Todo {
     @Column(nullable = false)
     private LocalTime endTime;
 
-
     @Column(nullable = false)
     private String content;
 

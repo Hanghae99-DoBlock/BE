@@ -1,10 +1,16 @@
 package com.sparta.doblock.feed.service;
 
+import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.feed.dto.request.DateRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
+import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
+import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import com.sparta.doblock.profile.entity.Follow;
+import com.sparta.doblock.profile.repository.FollowRepository;
+import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.mapper.TodoTagMapper;
@@ -19,13 +25,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -157,4 +161,5 @@ public class FeedService {
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
     }
+
 }

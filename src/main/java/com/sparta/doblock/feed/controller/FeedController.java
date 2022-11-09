@@ -36,5 +36,4 @@ public class FeedController {
     public ResponseEntity<?> deleteFeed(@PathVariable Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return feedService.deleteFeed(feedId, memberDetails);
     }
-
 }

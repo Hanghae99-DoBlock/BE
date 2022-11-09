@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -24,4 +25,5 @@ public class FeedResponseDto {
     private List<String> tagList;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private List<CommentResponseDto> commentResponseDtoList;
+    private LocalDateTime postedAt;
 }
