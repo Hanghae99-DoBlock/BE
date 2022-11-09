@@ -69,14 +69,20 @@ public class FeedService {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
 
-        List<String> todoList = feedRequestDto.getTodoIdList().stream()
-                .filter(id -> todoRepository.findById(id).orElseThrow(
-                        () -> new NullPointerException("존재하지 않는 투두입니다")
-                ).getMember().isEqual(memberDetails.getMember()))
-                .map(id -> todoRepository.findById(id).orElseThrow(
-                        () -> new NullPointerException("존재하지 않는 투두입니다")
-                ).getContent())
-                .collect(Collectors.toList());
+        List<String> todoList = new ArrayList<>();
+
+        for (Long todoId : feedRequestDto.getTodoIdList()) {
+            Todo todo = todoRepository.findById(todoId).orElseThrow(
+                    () -> new NullPointerException("해당 투두가 존재하지 않습니다")
+            );
+            if (! todo.getMember().isEqual(memberDetails.getMember())) {
+                return new ResponseEntity<>("투두의 작성자가 아닙니다", HttpStatus.FORBIDDEN);
+            } else if (! todo.isCompleted()) {
+                return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
+            } else {
+                todoList.add(todo.getContent());
+            }
+        }
 
         List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
                 .map(s3UploadService::uploadImage)
@@ -131,8 +137,7 @@ public class FeedService {
 
         // delete existing tags and create new ones
 
-        List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByFeed(feed);
-        feedTagMapperRepository.deleteAll(feedTagMapperList);
+        feedTagMapperRepository.deleteAllByFeed(feed);
 
         for (String tagContent : feedRequestDto.getTagList()) {
             Tag tag = tagRepository.findByContent(tagContent).orElse(Tag.builder().content(tagContent).build());
@@ -160,8 +165,8 @@ public class FeedService {
         if (! feed.getMember().isEqual(memberDetails.getMember())) {
             return new ResponseEntity<>("본인이 작성한 피드가 아닙니다", HttpStatus.FORBIDDEN);
         }
-        List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByFeed(feed);
-        feedTagMapperRepository.deleteAll(feedTagMapperList);
+
+        feedTagMapperRepository.deleteAllByFeed(feed);
 
         feedRepository.delete(feed);
 

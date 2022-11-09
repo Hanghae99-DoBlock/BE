@@ -114,6 +114,7 @@ public class SearchService {
     private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed, Member member) {
         // TODO: time complexity for taglist
         // O(total number of tags) or O(number of tags a single feed has)?
+
         FeedResponseDto feedResponseDto = FeedResponseDto.builder()
                 .feedId(feed.getId())
                 .memberId(member.getId())
