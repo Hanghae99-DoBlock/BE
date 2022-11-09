@@ -11,9 +11,6 @@ import java.util.List;
 public class FeedRequestDto {
     private List<Long> todoIdList;
     private String content;
-    private MultipartFile feedImage1;
-    private MultipartFile feedImage2;
-    private MultipartFile feedImage3;
-    private MultipartFile feedImage4;
+    private List<MultipartFile> feedImageList;
     private List<String> tagList;
 }

@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,34 +65,16 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
         // member can only post feed related to their own todo's
-        List<String> todoList = new ArrayList<>();
 
-        for (Long todoId : feedRequestDto.getTodoIdList()) {
-            Todo todo = todoRepository.findById(todoId).orElseThrow(
-                    () -> new NullPointerException("존재하지 않는 todo 입니다")
-            );
-//            System.out.println(todo.getMember().getId() + " " + memberDetails.getMember().getId());
-            if (! todo.getMember().isEqual(memberDetails.getMember())) {
-                return new ResponseEntity("본인 todo 가 아닙니다", HttpStatus.UNAUTHORIZED);
-            }
-            todoList.add(todo.getContent());
-        }
+        List<String> todoList = feedRequestDto.getTodoIdList().stream()
+                .map(id -> todoRepository.findById(id).orElseThrow(
+                        () -> new NullPointerException("존재하지 않는 투두입니다")
+                ).getContent())
+                .collect(Collectors.toList());
 
-        List<String> feedImageList = new ArrayList<>();
-
-//        System.out.println(feedRequestDto.getFeedImage1());
-//        System.out.println(feedRequestDto.getFeedImage2());
-//        System.out.println(feedRequestDto.getFeedImage3());
-//        System.out.println(feedRequestDto.getFeedImage4());
-
-        for (MultipartFile image : getImageList(feedRequestDto)) {
-//            String imageUrl = image.toString();
-            // TODO: FIX S3 ISSUE
-            String imageUrl = s3UploadService.uploadImage(image);
-            feedImageList.add(imageUrl);
-        }
-
-        System.out.println("feedImageList Generated");
+        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
+                .map(s3UploadService::uploadImage)
+                .collect(Collectors.toList());
 
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
@@ -120,26 +103,15 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
-        List<String> todoList = new ArrayList<>();
+        List<String> todoList = feedRequestDto.getTodoIdList().stream()
+                .map(id -> todoRepository.findById(id).orElseThrow(
+                        () -> new NullPointerException("존재하지 않는 투두입니다")
+                ).getContent())
+                .collect(Collectors.toList());
 
-        for (Long todoId : feedRequestDto.getTodoIdList()) {
-            Todo todo = todoRepository.findById(todoId).orElseThrow(
-                    () -> new NullPointerException("존재하지 않는 todo 입니다")
-            );
-            if (! todo.getMember().isEqual(memberDetails.getMember())) {
-                return new ResponseEntity("본인 todo 가 아닙니다", HttpStatus.UNAUTHORIZED);
-            }
-            todoList.add(todo.getContent());
-        }
-
-        List<String> feedImageList = new ArrayList<>();
-
-        for (MultipartFile image : getImageList(feedRequestDto)) {
-//            String imageUrl = image.toString();
-            // TODO: FIX S3 ISSUE
-            String imageUrl = s3UploadService.uploadImage(image);
-            feedImageList.add(imageUrl);
-        }
+        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
+                .map(s3UploadService::uploadImage)
+                .collect(Collectors.toList());
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("존재하는 피드가 아닙니다")
@@ -176,7 +148,7 @@ public class FeedService {
                 () -> new NullPointerException("해당 피드가 없습니다")
         );
         if (! feed.getMember().isEqual(memberDetails.getMember())) {
-            return new ResponseEntity("본인이 작성한 피드가 아닙니다", HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>("본인이 작성한 피드가 아닙니다", HttpStatus.FORBIDDEN);
         }
         List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByFeed(feed);
         feedTagMapperRepository.deleteAll(feedTagMapperList);
@@ -184,25 +156,5 @@ public class FeedService {
         feedRepository.delete(feed);
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
-    }
-
-    private List<MultipartFile> getImageList(FeedRequestDto feedRequestDto) {
-        List<MultipartFile> imageList = new ArrayList<>();
-
-        // add images manually
-        if (! Objects.isNull(feedRequestDto.getFeedImage1())) {
-            imageList.add(feedRequestDto.getFeedImage1());
-        }
-        if (! Objects.isNull(feedRequestDto.getFeedImage2())) {
-            imageList.add(feedRequestDto.getFeedImage2());
-        }
-        if (! Objects.isNull(feedRequestDto.getFeedImage3())) {
-            imageList.add(feedRequestDto.getFeedImage3());
-        }
-        if (! Objects.isNull(feedRequestDto.getFeedImage4())) {
-            imageList.add(feedRequestDto.getFeedImage4());
-        }
-
-        return imageList;
     }
 }
