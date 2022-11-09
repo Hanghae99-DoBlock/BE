@@ -25,7 +25,7 @@ public class CommentService {
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("해당 피드가 존재하지 않습니다")
         );
-        if (Objects.isNull(memberDetails.getMember())) {
+        if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
 
@@ -49,7 +49,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new NullPointerException("해당 댓글이 존재하지 않습니다")
         );
-        if (Objects.isNull(memberDetails.getMember())) {
+        if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         } else if (!comment.getFeed().isEqual(feed)) {
             return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다", HttpStatus.BAD_REQUEST);
@@ -72,7 +72,7 @@ public class CommentService {
                 () -> new NullPointerException("해당 댓글이 존재하지 않습니다")
         );
 
-        if (Objects.isNull(memberDetails.getMember())) {
+        if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         } else if (!comment.getFeed().isEqual(feed)) {
             return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다", HttpStatus.BAD_REQUEST);

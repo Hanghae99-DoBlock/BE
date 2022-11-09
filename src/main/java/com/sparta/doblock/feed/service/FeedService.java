@@ -1,16 +1,10 @@
 package com.sparta.doblock.feed.service;
 
-import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.feed.dto.request.DateRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
-import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
-import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
-import com.sparta.doblock.profile.entity.Follow;
-import com.sparta.doblock.profile.repository.FollowRepository;
-import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.mapper.TodoTagMapper;
@@ -30,6 +24,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,7 +65,14 @@ public class FeedService {
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
         // member can only post feed related to their own todo's
 
+        if (Objects.isNull(memberDetails)) {
+            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+        }
+
         List<String> todoList = feedRequestDto.getTodoIdList().stream()
+                .filter(id -> todoRepository.findById(id).orElseThrow(
+                        () -> new NullPointerException("존재하지 않는 투두입니다")
+                ).getMember().isEqual(memberDetails.getMember()))
                 .map(id -> todoRepository.findById(id).orElseThrow(
                         () -> new NullPointerException("존재하지 않는 투두입니다")
                 ).getContent())
@@ -107,6 +109,10 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
+        if (Objects.isNull(memberDetails)) {
+            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+        }
+
         List<String> todoList = feedRequestDto.getTodoIdList().stream()
                 .map(id -> todoRepository.findById(id).orElseThrow(
                         () -> new NullPointerException("존재하지 않는 투두입니다")

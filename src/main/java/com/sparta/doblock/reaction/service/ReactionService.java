@@ -8,6 +8,7 @@ import com.sparta.doblock.reaction.entity.Reaction;
 import com.sparta.doblock.reaction.entity.ReactionType;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,10 @@ public class ReactionService {
     private final FeedRepository feedRepository;
 
     public ResponseEntity<?> addReaction(Long feedId, ReactionRequestDto reactionRequestDto, MemberDetailsImpl memberDetails) {
+        if (Objects.isNull(memberDetails)) {
+            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("해당 피드가 없습니다")
         );

@@ -27,8 +27,8 @@ public class TodoService {
 
     @Transactional
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
-        if (Objects.isNull(memberDetails.getMember())) {
-            return new ResponseEntity("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+        if (Objects.isNull(memberDetails)) {
+            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
 
         Todo todo = Todo.builder()
@@ -49,9 +49,7 @@ public class TodoService {
                         .build();
                 tagRepository.save(tag);
             }
-            Tag tag = tagRepository.findByContent(tagContent).orElseThrow(
-                    () -> new NullPointerException()
-            );
+            Tag tag = tagRepository.findByContent(tagContent).orElseThrow(NullPointerException::new);
             TodoTagMapper todoTagMapper = TodoTagMapper.builder()
                     .todo(todo)
                     .tag(tag)

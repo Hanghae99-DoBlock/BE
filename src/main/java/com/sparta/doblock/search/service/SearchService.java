@@ -20,15 +20,13 @@ import com.sparta.doblock.tag.repository.TagRepository;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,6 +84,10 @@ public class SearchService {
 
     @Transactional
     public ResponseEntity<?> getFollowerFeeds(MemberDetailsImpl memberDetails) {
+        if (Objects.isNull(memberDetails)) {
+            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+        }
+
         List<Follow> followList = followRepository.findAllByFromMember(memberDetails.getMember());
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
