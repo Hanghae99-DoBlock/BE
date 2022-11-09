@@ -32,4 +32,8 @@ public class Reaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id")
     private Feed feed;
+
+    public void update(ReactionType reactionType) {
+        this.reactionType = reactionType;
+    }
 }

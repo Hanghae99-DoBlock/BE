@@ -11,11 +11,9 @@ import com.sparta.doblock.security.token.RefreshToken;
 import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,18 +28,17 @@ public class MemberService {
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    @Value("${profile.image}")
+    private String profileImage;
 
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            throw new CustomExceptions.DuplicatedEmailException();
-        }
-
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .nickname(memberRequestDto.getNickname())
+                .profileImage(profileImage)
                 .password(passwordEncoder.encode(memberRequestDto.getPassword()))
                 .authority(Authority.ROLE_MEMBER)
                 .build();
@@ -51,23 +48,33 @@ public class MemberService {
         return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
     }
 
+    public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
+
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+            return new ResponseEntity<>("이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST);
+        } else return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
+
+        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+            return new ResponseEntity<>("이미 사용 중인 닉네임입니다.", HttpStatus.BAD_REQUEST);
+        } else return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+    }
+
     @Transactional
     public ResponseEntity<?> login(MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse) {
 
-        UsernamePasswordAuthenticationToken authenticationToken = memberRequestDto.toAuthentication();
-
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-        Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(
+        Member member = memberRepository.findByEmail(memberRequestDto.getEmail()).orElseThrow(
                 CustomExceptions.NotFoundMemberException::new
         );
 
         if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())) throw new CustomExceptions.NotMatchedPasswordException();
 
-        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
 
         RefreshToken refreshToken = RefreshToken.builder()
-                .key(authentication.getName())
+                .key(member.getEmail())
                 .value(tokenDto.getRefreshToken())
                 .build();
 

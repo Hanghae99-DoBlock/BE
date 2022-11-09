@@ -1,5 +1,7 @@
 package com.sparta.doblock.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
@@ -12,14 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -40,18 +43,20 @@ public class TokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public TokenDto generateTokenDto(Authentication authentication){
+    public Key getKey(){
+        return this.key;
+    }
 
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+    public TokenDto generateTokenDto(Member member){
 
         long now = (new Date()).getTime();
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRATION_TIME);
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
+                .setSubject(member.getEmail())
+                .claim(AUTHORITIES_KEY, member.getAuthority())
+                .claim("nickname", member.getNickname())
+                .claim("profileImage", member.getProfileImage())
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -69,11 +74,21 @@ public class TokenProvider {
                 .build();
     }
 
-    public Authentication getAuthentication(String accessToken){
+    public Authentication getAuthentication(String accessToken, HttpServletResponse response) throws IOException {
 
         Claims claims = parseClaims(accessToken);
 
         Assert.notNull(claims.get(AUTHORITIES_KEY), "권한 정보가 없는 토큰입니다.");
+
+        if (claims.getExpiration().toInstant().toEpochMilli() < Instant.now().toEpochMilli()) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().println(
+                    new ObjectMapper().writeValueAsString(
+                            ErrorCodes.NOT_VALID_TOKEN
+                    )
+            );
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
 
         String email = claims.getSubject();
         Member member = memberRepository.findByEmail(email).orElseThrow(
@@ -82,7 +97,7 @@ public class TokenProvider {
 
         MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
 
-        return new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(memberDetails, accessToken, memberDetails.getAuthorities());
     }
 
     private Claims parseClaims(String accessToken){
@@ -98,13 +113,13 @@ public class TokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            log.info("유효하지 않은 서명입니다.");
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+            log.info("만료된 서명입니다.");
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            log.info("지원되지 않는 서명입니다.");
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            log.info("서명을 입력해주세요.");
         }
         return false;
     }

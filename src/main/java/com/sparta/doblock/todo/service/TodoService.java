@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class TodoService {
@@ -31,12 +32,9 @@ public class TodoService {
     private final TagRepository tagRepository;
     private final TodoTagMapperRepository todoTagMapperRepository;
 
-    //투두 작성
     @Transactional
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
-        if (Objects.isNull(memberDetails)) { return new ResponseEntity<>("로그인이 안되있습니다", HttpStatus.UNAUTHORIZED); }
-
-        if (Objects.isNull(memberDetails.getMember())) {
+        if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
 
@@ -58,9 +56,8 @@ public class TodoService {
                         .build();
                 tagRepository.save(tag);
             }
-            Tag tag = tagRepository.findByContent(tagContent).orElseThrow(
-                    () -> new NullPointerException()
-            );
+            Tag tag = tagRepository.findByContent(tagContent).orElseThrow(NullPointerException::new);
+
             TodoTagMapper todoTagMapper = TodoTagMapper.builder()
                     .todo(todo)
                     .tag(tag)
@@ -155,5 +152,4 @@ public class TodoService {
 //
 //    //캘린더 월별 조회
 //
-
 }

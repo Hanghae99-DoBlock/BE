@@ -1,13 +1,12 @@
-package com.sparta.doblock.member.dto.response;
+package com.sparta.doblock.profile.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@AllArgsConstructor
-public class MemberResponseDto {
+public class FollowResponseDto {
+
     private Long memberId;
     private String profileImage;
     private String nickname;

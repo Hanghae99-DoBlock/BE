@@ -1,7 +1,6 @@
 package com.sparta.doblock.todo.repository;
 
 import com.sparta.doblock.member.entity.Member;
-import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
