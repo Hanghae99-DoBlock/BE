@@ -78,7 +78,7 @@ public class TokenProvider {
 
         Claims claims = parseClaims(accessToken);
 
-        Assert.notNull(claims.get(AUTHORITIES_KEY), "권한 정보가 없는 토큰입니다.");
+        Assert.notNull(claims.get(AUTHORITIES_KEY), "권한 정보가 없는 서명입니다.");
 
         if (claims.getExpiration().toInstant().toEpochMilli() < Instant.now().toEpochMilli()) {
             response.setContentType("application/json;charset=UTF-8");
