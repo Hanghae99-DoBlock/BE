@@ -40,6 +40,10 @@ public class Feed {
     )
     private List<String> feedImageList;
 
+    public boolean isEqual(Feed other) {
+        return this.id.equals(other.getId());
+    }
+
     public void update(List<String> todoList, String content, List<String> feedImageList) {
         this.todoList = todoList;
         this.content = content;

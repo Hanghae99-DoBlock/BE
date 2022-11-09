@@ -8,6 +8,26 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<?> handleNullPointerException(NullPointerException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalAccessException.class)
+    public ResponseEntity<?> handleIllegalAccessException(IllegalAccessException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // General Exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /*
+    ------- CUSTOM EXCEPTIONS --------
+     */
+
     @ExceptionHandler(CustomExceptions.NotFoundMemberException.class)
     public ResponseEntity<?> handleNotFoundMemberException(){
         return new ResponseEntity<>(new ErrorMessage(ErrorCodes.NOT_FOUND_MEMBER.getCode(), ErrorCodes.NOT_FOUND_MEMBER.getMessage()), HttpStatus.NOT_FOUND);

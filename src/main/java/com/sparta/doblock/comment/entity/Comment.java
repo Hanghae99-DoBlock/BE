@@ -1,5 +1,6 @@
 package com.sparta.doblock.comment.entity;
 
+import com.sparta.doblock.comment.dto.request.CommentRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.member.entity.Member;
 import lombok.AllArgsConstructor;
@@ -30,4 +31,8 @@ public class Comment {
 
     @Column(nullable = false)
     private String content;
+
+    public void update(CommentRequestDto commentRequestDto) {
+        this.content = commentRequestDto.getContent();
+    }
 }
