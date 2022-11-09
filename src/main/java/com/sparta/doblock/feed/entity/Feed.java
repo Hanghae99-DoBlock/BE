@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -46,8 +47,11 @@ public class Feed extends TimeStamp {
     }
 
     public void update(List<String> todoList, String content, List<String> feedImageList) {
-        this.todoList = todoList;
-        this.content = content;
-        this.feedImageList = feedImageList;
+        if (Objects.isNull(todoList) || todoList.isEmpty())
+            this.todoList = todoList;
+        if (Objects.isNull(content))
+            this.content = content;
+        if (Objects.isNull(feedImageList) || feedImageList.isEmpty())
+            this.feedImageList = feedImageList;
     }
 }

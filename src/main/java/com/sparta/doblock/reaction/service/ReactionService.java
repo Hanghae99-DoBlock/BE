@@ -44,10 +44,10 @@ public class ReactionService {
             return ResponseEntity.ok("성공적으로 리액션을 추가했습니다");
         } else {
             Reaction reaction = reactionRepository.findByFeedAndMember(feed, memberDetails.getMember()).orElseThrow(
-                    () -> new NullPointerException()
+                    NullPointerException::new
             );
             boolean delete = false;
-            if (Objects.isNull(reactionRequestDto.getType())) {
+            if (Objects.isNull(reactionRequestDto.getType()) || reactionRequestDto.getType().length() == 0) {
                 delete = true;
             } else if (Objects.isNull(ReactionType.valueOf(reactionRequestDto.getType()))) {
                 delete = true;

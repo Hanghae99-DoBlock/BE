@@ -100,6 +100,7 @@ public class FeedService {
 
         feedRepository.save(feed);
 
+        // Tag & FeedTagMapper
         for (String tagContent : feedRequestDto.getTagList()) {
             Tag tag = tagRepository.findByContent(tagContent).orElse(Tag.builder().content(tagContent).build());
 
@@ -113,7 +114,7 @@ public class FeedService {
             feedTagMapperRepository.save(feedTagMapper);
         }
 
-        return ResponseEntity.ok(feed);
+        return ResponseEntity.ok("성공적으로 피드를 생성하였습니다");
     }
 
     @Transactional

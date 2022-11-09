@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     // General Exception
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
     }
 
     /*

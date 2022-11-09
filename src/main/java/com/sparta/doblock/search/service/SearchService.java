@@ -54,9 +54,10 @@ public class SearchService {
 
             for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                 Feed feed = feedTagMapper.getFeed();
-                Member member = feed.getMember(); // author of the feed
-                addFeed(feedResponseDtoList, feed, member);
+                addFeed(feedResponseDtoList, feed);
             }
+
+            feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
 
             return ResponseEntity.ok(feedResponseDtoList);
         } else {
@@ -69,9 +70,7 @@ public class SearchService {
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname()).build());
-            }
-
-            if (memberRepository.existsByNickname(keyword)) {
+            } else if (memberRepository.existsByNickname(keyword)) {
                 Member member = memberRepository.findByNickname(keyword).orElseThrow(NullPointerException::new);
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
@@ -97,12 +96,12 @@ public class SearchService {
             List<Feed> feedList = feedRepository.findByMember(member);
 
             for (Feed feed : feedList) {
-                addFeed(feedResponseDtoList, feed, member);
+                addFeed(feedResponseDtoList, feed);
             }
         }
         // add user's own feed too
         for (Feed feed : feedRepository.findByMember(memberDetails.getMember())) {
-            addFeed(feedResponseDtoList, feed, memberDetails.getMember());
+            addFeed(feedResponseDtoList, feed);
         }
 
         // sort by time created
@@ -111,9 +110,11 @@ public class SearchService {
         return ResponseEntity.ok(feedResponseDtoList);
     }
 
-    private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed, Member member) {
+    private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed) {
         // TODO: time complexity for taglist
         // O(total number of tags) or O(number of tags a single feed has)?
+
+        Member member = feed.getMember();
 
         FeedResponseDto feedResponseDto = FeedResponseDto.builder()
                 .feedId(feed.getId())

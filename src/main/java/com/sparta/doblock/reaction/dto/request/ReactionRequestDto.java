@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReactionRequestDto {
+
+    // TODO: Change to ENUM
     private String type;
 
     public void capitalize() {
