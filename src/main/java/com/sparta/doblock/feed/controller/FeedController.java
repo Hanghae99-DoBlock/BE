@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/feed")
 public class FeedController {
+
     private final FeedService feedService;
 
     @GetMapping("")

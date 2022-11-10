@@ -16,7 +16,6 @@ public class TodoRequestDto {
     private int startMinute;
     private int endHour;
     private int endMinute;
-
     private String todoContent;
     private List<String> tagList;
     private boolean completed;

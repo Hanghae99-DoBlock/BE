@@ -3,6 +3,7 @@ package com.sparta.doblock.comment.entity;
 import com.sparta.doblock.comment.dto.request.CommentRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.util.TimeStamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,8 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Comment extends TimeStamp {
+
     @Id
     @Column(name = "comment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +32,9 @@ public class Comment {
     private Feed feed;
 
     @Column(nullable = false)
-    private String content;
+    private String commentContent;
 
     public void update(CommentRequestDto commentRequestDto) {
-        this.content = commentRequestDto.getContent();
+        this.commentContent = commentRequestDto.getCommentContent();
     }
 }

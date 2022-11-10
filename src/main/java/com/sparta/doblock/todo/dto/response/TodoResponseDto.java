@@ -12,10 +12,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class TodoResponseDto {
-    private Long todoId;
 
+    private Long todoId;
     private String todoContent;
     private List<String> tagList;
     private boolean completed;
-
+    private int day;
 }

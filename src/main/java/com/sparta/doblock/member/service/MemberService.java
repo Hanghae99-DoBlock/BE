@@ -45,7 +45,7 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
+        return ResponseEntity.ok("회원가입 성공");
     }
 
     public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
@@ -82,7 +82,7 @@ public class MemberService {
 
         tokenToHeader(tokenDto, httpServletResponse);
 
-        return new ResponseEntity<>("로그인 완료", HttpStatus.OK);
+        return ResponseEntity.ok("로그인 완료");
     }
 
     public void tokenToHeader(TokenDto tokenDto, HttpServletResponse httpServletResponse){

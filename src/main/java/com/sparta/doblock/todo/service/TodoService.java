@@ -3,6 +3,7 @@ package com.sparta.doblock.todo.service;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.tag.entity.Tag;
+import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.mapper.TodoTagMapper;
 import com.sparta.doblock.tag.repository.TagRepository;
 import com.sparta.doblock.tag.repository.TodoTagMapperRepository;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class TodoService {
@@ -34,6 +34,7 @@ public class TodoService {
 
     @Transactional
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
+
         if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
@@ -50,106 +51,171 @@ public class TodoService {
         todoRepository.save(todo);
 
         for (String tagContent : todoRequestDto.getTagList()) {
-            if (! tagRepository.existsByContent(tagContent)) {
+            if (! tagRepository.existsByTagContent(tagContent)) {
                 Tag tag = Tag.builder()
-                        .content(tagContent)
+                        .tagContent(tagContent)
                         .build();
                 tagRepository.save(tag);
             }
-            Tag tag = tagRepository.findByContent(tagContent).orElseThrow(NullPointerException::new);
+
+            Tag tag = tagRepository.findByTagContent(tagContent).orElseThrow(NullPointerException::new);
 
             TodoTagMapper todoTagMapper = TodoTagMapper.builder()
                     .todo(todo)
                     .tag(tag)
                     .build();
+
             todoTagMapperRepository.save(todoTagMapper);
         }
 
         return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
     }
 
-    //투두 일별 조회
     public ResponseEntity<?> getTodayTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
-        LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
-        List<Todo> todoList = todoRepository.findByMemberAndDate(memberDetails.getMember(), date);
 
+        LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
+
+        List<Todo> todoList = todoRepository.findAllByMemberAndDate(memberDetails.getMember(), date);
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
+
             List<String> tagList = new ArrayList<>();
             for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
-                tagList.add(todoTagMapper.getTag().getContent());
+                tagList.add(todoTagMapper.getTag().getTagContent());
             }
+
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
                     .tagList(tagList)
                     .completed(todo.isCompleted())
                     .build();
+
             todoResponseDtoList.add(todoResponseDto);
         }
+
         return ResponseEntity.ok(todoResponseDtoList);
     }
 
-    //투두 단건 조회
     public ResponseEntity<?> getTodo(Long id, MemberDetailsImpl memberDetails) {
 
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("투두가 존재하지 않습니다."));
+
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                 .todoId(todo.getId())
                 .todoContent(todo.getTodoContent())
                 .tagList((todoTagMapperRepository.findByTodo(todo).stream()
-                        .map(todoTagMapper -> todoTagMapper.getTag().getContent()).collect(Collectors.toList())))
+                        .map(todoTagMapper -> todoTagMapper.getTag().getTagContent()).collect(Collectors.toList())))
                 .completed(todo.isCompleted())
                 .build();
-        return new ResponseEntity<>(todoResponseDto, HttpStatus.OK);
+
+        return ResponseEntity.ok(todoResponseDto);
     }
-    //투두 완료
+
     @Transactional
     public ResponseEntity<?> completedTodo(Long id, MemberDetailsImpl memberDetails) {
+
         Todo todo = todoRepository.findById(id).orElseThrow(
                 ()->new RuntimeException("완료할 투두가 없습니다.")
         );
+
         if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
             throw new RuntimeException("본인이 작성한 투두만 완료가 가능합니다.");
         }
+
         todo.completeTask();
         todoRepository.save(todo);
-        return ResponseEntity.ok("투두가 완료되었습니다.");
 
+        return ResponseEntity.ok("투두가 완료되었습니다.");
     }
-    //투두 수정
+
     @Transactional
     public ResponseEntity<?> editTodo(Long id, TodoRequestDto todoRequestDto, Member member) {
+
         Todo todo = todoRepository.findById(id).orElseThrow(
                 ()->new RuntimeException("수정할 투두가 없습니다.")
         );
+
         if(!todo.getMember().getNickname().equals(member.getNickname())) {
             throw new RuntimeException("본인이 작성한 투두만 삭제가 가능합니다.");
         }
+
         todo.edit(todoRequestDto);
+
+        todoTagMapperRepository.deleteAllByTodo(todo);
+
+        for (String tagContent : todoRequestDto.getTagList()) {
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+
+            tagRepository.save(tag);
+
+            if (! todoTagMapperRepository.existsByTodoAndTag(todo, tag)) {
+                TodoTagMapper feedTagMapper = TodoTagMapper.builder()
+                        .todo(todo)
+                        .tag(tag)
+                        .build();
+
+                todoTagMapperRepository.save(feedTagMapper);
+            }
+        }
+
         todoRepository.save(todo);
-        return new ResponseEntity<>("투두 수정이 완료되었습니다.", HttpStatus.OK);
+
+        return ResponseEntity.ok("투두 수정이 완료되었습니다.");
     }
 
     //투두 삭제
     @Transactional
     public ResponseEntity<?> deleteTodo(Long id, MemberDetailsImpl memberDetails) {
+
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("삭제할 투두가 존재하지 않습니다.")
         );
+
         if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
             throw new RuntimeException("본인이 작성한 투두만 삭제가 가능합니다.");
         }
+
         todoTagMapperRepository.deleteAllByTodo(todo);
         todoRepository.deleteById(id);
-        return new ResponseEntity<>("투두 삭제가 완료되었습니다.", HttpStatus.OK);
+
+        return ResponseEntity.ok("투두 삭제가 완료되었습니다.");
     }
-//
-//
-//
-//
-//    //캘린더 월별 조회
-//
+
+    public ResponseEntity<?> getMonthTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
+
+        LocalDate startDate = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), 1);
+        LocalDate endDate = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), startDate.lengthOfMonth());
+
+        List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
+
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)){
+
+            List<Todo> todoList = todoRepository.findAllByMemberAndDate(memberDetails.getMember(), date);
+
+            for (Todo todo : todoList) {
+
+                List<String> tagList = new ArrayList<>();
+
+                for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
+                    tagList.add(todoTagMapper.getTag().getTagContent());
+                }
+
+                TodoResponseDto todoResponseDto = TodoResponseDto.builder()
+                        .todoId(todo.getId())
+                        .todoContent(todo.getTodoContent())
+                        .tagList(tagList)
+                        .completed(todo.isCompleted())
+                        .day(todo.getDate().getDayOfMonth())
+                        .build();
+
+                todoResponseDtoList.add(todoResponseDto);
+            }
+        }
+
+        return ResponseEntity.ok(todoResponseDtoList);
+    }
+
 }

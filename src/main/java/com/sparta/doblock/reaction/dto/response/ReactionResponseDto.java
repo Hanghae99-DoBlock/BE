@@ -9,6 +9,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ReactionResponseDto {
+
     private String nickname;
     private ReactionType reactionType;
 }

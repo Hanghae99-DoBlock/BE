@@ -63,6 +63,7 @@ public class S3UploadService {
             s3Client.putObject(new PutObjectRequest(bucket + "/post/image", fileName, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
             imageUrl = (s3Client.getUrl(bucket + "/post/image", fileName).toString());
+
         } catch (IOException e) {
             throw new CustomExceptions.UploadFailException();
         }
@@ -83,6 +84,7 @@ public class S3UploadService {
             s3Client.putObject(new PutObjectRequest(bucket + "/post/media", fileName, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
             videoUrl = (s3Client.getUrl(bucket + "/post/media", fileName).toString());
+
         } catch (IOException e) {
             throw new CustomExceptions.UploadFailException();
         }
@@ -91,21 +93,20 @@ public class S3UploadService {
     }
 
     public void delete(String key) {
+
         try {
-            //Delete 객체 생성
             DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(this.bucket, key);
-            //Delete
             this.s3Client.deleteObject(deleteObjectRequest);
             System.out.println(String.format("[%s] deletion complete", key));
 
         } catch (AmazonServiceException e) {
             e.printStackTrace();
+
         } catch (SdkClientException e) {
             e.printStackTrace();
         }
     }
 
-    // 이미지파일명 중복 방지
     private String createImageFileName(String fileName) {
         return UUID.randomUUID().toString().concat(getImageFileExtension(fileName));
     }
@@ -114,8 +115,8 @@ public class S3UploadService {
         return UUID.randomUUID().toString().concat(getVideoFileExtension(fileName));
     }
 
-    // 파일 유효성 검사
     private String getImageFileExtension(String fileName) {
+
         ArrayList<String> fileValidate = new ArrayList<>();
         fileValidate.add(".jpg");
         fileValidate.add(".jpeg");
@@ -123,15 +124,17 @@ public class S3UploadService {
         fileValidate.add(".JPG");
         fileValidate.add(".JPEG");
         fileValidate.add(".PNG");
+
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
     private String getVideoFileExtension(String fileName) {
+
         ArrayList<String> fileValidate = new ArrayList<>();
         fileValidate.add(".mp4");
         fileValidate.add(".mov");
         fileValidate.add(".mkv");
+
         return fileName.substring(fileName.lastIndexOf("."));
     }
-
 }

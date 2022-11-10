@@ -1,5 +1,6 @@
 package com.sparta.doblock.reaction.dto.request;
 
+import com.sparta.doblock.reaction.entity.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,10 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReactionRequestDto {
 
-    // TODO: Change to ENUM
-    private String type;
-
-    public void capitalize() {
-        this.type = type.toUpperCase();
-    }
+    private ReactionType reactionType;
 }

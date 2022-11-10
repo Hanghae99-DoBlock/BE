@@ -32,7 +32,7 @@ public class Feed extends TimeStamp {
     private List<String> todoList;
 
     @Column
-    private String content;
+    private String feedContent;
 
     @Column(columnDefinition = "mediumblob")
     @ElementCollection(fetch = FetchType.LAZY)
@@ -46,12 +46,10 @@ public class Feed extends TimeStamp {
         return this.id.equals(other.getId());
     }
 
-    public void update(List<String> todoList, String content, List<String> feedImageList) {
-        if (Objects.isNull(todoList) || todoList.isEmpty())
-            this.todoList = todoList;
-        if (Objects.isNull(content))
-            this.content = content;
-        if (Objects.isNull(feedImageList) || feedImageList.isEmpty())
+    public void update(String feedContent, List<String> feedImageList) {
+        if (!Objects.isNull(feedContent))
+            this.feedContent = feedContent;
+        if (!Objects.isNull(feedImageList) && !feedImageList.isEmpty())
             this.feedImageList = feedImageList;
     }
 }

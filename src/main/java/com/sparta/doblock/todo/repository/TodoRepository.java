@@ -8,5 +8,5 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface TodoRepository extends JpaRepository<Todo, Long> {
-    List<Todo> findByMemberAndDate(Member member, LocalDate date);
+    List<Todo> findAllByMemberAndDate(Member member, LocalDate date);
 }

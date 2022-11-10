@@ -46,9 +46,10 @@ public class SearchService {
 
         if (category.equals("feed")) {
             // feed search
-            Tag tag = tagRepository.findByContent(keyword).orElseThrow(
+            Tag tag = tagRepository.findByTagContent(keyword).orElseThrow(
                     () -> new NullPointerException("해당 검색어에 맞는 피드 가 없습니다")
             );
+
             List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByTag(tag);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
@@ -60,41 +61,49 @@ public class SearchService {
             feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
 
             return ResponseEntity.ok(feedResponseDtoList);
+
         } else {
             // member search
             List<MemberResponseDto> memberResponseDtoList = new ArrayList<>();
 
             if (memberRepository.existsByEmail(keyword)) {
+
                 Member member = memberRepository.findByEmail(keyword).orElseThrow(NullPointerException::new);
+
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname()).build());
+
             } else if (memberRepository.existsByNickname(keyword)) {
+
                 Member member = memberRepository.findByNickname(keyword).orElseThrow(NullPointerException::new);
+
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname()).build());
             }
+
             return ResponseEntity.ok(memberResponseDtoList);
         }
     }
 
     @Transactional
-    public ResponseEntity<?> getFollowerFeeds(MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getFollowingFeeds(MemberDetailsImpl memberDetails) {
+
         if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
         }
 
-        List<Follow> followList = followRepository.findAllByFromMember(memberDetails.getMember());
+        List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (Follow follow : followList) {
-            Member member = follow.getToMember();
-            List<Feed> feedList = feedRepository.findByMember(member);
+        for (Follow following : followingList) {
+            Member toMember = following.getToMember();
 
+            List<Feed> feedList = feedRepository.findByMember(toMember);
             for (Feed feed : feedList) {
                 addFeed(feedResponseDtoList, feed);
             }
@@ -122,12 +131,12 @@ public class SearchService {
                 .profileImageUrl(member.getProfileImage())
                 .nickname(member.getNickname())
                 .todoList(feed.getTodoList())
-                .content(feed.getContent())
+                .feedContent(feed.getFeedContent())
                 .feedImagesUrlList(feed.getFeedImageList())
                 .tagList(feedTagMapperRepository.findByFeed(feed).stream()
-                        .map(feedTagMapper1 -> feedTagMapper1.getTag().getContent())
+                        .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))
-                .reactionResponseDtoList(reactionRepository.findByFeed(feed).stream()
+                .reactionResponseDtoList(reactionRepository.findAllByFeed(feed).stream()
                         .map(r -> ReactionResponseDto.builder()
                                 .nickname(r.getMember().getNickname())
                                 .reactionType(r.getReactionType())
@@ -135,13 +144,17 @@ public class SearchService {
                         .collect(Collectors.toList()))
                 .commentResponseDtoList(commentRepository.findByFeed(feed).stream()
                         .map(c -> CommentResponseDto.builder()
+                                .commentId(c.getId())
                                 .nickname(c.getMember().getNickname())
-                                .content(c.getContent())
+                                .commentContent(c.getCommentContent())
+                                .postedAt(c.getPostedAt())
                                 .build())
                         .collect(Collectors.toList()))
                 .postedAt(feed.getPostedAt())
                 .build();
+
         feedResponseDtoList.add(feedResponseDto);
+
         return feedResponseDtoList;
     }
 }

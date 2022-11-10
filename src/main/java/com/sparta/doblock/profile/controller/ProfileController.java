@@ -1,6 +1,7 @@
 package com.sparta.doblock.profile.controller;
 
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import com.sparta.doblock.profile.dto.request.EditProfileRequestDto;
 import com.sparta.doblock.profile.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

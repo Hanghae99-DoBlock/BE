@@ -1,4 +1,4 @@
-package com.sparta.doblock.profile.controller;
+package com.sparta.doblock.profile.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

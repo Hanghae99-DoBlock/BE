@@ -48,6 +48,17 @@ public class Todo extends TimeStamp {
     }
 
     public void edit(TodoRequestDto todoRequestDto) {
-        this.todoContent = todoRequestDto.getTodoContent();
+
+        this.date = todoRequestDto.getYear() != 0 ? LocalDate.of(todoRequestDto.getYear(), this.date.getMonth(), this.date.getDayOfMonth()) : this.date;
+        this.date = todoRequestDto.getMonth() != 0 ? LocalDate.of(this.date.getYear(), todoRequestDto.getMonth(), this.date.getDayOfMonth()) : this.date;
+        this.date = todoRequestDto.getDay() != 0 ? LocalDate.of(this.date.getYear(), this.date.getMonth(), todoRequestDto.getDay()) : this.date;
+
+        this.startTime = todoRequestDto.getStartHour() != 0 ? LocalTime.of(todoRequestDto.getStartHour(), this.startTime.getMinute()) : this.startTime;
+        this.startTime = todoRequestDto.getStartMinute() != 0 ? LocalTime.of(this.startTime.getHour(), todoRequestDto.getStartMinute()) : this.startTime;
+
+        this.endTime = todoRequestDto.getEndHour() != 0 ? LocalTime.of(todoRequestDto.getEndHour(), this.endTime.getMinute()) : this.endTime;
+        this.endTime = todoRequestDto.getEndMinute() != 0 ? LocalTime.of(this.endTime.getHour(), todoRequestDto.getEndMinute()) : this.endTime;
+
+        this.todoContent = todoRequestDto.getTodoContent() != null ? todoRequestDto.getTodoContent() : this.todoContent;
     }
 }

@@ -3,7 +3,7 @@ package com.sparta.doblock.profile.service;
 import com.sparta.doblock.exception.CustomExceptions;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.profile.controller.EditProfileRequestDto;
+import com.sparta.doblock.profile.dto.request.EditProfileRequestDto;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
@@ -35,10 +35,6 @@ public class ProfileService {
     @Transactional
     public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, Member member) {
 
-        if(passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())){
-            throw new CustomExceptions.NotMatchedPasswordException();
-        }
-
         if(editProfileRequestDto.getProfileImage() != null){
 
             if(!member.getProfileImage().equals(defaultProfileImage)){
@@ -50,6 +46,11 @@ public class ProfileService {
         }
 
         if(editProfileRequestDto.getNewPassword() != null){
+
+            if(passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())){
+                throw new CustomExceptions.NotMatchedPasswordException();
+            }
+
             member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
         }
 
@@ -57,7 +58,7 @@ public class ProfileService {
 
         memberRepository.save(member);
 
-        return new ResponseEntity<>("정보 변경 성공", HttpStatus.OK);
+        return ResponseEntity.ok("정보 변경 성공");
     }
 
 
@@ -78,12 +79,12 @@ public class ProfileService {
 
             followRepository.save(follow);
 
-            return new ResponseEntity<>("팔로우 완료", HttpStatus.OK);
+            return ResponseEntity.ok("팔로우 완료");
 
         }else {
             followRepository.deleteByFromMemberAndToMember(member, toMember);
 
-            return new ResponseEntity<>("팔로우 취소", HttpStatus.OK);
+            return ResponseEntity.ok("팔로우 취소");
         }
     }
 
@@ -106,7 +107,7 @@ public class ProfileService {
             );
         }
 
-        return new ResponseEntity<>(followResponseDtoList, HttpStatus.OK);
+        return ResponseEntity.ok(followResponseDtoList);
     }
 
     public ResponseEntity<?> getFollowerList(String nickname, Member member) {
@@ -128,6 +129,6 @@ public class ProfileService {
             );
         }
 
-        return new ResponseEntity<>(followResponseDtoList, HttpStatus.OK);
+        return ResponseEntity.ok(followResponseDtoList);
     }
 }
