@@ -43,7 +43,7 @@ public class TodoService {
                 .date(LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay()))
                 .startTime(LocalTime.of(todoRequestDto.getStartHour(), todoRequestDto.getStartMinute()))
                 .endTime(LocalTime.of(todoRequestDto.getEndHour(), todoRequestDto.getEndMinute()))
-                .todocontent(todoRequestDto.getTodocontent())
+                .todoContent(todoRequestDto.getTodoContent())
                 .completed(false)
                 .build();
 
@@ -82,7 +82,7 @@ public class TodoService {
             }
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
-                    .todocontent(todo.getTodocontent())
+                    .todoContent(todo.getTodoContent())
                     .tagList(tagList)
                     .completed(todo.isCompleted())
                     .build();
@@ -98,7 +98,7 @@ public class TodoService {
                 () -> new RuntimeException("투두가 존재하지 않습니다."));
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                 .todoId(todo.getId())
-                .todocontent(todo.getTodocontent())
+                .todoContent(todo.getTodoContent())
                 .tagList((todoTagMapperRepository.findByTodo(todo).stream()
                         .map(todoTagMapper -> todoTagMapper.getTag().getContent()).collect(Collectors.toList())))
                 .completed(todo.isCompleted())
