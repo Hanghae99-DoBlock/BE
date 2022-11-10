@@ -38,7 +38,7 @@ public class Todo extends TimeStamp {
     private LocalTime endTime;
 
     @Column(nullable = false)
-    private String todocontent;
+    private String todoContent;
 
     @Column(nullable = false)
     private boolean completed;
@@ -48,6 +48,6 @@ public class Todo extends TimeStamp {
     }
 
     public void edit(TodoRequestDto todoRequestDto) {
-        this.todocontent = todoRequestDto.getTodocontent();
+        this.todoContent = todoRequestDto.getTodoContent();
     }
 }

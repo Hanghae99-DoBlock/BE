@@ -56,7 +56,7 @@ public class FeedService {
             }
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
-                    .todo(todo.getContent())
+                    .todoContent(todo.getTodoContent())
                     .tagList(tagList)
                     .build();
             todoResponseDtoList.add(todoResponseDto);
@@ -83,7 +83,7 @@ public class FeedService {
             } else if (! todo.isCompleted()) {
                 return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
             } else {
-                todoList.add(todo.getContent());
+                todoList.add(todo.getTodoContent());
             }
         }
 
@@ -126,7 +126,7 @@ public class FeedService {
         List<String> todoList = feedRequestDto.getTodoIdList().stream()
                 .map(id -> todoRepository.findById(id).orElseThrow(
                         () -> new NullPointerException("존재하지 않는 투두입니다")
-                ).getContent())
+                ).getTodoContent())
                 .collect(Collectors.toList());
 
         List<String> feedImageList = feedRequestDto.getFeedImageList().stream()

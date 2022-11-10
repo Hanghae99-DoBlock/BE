@@ -14,7 +14,7 @@ import java.util.List;
 public class TodoResponseDto {
     private Long todoId;
 
-    private String todocontent;
+    private String todoContent;
     private List<String> tagList;
     private boolean completed;
 
