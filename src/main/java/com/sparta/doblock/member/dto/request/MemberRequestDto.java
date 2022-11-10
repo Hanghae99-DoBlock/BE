@@ -10,7 +10,7 @@ import javax.validation.constraints.Pattern;
 @AllArgsConstructor
 public class MemberRequestDto {
 
-    @Email
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
     private String email;
 
     @Pattern(regexp = "^(?=.*[a-z0-9A-Z가-힣])[a-z0-9A-Z가-힣]{2,6}$")

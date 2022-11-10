@@ -52,14 +52,14 @@ public class MemberService {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
             return new ResponseEntity<>("이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST);
-        } else return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+        } else return ResponseEntity.ok("사용 가능한 이메일입니다.");
     }
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
             return new ResponseEntity<>("이미 사용 중인 닉네임입니다.", HttpStatus.BAD_REQUEST);
-        } else return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+        } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }
 
     @Transactional
