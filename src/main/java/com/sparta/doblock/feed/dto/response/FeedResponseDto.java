@@ -13,14 +13,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class FeedResponseDto {
+
     private Long feedId;
     private Long memberId;
     private String profileImageUrl;
     private String nickname;
-//    private List<Long> todoIdList;
-    // TODO: discuss this in the meeting
     private List<String> todoList;
-    private String content;
+    private String feedContent;
     private List<String> feedImagesUrlList;
     private List<String> tagList;
     private List<ReactionResponseDto> reactionResponseDtoList;

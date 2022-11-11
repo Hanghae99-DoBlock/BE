@@ -2,15 +2,15 @@ package com.sparta.doblock.profile.service;
 
 import com.sparta.doblock.exception.CustomExceptions;
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.profile.controller.EditProfileRequestDto;
+import com.sparta.doblock.profile.dto.request.EditProfileRequestDto;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -33,11 +34,19 @@ public class ProfileService {
     private String defaultProfileImage;
 
     @Transactional
-    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, Member member) {
+    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) {
 
-        if(passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())){
-            throw new CustomExceptions.NotMatchedPasswordException();
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
         }
+
+        if (memberRepository.existsByNickname(editProfileRequestDto.getNickname())){
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+        }
+
+        Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
+                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+        );
 
         if(editProfileRequestDto.getProfileImage() != null){
 
@@ -50,44 +59,59 @@ public class ProfileService {
         }
 
         if(editProfileRequestDto.getNewPassword() != null){
+
+            if(passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())){
+                throw new CustomExceptions.NotMatchedPasswordException();
+            }
+
             member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
         }
 
         member.editNickname(editProfileRequestDto.getNickname());
 
-        memberRepository.save(member);
-
-        return new ResponseEntity<>("정보 변경 성공", HttpStatus.OK);
+        return ResponseEntity.ok("정보 변경 성공");
     }
 
 
     @Transactional
-    public ResponseEntity<?> follow(String nickname, Member member) {
+    public ResponseEntity<?> follow(String nickname, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
 
         Member toMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        Optional<Follow> followingMember = followRepository.findByFromMemberAndToMember(member, toMember);
+        if (toMember.getNickname().equals(memberDetails.getMember().getNickname())){
+            throw new RuntimeException("본인을 팔로우 할 수 없습니다.");
+        }
+
+        Optional<Follow> followingMember = followRepository.findByFromMemberAndToMember(memberDetails.getMember(), toMember);
 
         if (followingMember.isEmpty()){
             Follow follow = Follow.builder()
-                    .fromMember(member)
+                    .fromMember(memberDetails.getMember())
                     .toMember(toMember)
                     .build();
 
             followRepository.save(follow);
 
-            return new ResponseEntity<>("팔로우 완료", HttpStatus.OK);
+            return ResponseEntity.ok("팔로우 완료");
 
         }else {
-            followRepository.deleteByFromMemberAndToMember(member, toMember);
+            followRepository.deleteByFromMemberAndToMember(memberDetails.getMember(), toMember);
 
-            return new ResponseEntity<>("팔로우 취소", HttpStatus.OK);
+            return ResponseEntity.ok("팔로우 취소");
         }
     }
 
-    public ResponseEntity<?> getFollowingList(String nickname, Member member) {
+    public ResponseEntity<?> getFollowingList(String nickname, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
 
         Member fromMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
@@ -106,10 +130,14 @@ public class ProfileService {
             );
         }
 
-        return new ResponseEntity<>(followResponseDtoList, HttpStatus.OK);
+        return ResponseEntity.ok(followResponseDtoList);
     }
 
-    public ResponseEntity<?> getFollowerList(String nickname, Member member) {
+    public ResponseEntity<?> getFollowerList(String nickname, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
 
         Member toMember = memberRepository.findByNickname(nickname).orElseThrow(
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
@@ -128,6 +156,6 @@ public class ProfileService {
             );
         }
 
-        return new ResponseEntity<>(followResponseDtoList, HttpStatus.OK);
+        return ResponseEntity.ok(followResponseDtoList);
     }
 }

@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -28,14 +26,9 @@ public class Todo extends TimeStamp {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(nullable = false)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalTime startTime;
-
-    @Column(nullable = false)
-    private LocalTime endTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "date_id", nullable = false)
+    private TodoDate todoDate;
 
     @Column(nullable = false)
     private String todoContent;
@@ -43,11 +36,19 @@ public class Todo extends TimeStamp {
     @Column(nullable = false)
     private boolean completed;
 
-    public void completeTask() {
-        this.completed = true;
+    @Column
+    private int index;
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
-    public void edit(TodoRequestDto todoRequestDto) {
-        this.todoContent = todoRequestDto.getTodoContent();
+    public void completeTask() {
+        this.completed = !completed;
+    }
+
+    public void edit(TodoRequestDto todoRequestDto, TodoDate todoDate) {
+        this.todoDate = todoDate;
+        this.todoContent = todoRequestDto.getTodoContent() != null ? todoRequestDto.getTodoContent() : this.todoContent;
     }
 }

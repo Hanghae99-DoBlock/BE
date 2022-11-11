@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -47,7 +46,7 @@ public class SecurityConfiguration {
     @Order(SecurityProperties.BASIC_AUTH_ORDER)
     public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
 
-        http.cors().disable();
+        http.cors();
 
         http.csrf().disable()
 
@@ -68,13 +67,9 @@ public class SecurityConfiguration {
                 .and()
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .antMatchers("/api/**").permitAll()
-                .antMatchers(HttpMethod.POST).authenticated()
-                .antMatchers(HttpMethod.DELETE).authenticated()
-                .antMatchers(HttpMethod.PUT).authenticated()
-                .antMatchers(HttpMethod.PATCH).authenticated()
+                .antMatchers("/api/members/**").permitAll()
                 .anyRequest()
-                .permitAll()
+                .authenticated()
 
                 .and()
                 .apply(new JwtSecurityConfiguration(tokenProvider));

@@ -12,7 +12,6 @@ import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +34,14 @@ public class MemberService {
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+        }
+
+        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+        }
+
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .nickname(memberRequestDto.getNickname())
@@ -45,21 +52,21 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        return new ResponseEntity<>("회원가입 성공", HttpStatus.OK);
+        return ResponseEntity.ok("회원가입 성공");
     }
 
     public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            return new ResponseEntity<>("이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST);
-        } else return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+        } else return ResponseEntity.ok("사용 가능한 이메일입니다.");
     }
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
-            return new ResponseEntity<>("이미 사용 중인 닉네임입니다.", HttpStatus.BAD_REQUEST);
-        } else return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+        } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }
 
     @Transactional
@@ -82,7 +89,7 @@ public class MemberService {
 
         tokenToHeader(tokenDto, httpServletResponse);
 
-        return new ResponseEntity<>("로그인 완료", HttpStatus.OK);
+        return ResponseEntity.ok("로그인 완료");
     }
 
     public void tokenToHeader(TokenDto tokenDto, HttpServletResponse httpServletResponse){

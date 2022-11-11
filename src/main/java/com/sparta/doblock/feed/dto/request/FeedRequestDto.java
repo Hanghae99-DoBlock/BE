@@ -9,8 +9,9 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class FeedRequestDto {
+
     private List<Long> todoIdList;
-    private String content;
+    private String feedContent;
     private List<MultipartFile> feedImageList;
     private List<String> tagList;
 }

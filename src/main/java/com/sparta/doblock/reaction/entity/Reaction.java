@@ -15,8 +15,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "member_id", "feed_id" }) })
-// TODO: 한 유저가 한 피드에 한개의 리액션만 할수 있음 --> 할지 말지 정해야됨
 public class Reaction {
+
     @Id
     @Column(name = "reaction_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

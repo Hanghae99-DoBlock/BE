@@ -4,10 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
 public class CommentResponseDto {
+
+    private Long commentId;
     private String nickname;
-    private String content;
+    private String commentContent;
+    private LocalDateTime postedAt;
 }

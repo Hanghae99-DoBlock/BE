@@ -22,8 +22,8 @@ public class SearchController {
         return searchService.search(keyword, category);
     }
 
-    @GetMapping("/feed")
-    public ResponseEntity<?> getFollowerFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return searchService.getFollowerFeeds(memberDetails);
+    @GetMapping("/feed/following")
+    public ResponseEntity<?> getFollowingFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getFollowingFeeds(memberDetails);
     }
 }

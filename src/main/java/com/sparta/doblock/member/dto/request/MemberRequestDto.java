@@ -3,14 +3,13 @@ package com.sparta.doblock.member.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 
 @Getter
 @AllArgsConstructor
 public class MemberRequestDto {
 
-    @Email
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")
     private String email;
 
     @Pattern(regexp = "^(?=.*[a-z0-9A-Z가-힣])[a-z0-9A-Z가-힣]{2,6}$")

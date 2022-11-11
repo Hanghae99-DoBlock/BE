@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -22,17 +21,19 @@ public class MemberController {
     public ResponseEntity<?> signup(@RequestBody @Valid MemberRequestDto memberRequestDto){
         return memberService.signup(memberRequestDto);
     }
-    @GetMapping("/checkmail")
-    public ResponseEntity<?> checkEmail(@RequestBody @Valid MemberRequestDto memberRequestDto){
+
+    @PostMapping("/checkmail")
+    public ResponseEntity<?> checkEmail(@RequestBody(required = false) @Valid MemberRequestDto memberRequestDto){
         return memberService.checkEmail(memberRequestDto);
     }
 
-    @GetMapping("/checkname")
-    public ResponseEntity<?> checkNickname(@RequestBody @Valid MemberRequestDto memberRequestDto){
+    @PostMapping("/checkname")
+    public ResponseEntity<?> checkNickname(@RequestBody(required = false) @Valid MemberRequestDto memberRequestDto){
         return memberService.checkNickname(memberRequestDto);
     }
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse){
+    public ResponseEntity<?> login(@RequestBody(required = false) @Valid MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse){
         return memberService.login(memberRequestDto, httpServletResponse);
     }
 }

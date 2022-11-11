@@ -1,6 +1,5 @@
 package com.sparta.doblock.feed.service;
 
-import com.sparta.doblock.feed.dto.request.DateRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -14,6 +13,8 @@ import com.sparta.doblock.tag.repository.TodoTagMapperRepository;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
 import com.sparta.doblock.todo.repository.TodoRepository;
+import com.sparta.doblock.todo.entity.TodoDate;
+import com.sparta.doblock.todo.repository.TodoDateRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,30 +31,37 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FeedService {
+
     private final TodoRepository todoRepository;
     private final FeedRepository feedRepository;
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final TodoTagMapperRepository todoTagMapperRepository;
-
+    private final TodoDateRepository todoDateRepository;
     private final S3UploadService s3UploadService;
 
     @Transactional
-    public ResponseEntity<?> getTodoByDate(DateRequestDto dateRequestDto, MemberDetailsImpl memberDetails) {
-        // TODO: merge with 영성's todo entity/responseDto
-        LocalDate date = LocalDate.of(dateRequestDto.getYear(), dateRequestDto.getMonth(), dateRequestDto.getDay());
-        List<Todo> todoList = todoRepository.findByMemberAndDate(memberDetails.getMember(), date);
+    public ResponseEntity<?> getTodoByDate(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
+        LocalDate date = LocalDate.of(year, month, day);
+
+        TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+                () -> new NullPointerException("해당 날짜에 등록된 투두가 없습니다")
+        );
+
+        List<Todo> todoList = todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate);
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
             if (!todo.isCompleted()) {
                 continue;
             }
+
             List<String> tagList = new ArrayList<>();
             for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
-                tagList.add(todoTagMapper.getTag().getContent());
+                tagList.add(todoTagMapper.getTag().getTagContent());
             }
+
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
@@ -61,15 +69,15 @@ public class FeedService {
                     .build();
             todoResponseDtoList.add(todoResponseDto);
         }
+
         return ResponseEntity.ok(todoResponseDtoList);
     }
 
     @Transactional
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
-        // member can only post feed related to their own todo's
 
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
 
         List<String> todoList = new ArrayList<>();
@@ -78,10 +86,13 @@ public class FeedService {
             Todo todo = todoRepository.findById(todoId).orElseThrow(
                     () -> new NullPointerException("해당 투두가 존재하지 않습니다")
             );
+
             if (! todo.getMember().isEqual(memberDetails.getMember())) {
                 return new ResponseEntity<>("투두의 작성자가 아닙니다", HttpStatus.FORBIDDEN);
+
             } else if (! todo.isCompleted()) {
                 return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
+
             } else {
                 todoList.add(todo.getTodoContent());
             }
@@ -94,15 +105,14 @@ public class FeedService {
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
                 .todoList(todoList)
-                .content(feedRequestDto.getContent())
+                .feedContent(feedRequestDto.getFeedContent())
                 .feedImageList(feedImageList)
                 .build();
 
         feedRepository.save(feed);
 
-        // Tag & FeedTagMapper
         for (String tagContent : feedRequestDto.getTagList()) {
-            Tag tag = tagRepository.findByContent(tagContent).orElse(Tag.builder().content(tagContent).build());
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
 
             tagRepository.save(tag);
 
@@ -119,32 +129,27 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
+
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
-
-        List<String> todoList = feedRequestDto.getTodoIdList().stream()
-                .map(id -> todoRepository.findById(id).orElseThrow(
-                        () -> new NullPointerException("존재하지 않는 투두입니다")
-                ).getTodoContent())
-                .collect(Collectors.toList());
-
-        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
-                .map(s3UploadService::uploadImage)
-                .collect(Collectors.toList());
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("존재하는 피드가 아닙니다")
         );
 
-        feed.update(todoList, feedRequestDto.getContent(), feedImageList);
+        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
+                .map(s3UploadService::uploadImage)
+                .collect(Collectors.toList());
+
+        feed.update(feedRequestDto.getFeedContent(), feedImageList);
 
         // delete existing tags and create new ones
 
         feedTagMapperRepository.deleteAllByFeed(feed);
 
         for (String tagContent : feedRequestDto.getTagList()) {
-            Tag tag = tagRepository.findByContent(tagContent).orElse(Tag.builder().content(tagContent).build());
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
 
             tagRepository.save(tag);
 
@@ -166,8 +171,9 @@ public class FeedService {
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("해당 피드가 없습니다")
         );
+
         if (! feed.getMember().isEqual(memberDetails.getMember())) {
-            return new ResponseEntity<>("본인이 작성한 피드가 아닙니다", HttpStatus.FORBIDDEN);
+            throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
         }
 
         feedTagMapperRepository.deleteAllByFeed(feed);

@@ -1,7 +1,6 @@
 package com.sparta.doblock.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sparta.doblock.profile.controller.EditProfileRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
