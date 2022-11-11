@@ -4,12 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Pattern;
+
 @Getter
 @AllArgsConstructor
 public class EditProfileRequestDto {
 
+    @Pattern(regexp = "^(?=.*[a-z0-9A-Z가-힣])[a-z0-9A-Z가-힣]{2,6}$")
     private String nickname;
+
     private MultipartFile profileImage;
+
     private String currentPassword;
+
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-z0-9A-Z!@#$%^&*]{8,20}$")
     private String newPassword;
 }

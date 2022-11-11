@@ -1,6 +1,5 @@
 package com.sparta.doblock.feed.service;
 
-import com.sparta.doblock.feed.dto.request.DateRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -14,6 +13,8 @@ import com.sparta.doblock.tag.repository.TodoTagMapperRepository;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
 import com.sparta.doblock.todo.repository.TodoRepository;
+import com.sparta.doblock.todo.entity.TodoDate;
+import com.sparta.doblock.todo.repository.TodoDateRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,14 +37,19 @@ public class FeedService {
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final TodoTagMapperRepository todoTagMapperRepository;
+    private final TodoDateRepository todoDateRepository;
     private final S3UploadService s3UploadService;
 
     @Transactional
-    public ResponseEntity<?> getTodoByDate(DateRequestDto dateRequestDto, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getTodoByDate(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
-        LocalDate date = LocalDate.of(dateRequestDto.getYear(), dateRequestDto.getMonth(), dateRequestDto.getDay());
+        LocalDate date = LocalDate.of(year, month, day);
 
-        List<Todo> todoList = todoRepository.findAllByMemberAndDate(memberDetails.getMember(), date);
+        TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+                () -> new NullPointerException("해당 날짜에 등록된 투두가 없습니다")
+        );
+
+        List<Todo> todoList = todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate);
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
@@ -71,7 +77,7 @@ public class FeedService {
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
 
         List<String> todoList = new ArrayList<>();
@@ -125,7 +131,7 @@ public class FeedService {
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
@@ -167,7 +173,7 @@ public class FeedService {
         );
 
         if (! feed.getMember().isEqual(memberDetails.getMember())) {
-            return new ResponseEntity<>("본인이 작성한 피드가 아닙니다", HttpStatus.FORBIDDEN);
+            throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
         }
 
         feedTagMapperRepository.deleteAllByFeed(feed);

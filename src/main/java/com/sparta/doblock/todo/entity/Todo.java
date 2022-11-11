@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -28,14 +26,9 @@ public class Todo extends TimeStamp {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(nullable = false)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalTime startTime;
-
-    @Column(nullable = false)
-    private LocalTime endTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "date_id", nullable = false)
+    private TodoDate todoDate;
 
     @Column(nullable = false)
     private String todoContent;
@@ -43,22 +36,19 @@ public class Todo extends TimeStamp {
     @Column(nullable = false)
     private boolean completed;
 
-    public void completeTask() {
-        this.completed = true;
+    @Column
+    private int index;
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
-    public void edit(TodoRequestDto todoRequestDto) {
+    public void completeTask() {
+        this.completed = !completed;
+    }
 
-        this.date = todoRequestDto.getYear() != 0 ? LocalDate.of(todoRequestDto.getYear(), this.date.getMonth(), this.date.getDayOfMonth()) : this.date;
-        this.date = todoRequestDto.getMonth() != 0 ? LocalDate.of(this.date.getYear(), todoRequestDto.getMonth(), this.date.getDayOfMonth()) : this.date;
-        this.date = todoRequestDto.getDay() != 0 ? LocalDate.of(this.date.getYear(), this.date.getMonth(), todoRequestDto.getDay()) : this.date;
-
-        this.startTime = todoRequestDto.getStartHour() != 0 ? LocalTime.of(todoRequestDto.getStartHour(), this.startTime.getMinute()) : this.startTime;
-        this.startTime = todoRequestDto.getStartMinute() != 0 ? LocalTime.of(this.startTime.getHour(), todoRequestDto.getStartMinute()) : this.startTime;
-
-        this.endTime = todoRequestDto.getEndHour() != 0 ? LocalTime.of(todoRequestDto.getEndHour(), this.endTime.getMinute()) : this.endTime;
-        this.endTime = todoRequestDto.getEndMinute() != 0 ? LocalTime.of(this.endTime.getHour(), todoRequestDto.getEndMinute()) : this.endTime;
-
+    public void edit(TodoRequestDto todoRequestDto, TodoDate todoDate) {
+        this.todoDate = todoDate;
         this.todoContent = todoRequestDto.getTodoContent() != null ? todoRequestDto.getTodoContent() : this.todoContent;
     }
 }

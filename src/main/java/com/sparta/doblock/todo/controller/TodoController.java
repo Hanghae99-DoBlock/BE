@@ -1,6 +1,7 @@
 package com.sparta.doblock.todo.controller;
 
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import com.sparta.doblock.todo.dto.request.TodoIdOrderRequestDto;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,15 @@ public class TodoController {
         return todoService.createTodo(todoRequestDto, memberDetails);
     }
 
+    @PutMapping("/switch")
+    public ResponseEntity<?> switchOrder(@RequestBody TodoIdOrderRequestDto todoIdOrderRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return todoService.switchOrder(todoIdOrderRequestDto, memberDetails);
+    }
+
     @GetMapping("")
-    public ResponseEntity<?> getTodayTodo(@RequestBody TodoRequestDto todoRequestDto,
+    public ResponseEntity<?> getTodayTodo(@RequestParam("year") int year, @RequestParam("month") int month, @RequestParam("day") int day,
                                                               @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return todoService.getTodayTodo(todoRequestDto, memberDetails);
+        return todoService.getTodayTodo(year, month, day, memberDetails);
     }
 
     @GetMapping("/{todo_id}")
@@ -43,7 +49,7 @@ public class TodoController {
     public ResponseEntity<?> editTodo(@PathVariable(name = "todo_id") Long id,
                                       @RequestBody TodoRequestDto todoRequestDto,
                                       @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return todoService.editTodo(id, todoRequestDto, memberDetails.getMember());
+        return todoService.editTodo(id, todoRequestDto, memberDetails);
     }
 
     @DeleteMapping("/{todo_id}/remove")
@@ -53,8 +59,8 @@ public class TodoController {
     }
 
     @GetMapping("/calendar")
-    public ResponseEntity<?> getMonthTodo(@RequestBody TodoRequestDto todoRequestDto,
+    public ResponseEntity<?> getMonthTodo(@RequestParam("year") int year, @RequestParam("month") int month,
                                           @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return todoService.getMonthTodo(todoRequestDto, memberDetails);
+        return todoService.getMonthTodo(year, month, memberDetails);
     }
 }

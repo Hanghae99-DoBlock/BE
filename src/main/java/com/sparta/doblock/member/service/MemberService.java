@@ -12,7 +12,6 @@ import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +34,14 @@ public class MemberService {
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+        }
+
+        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+        }
+
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .nickname(memberRequestDto.getNickname())
@@ -51,14 +58,14 @@ public class MemberService {
     public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            return new ResponseEntity<>("이미 사용 중인 이메일입니다.", HttpStatus.BAD_REQUEST);
+            throw new RuntimeException("이미 사용 중인 이메일입니다.");
         } else return ResponseEntity.ok("사용 가능한 이메일입니다.");
     }
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
-            return new ResponseEntity<>("이미 사용 중인 닉네임입니다.", HttpStatus.BAD_REQUEST);
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }
 

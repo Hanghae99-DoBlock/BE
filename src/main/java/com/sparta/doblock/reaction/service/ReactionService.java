@@ -5,10 +5,8 @@ import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.reaction.dto.request.ReactionRequestDto;
 import com.sparta.doblock.reaction.entity.Reaction;
-import com.sparta.doblock.reaction.entity.ReactionType;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +23,7 @@ public class ReactionService {
     public ResponseEntity<?> addReaction(Long feedId, ReactionRequestDto reactionRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(

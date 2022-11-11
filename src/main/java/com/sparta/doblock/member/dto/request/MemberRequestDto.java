@@ -3,7 +3,6 @@ package com.sparta.doblock.member.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 
 @Getter

@@ -1,7 +1,5 @@
 package com.sparta.doblock.todo.dto.response;
 
-import com.sparta.doblock.todo.entity.Todo;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

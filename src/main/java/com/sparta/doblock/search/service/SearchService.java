@@ -17,15 +17,11 @@ import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
 import com.sparta.doblock.tag.repository.TagRepository;
-import com.sparta.doblock.todo.dto.response.TodoResponseDto;
-import com.sparta.doblock.todo.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +43,7 @@ public class SearchService {
         if (category.equals("feed")) {
             // feed search
             Tag tag = tagRepository.findByTagContent(keyword).orElseThrow(
-                    () -> new NullPointerException("해당 검색어에 맞는 피드 가 없습니다")
+                    () -> new NullPointerException("해당 검색어에 맞는 피드가 없습니다.")
             );
 
             List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByTag(tag);
@@ -68,7 +64,9 @@ public class SearchService {
 
             if (memberRepository.existsByEmail(keyword)) {
 
-                Member member = memberRepository.findByEmail(keyword).orElseThrow(NullPointerException::new);
+                Member member = memberRepository.findByEmail(keyword).orElseThrow(
+                        () -> new NullPointerException("해당 검색어에 맞는 사용자가 없습니다.")
+                );
 
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
@@ -77,7 +75,9 @@ public class SearchService {
 
             } else if (memberRepository.existsByNickname(keyword)) {
 
-                Member member = memberRepository.findByNickname(keyword).orElseThrow(NullPointerException::new);
+                Member member = memberRepository.findByNickname(keyword).orElseThrow(
+                        () -> new NullPointerException("해당 검색어에 맞는 사용자가 없습니다.")
+                );
 
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
@@ -93,7 +93,7 @@ public class SearchService {
     public ResponseEntity<?> getFollowingFeeds(MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다", HttpStatus.UNAUTHORIZED);
+            throw new NullPointerException("로그인이 필요합니다.");
         }
 
         List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
