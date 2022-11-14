@@ -8,6 +8,10 @@ import com.sparta.doblock.profile.dto.request.EditProfileRequestDto;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
+import com.sparta.doblock.tag.entity.Tag;
+import com.sparta.doblock.tag.mapper.MemberTagMapper;
+import com.sparta.doblock.tag.repository.MemberTagMapperRepository;
+import com.sparta.doblock.tag.repository.TagRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +33,8 @@ public class ProfileService {
     private final MemberRepository memberRepository;
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
+    private final TagRepository tagRepository;
+    private final MemberTagMapperRepository memberTagMapperRepository;
 
     @Value("${profile.image}")
     private String defaultProfileImage;
@@ -68,6 +74,25 @@ public class ProfileService {
         }
 
         member.editNickname(editProfileRequestDto.getNickname());
+
+        memberTagMapperRepository.deleteAllByMember(member);
+
+        if (editProfileRequestDto.getTagList().size() >= 4){
+            throw new RuntimeException("관심사 태그는 유저 당 3개만 가능합니다.");
+        }
+
+        for (String tagContent : Objects.requireNonNull(editProfileRequestDto.getTagList())) {
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+
+            tagRepository.save(tag);
+
+            MemberTagMapper memberTagMapper = MemberTagMapper.builder()
+                    .tag(tag)
+                    .member(member)
+                    .build();
+
+            memberTagMapperRepository.save(memberTagMapper);
+        }
 
         return ResponseEntity.ok("정보 변경 성공");
     }

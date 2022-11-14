@@ -15,7 +15,9 @@ import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
+import com.sparta.doblock.tag.mapper.MemberTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
+import com.sparta.doblock.tag.repository.MemberTagMapperRepository;
 import com.sparta.doblock.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,7 @@ public class SearchService {
     private final CommentRepository commentRepository;
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
+    private final MemberTagMapperRepository memberTagMapperRepository;
 
     @Transactional
     public ResponseEntity<?> search(String keyword, String category) {
@@ -46,7 +49,7 @@ public class SearchService {
                     () -> new NullPointerException("해당 검색어에 맞는 피드가 없습니다.")
             );
 
-            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByTag(tag);
+            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
             for (FeedTagMapper feedTagMapper : feedTagMapperList) {
@@ -103,17 +106,44 @@ public class SearchService {
         for (Follow following : followingList) {
             Member toMember = following.getToMember();
 
-            List<Feed> feedList = feedRepository.findByMember(toMember);
+            List<Feed> feedList = feedRepository.findAllByMember(toMember);
             for (Feed feed : feedList) {
                 addFeed(feedResponseDtoList, feed);
             }
         }
         // add user's own feed too
-        for (Feed feed : feedRepository.findByMember(memberDetails.getMember())) {
+        for (Feed feed : feedRepository.findAllByMember(memberDetails.getMember())) {
             addFeed(feedResponseDtoList, feed);
         }
 
         // sort by time created
+        feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
+
+        return ResponseEntity.ok(feedResponseDtoList);
+    }
+
+    @Transactional
+    public ResponseEntity<?> getRecommendedFeeds(MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
+
+        List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
+
+        List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
+
+        for (MemberTagMapper memberTagMapper : memberTagMapperList){
+            Tag tag = memberTagMapper.getTag();
+
+            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findTop5ByTagOrderByIdDesc(tag);
+
+            for (FeedTagMapper feedTagMapper : feedTagMapperList){
+                Feed feed = feedTagMapper.getFeed();
+                addFeed(feedResponseDtoList, feed);
+            }
+        }
+
         feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
 
         return ResponseEntity.ok(feedResponseDtoList);
@@ -133,7 +163,7 @@ public class SearchService {
                 .todoList(feed.getTodoList())
                 .feedContent(feed.getFeedContent())
                 .feedImagesUrlList(feed.getFeedImageList())
-                .tagList(feedTagMapperRepository.findByFeed(feed).stream()
+                .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))
                 .reactionResponseDtoList(reactionRepository.findAllByFeed(feed).stream()

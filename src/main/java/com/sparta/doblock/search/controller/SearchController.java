@@ -26,4 +26,9 @@ public class SearchController {
     public ResponseEntity<?> getFollowingFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return searchService.getFollowingFeeds(memberDetails);
     }
+
+    @GetMapping("/feed/recommended")
+    public ResponseEntity<?> getRecommendedFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getRecommendedFeeds(memberDetails);
+    }
 }
