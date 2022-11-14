@@ -66,6 +66,7 @@ public class FeedService {
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
                     .tagList(tagList)
+                    .completed(true)
                     .build();
             todoResponseDtoList.add(todoResponseDto);
         }
@@ -97,10 +98,15 @@ public class FeedService {
                 todoList.add(todo.getTodoContent());
             }
         }
+        List<String> feedImageList;
 
-        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
-                .map(s3UploadService::uploadImage)
-                .collect(Collectors.toList());
+        try {
+            feedImageList = feedRequestDto.getFeedImageList().stream()
+                    .map(s3UploadService::uploadImage)
+                    .collect(Collectors.toList());
+        } catch (NullPointerException e) {
+            feedImageList = new ArrayList<>();
+        }
 
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
@@ -108,6 +114,7 @@ public class FeedService {
                 .feedContent(feedRequestDto.getFeedContent())
                 .feedImageList(feedImageList)
                 .build();
+
 
         feedRepository.save(feed);
 
