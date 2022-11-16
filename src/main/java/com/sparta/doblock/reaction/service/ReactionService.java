@@ -16,6 +16,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ReactionService {
+
     private final ReactionRepository reactionRepository;
     private final FeedRepository feedRepository;
 

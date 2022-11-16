@@ -1,5 +1,6 @@
 package com.sparta.doblock.todo.service;
 
+import com.sparta.doblock.badges.aop.TodoBadgeEvent;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
@@ -141,6 +142,7 @@ public class TodoService {
     }
 
     @Transactional
+    @TodoBadgeEvent
     public ResponseEntity<?> completedTodo(Long id, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
