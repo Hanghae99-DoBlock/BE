@@ -10,6 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ReactionResponseDto {
 
+    private Long memberId;
     private String nickname;
     private ReactionType reactionType;
 }

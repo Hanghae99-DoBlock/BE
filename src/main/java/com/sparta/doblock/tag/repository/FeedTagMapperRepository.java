@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface FeedTagMapperRepository extends JpaRepository<FeedTagMapper, Long> {
 
-    List<FeedTagMapper> findByTag(Tag tag);
-    List<FeedTagMapper> findByFeed(Feed feed);
+    List<FeedTagMapper> findAllByTag(Tag tag);
+    List<FeedTagMapper> findAllByFeed(Feed feed);
+    List<FeedTagMapper> findTop5ByTagOrderByIdDesc(Tag tag);
     void deleteAllByFeed(Feed feed);
     boolean existsByFeedAndTag(Feed feed, Tag tag);
 }

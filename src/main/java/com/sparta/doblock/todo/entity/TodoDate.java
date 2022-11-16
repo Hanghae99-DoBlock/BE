@@ -25,7 +25,7 @@ public class TodoDate {
     @Column
     private int lastIndex;
 
-    public int getIndex() {
+    public int getTodoIndex() {
         return ++ this.lastIndex;
     }
 
