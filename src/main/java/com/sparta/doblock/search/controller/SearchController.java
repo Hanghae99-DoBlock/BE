@@ -26,4 +26,6 @@ public class SearchController {
     public ResponseEntity<?> getFollowingFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return searchService.getFollowingFeeds(memberDetails);
     }
+
+    // TODO: search todos
 }

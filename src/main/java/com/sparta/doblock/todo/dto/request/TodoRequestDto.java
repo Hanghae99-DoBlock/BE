@@ -12,6 +12,7 @@ public class TodoRequestDto {
     private int year;
     private int month;
     private int day;
+    private Long todoId;
     private String todoContent;
     private List<String> tagList;
     private boolean completed;

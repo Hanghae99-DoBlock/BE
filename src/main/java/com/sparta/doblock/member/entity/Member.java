@@ -36,6 +36,13 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Authority authority;
 
+    // For OAuth2 Purposes
+    @Column(unique = true)
+    private String socialId;
+
+    private String socialCode;
+
+
     public boolean isEqual(Member other) {
         return this.id.equals(other.getId());
     }

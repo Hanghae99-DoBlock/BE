@@ -9,7 +9,7 @@ import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
 import com.sparta.doblock.todo.repository.TodoRepository;
-import com.sparta.doblock.todo.dto.request.TodoIdOrderRequestDto;
+import com.sparta.doblock.todo.dto.request.TodoOrderRequestDto;
 import com.sparta.doblock.todo.entity.TodoDate;
 import com.sparta.doblock.todo.repository.TodoDateRepository;
 import lombok.RequiredArgsConstructor;
@@ -78,22 +78,23 @@ public class TodoService {
     }
 
     @Transactional
-    public ResponseEntity<?> switchOrder(TodoIdOrderRequestDto todoIdOrderRequestDto, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> switchOrder(TodoOrderRequestDto todoOrderRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
-        LocalDate date = LocalDate.of(todoIdOrderRequestDto.getYear(), todoIdOrderRequestDto.getMonth(), todoIdOrderRequestDto.getDay());
+        LocalDate date = LocalDate.of(todoOrderRequestDto.getYear(), todoOrderRequestDto.getMonth(), todoOrderRequestDto.getDay());
         TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
                 () -> new NullPointerException("해당 날짜에 등록된 투두가 없습니다")
         );
 
-        if (todoIdOrderRequestDto.getTodoIdList().size() != todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate).size()){
+        if (todoOrderRequestDto.getTodoRequestDtoList().size() != todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate).size()){
             throw new IllegalArgumentException("투두리스트 갯수가 정확하지 않습니다.");
         }
 
-        Set<Long> todoIdSet = new HashSet<>(todoIdOrderRequestDto.getTodoIdList());
+        Set<Long> todoIdSet = new HashSet<>(todoOrderRequestDto.getTodoRequestDtoList().stream()
+                .map(t -> t.getTodoId()).collect(Collectors.toList()));
 
         for(Todo todo : todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate)){
 
@@ -102,9 +103,9 @@ public class TodoService {
             }
         }
 
-        for (int i = 0; i < todoIdOrderRequestDto.getTodoIdList().size(); i++) {
+        for (int i = 0; i < todoOrderRequestDto.getTodoRequestDtoList().size(); i++) {
 
-            Long todoId = todoIdOrderRequestDto.getTodoIdList().get(i);
+            Long todoId = todoOrderRequestDto.getTodoRequestDtoList().get(i).getTodoId();
             Todo todo = todoRepository.findById(todoId).orElseThrow(
                     () -> new NullPointerException("해당 투두가 없습니다")
             );
@@ -112,7 +113,7 @@ public class TodoService {
             todo.setIndex(i);
         }
 
-        todoDate.setLastIndex(todoIdOrderRequestDto.getTodoIdList().size());
+        todoDate.setLastIndex(todoOrderRequestDto.getTodoRequestDtoList().size());
 
         return ResponseEntity.ok("성공적으로 투두 순서를 바꾸었습니다");
     }
