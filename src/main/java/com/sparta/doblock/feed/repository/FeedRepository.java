@@ -11,5 +11,6 @@ import java.util.List;
 public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     List<Feed> findAllByMember(Member member);
+    Long countAllByMember(Member member);
     Slice<Feed> findByMember(Member member, Pageable pageable);
 }

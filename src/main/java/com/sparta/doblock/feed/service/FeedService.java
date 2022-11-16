@@ -174,5 +174,4 @@ public class FeedService {
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
     }
-
 }

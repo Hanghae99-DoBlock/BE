@@ -17,23 +17,28 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
+    @GetMapping("/{memberId}")
+    public ResponseEntity<?> getProfile(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return profileService.getProfile(memberId, memberDetails);
+    }
+
     @PatchMapping("/edit")
     public ResponseEntity<?> editProfile(@ModelAttribute @Valid EditProfileRequestDto editProfileRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
         return profileService.editProfile(editProfileRequestDto, memberDetails);
     }
 
-    @PostMapping("/{nickname}/follow")
-    public ResponseEntity<?> follow(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.follow(nickname, memberDetails);
+    @PostMapping("/{memberId}/follow")
+    public ResponseEntity<?> follow(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return profileService.follow(memberId, memberDetails);
     }
 
-    @GetMapping("/{nickname}/following")
-    public ResponseEntity<?> getFollowingList(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.getFollowingList(nickname, memberDetails);
+    @GetMapping("/{memberId}/following")
+    public ResponseEntity<?> getFollowingList(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return profileService.getFollowingList(memberId, memberDetails);
     }
 
-    @GetMapping("/{nickname}/follower")
-    public ResponseEntity<?> getFollowerList(@PathVariable(name = "nickname") String nickname, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.getFollowerList(nickname, memberDetails);
+    @GetMapping("/{memberId}/follower")
+    public ResponseEntity<?> getFollowerList(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return profileService.getFollowerList(memberId, memberDetails);
     }
 }
