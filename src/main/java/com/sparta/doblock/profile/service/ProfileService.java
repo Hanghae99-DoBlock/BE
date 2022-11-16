@@ -1,5 +1,6 @@
 package com.sparta.doblock.profile.service;
 
+import com.sparta.doblock.badges.event.BadgeEvents;
 import com.sparta.doblock.exception.CustomExceptions;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
@@ -15,6 +16,7 @@ import com.sparta.doblock.tag.repository.TagRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final TagRepository tagRepository;
     private final MemberTagMapperRepository memberTagMapperRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Value("${profile.image}")
     private String defaultProfileImage;
@@ -122,6 +125,8 @@ public class ProfileService {
                     .build();
 
             followRepository.save(follow);
+
+            applicationEventPublisher.publishEvent(new BadgeEvents.FollowToMemberBadgeEvent(memberDetails));
 
             return ResponseEntity.ok("팔로우 완료");
 

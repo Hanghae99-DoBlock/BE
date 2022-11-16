@@ -11,5 +11,5 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     List<Todo> findAllByMemberAndTodoDate(Member member, TodoDate todoDate);
     List<Todo> findAllByMemberAndTodoDateOrderByTodoIndex(Member member, TodoDate todoDate);
-    long countByMemberAndCompleted(Member member, boolean completed);
+    long countAllByMemberAndCompleted(Member member, boolean completed);
 }

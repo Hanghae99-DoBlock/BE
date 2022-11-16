@@ -1,5 +1,6 @@
 package com.sparta.doblock.comment.service;
 
+import com.sparta.doblock.badges.event.BadgeEvents;
 import com.sparta.doblock.comment.dto.request.CommentRequestDto;
 import com.sparta.doblock.comment.entity.Comment;
 import com.sparta.doblock.comment.repository.CommentRepository;
@@ -7,6 +8,7 @@ import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class CommentService {
 
     private final FeedRepository feedRepository;
     private final CommentRepository commentRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public ResponseEntity<?> addComment(Long feedId, CommentRequestDto commentRequestDto, MemberDetailsImpl memberDetails) {
@@ -39,6 +42,8 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        applicationEventPublisher.publishEvent(new BadgeEvents.CreateCommentBadgeEvent(memberDetails));
 
         return ResponseEntity.ok("댓글을 성공적으로 생성하였습니다");
     }
