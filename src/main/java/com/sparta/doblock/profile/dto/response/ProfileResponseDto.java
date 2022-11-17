@@ -16,6 +16,7 @@ public class ProfileResponseDto {
     private String profileImage;
     private String nickname;
     private String email;
+    private boolean followOrNot;
     private Long countFeed;
     private Long countFollower;
     private Long countFollowing;

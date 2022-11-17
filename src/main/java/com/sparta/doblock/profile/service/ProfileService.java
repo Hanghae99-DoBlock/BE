@@ -79,6 +79,7 @@ public class ProfileService {
                 .profileImage(member.getProfileImage())
                 .nickname(member.getNickname())
                 .email(member.getEmail())
+                .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
                 .countFeed(feedRepository.countAllByMember(member))
                 .countFollower(followRepository.countAllByToMember(member))
                 .countFollowing(followRepository.countAllByFromMember(member))
@@ -201,6 +202,7 @@ public class ProfileService {
                             .memberId(following.getToMember().getId())
                             .profileImage(following.getToMember().getProfileImage())
                             .nickname(following.getToMember().getNickname())
+                            .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), following.getToMember()))
                             .build()
             );
         }
@@ -227,6 +229,7 @@ public class ProfileService {
                             .memberId(follower.getFromMember().getId())
                             .profileImage(follower.getFromMember().getProfileImage())
                             .nickname(follower.getFromMember().getNickname())
+                            .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), follower.getFromMember()))
                             .build()
             );
         }

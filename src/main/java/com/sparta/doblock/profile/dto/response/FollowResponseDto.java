@@ -10,4 +10,5 @@ public class FollowResponseDto {
     private Long memberId;
     private String profileImage;
     private String nickname;
+    private boolean followOrNot;
 }
