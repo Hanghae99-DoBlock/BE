@@ -37,10 +37,13 @@ public class Todo extends TimeStamp {
     private boolean completed;
 
     @Column
-    private int index;
+    private String todoMemo;
 
-    public void setIndex(int index) {
-        this.index = index;
+    @Column
+    private int todoIndex;
+
+    public void setTodoIndex(int index) {
+        this.todoIndex = index;
     }
 
     public void completeTask() {
@@ -50,5 +53,6 @@ public class Todo extends TimeStamp {
     public void edit(TodoRequestDto todoRequestDto, TodoDate todoDate) {
         this.todoDate = todoDate;
         this.todoContent = todoRequestDto.getTodoContent() != null ? todoRequestDto.getTodoContent() : this.todoContent;
+        this.todoMemo = todoRequestDto.getTodoMemo() != null ? todoRequestDto.getTodoMemo() : this.todoMemo;
     }
 }

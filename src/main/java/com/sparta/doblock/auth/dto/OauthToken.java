@@ -2,8 +2,9 @@ package com.sparta.doblock.auth.dto;
 
 import lombok.Data;
 
-@Data //(2)
-public class OauthToken { //(1)
+@Data
+public class OauthToken {
+
     private String accessToken;
     private String tokenType;
     private String refreshToken;
@@ -11,5 +12,4 @@ public class OauthToken { //(1)
     private String scope;
     private String idToken;
     private int refreshTokenExpiresIn;
-
 }

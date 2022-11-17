@@ -10,5 +10,5 @@ import java.util.List;
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     List<Todo> findAllByMemberAndTodoDate(Member member, TodoDate todoDate);
-    List<Todo> findAllByMemberAndTodoDateOrderByIndex(Member member, TodoDate todoDate);
+    List<Todo> findAllByMemberAndTodoDateOrderByTodoIndex(Member member, TodoDate todoDate);
 }

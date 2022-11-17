@@ -1,10 +1,6 @@
 package com.sparta.doblock.todo.service;
 
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
-import com.sparta.doblock.tag.entity.Tag;
-import com.sparta.doblock.tag.mapper.TodoTagMapper;
-import com.sparta.doblock.tag.repository.TagRepository;
-import com.sparta.doblock.tag.repository.TodoTagMapperRepository;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
@@ -19,15 +15,12 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TodoService {
 
     private final TodoRepository todoRepository;
-    private final TagRepository tagRepository;
-    private final TodoTagMapperRepository todoTagMapperRepository;
     private final TodoDateRepository todoDateRepository;
 
     @Transactional
@@ -44,37 +37,28 @@ public class TodoService {
 
         todoDateRepository.save(todoDate);
 
-        int index = todoDate.getIndex();
+        int todoIndex = todoDate.getTodoIndex();
 
         Todo todo = Todo.builder()
                 .member(memberDetails.getMember())
                 .todoDate(todoDate)
-                .index(index)
+                .todoIndex(todoIndex)
                 .todoContent(todoRequestDto.getTodoContent())
                 .completed(false)
+                .todoMemo(todoRequestDto.getTodoMemo())
                 .build();
 
         todoRepository.save(todo);
 
-        for (String tagContent : todoRequestDto.getTagList()) {
-            if (! tagRepository.existsByTagContent(tagContent)) {
-                Tag tag = Tag.builder()
-                        .tagContent(tagContent)
-                        .build();
-                tagRepository.save(tag);
-            }
+        TodoResponseDto todoResponseDto = TodoResponseDto.builder()
+                .todoId(todo.getId())
+                .todoContent(todo.getTodoContent())
+                .todoMemo(todo.getTodoMemo())
+                .completed(todo.isCompleted())
+                .build();
 
-            Tag tag = tagRepository.findByTagContent(tagContent).orElseThrow(NullPointerException::new);
-
-            TodoTagMapper todoTagMapper = TodoTagMapper.builder()
-                    .todo(todo)
-                    .tag(tag)
-                    .build();
-
-            todoTagMapperRepository.save(todoTagMapper);
-        }
-
-        return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
+        return ResponseEntity.ok(todoResponseDto);
+//        return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
     }
 
     @Transactional
@@ -110,7 +94,7 @@ public class TodoService {
                     () -> new NullPointerException("해당 투두가 없습니다")
             );
 
-            todo.setIndex(i);
+            todo.setTodoIndex(i);
         }
 
         todoDate.setLastIndex(todoOrderRequestDto.getTodoRequestDtoList().size());
@@ -130,21 +114,16 @@ public class TodoService {
                 () -> new NullPointerException("해당 날짜에 등록한 투두가 없습니다")
         );
 
-        List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByIndex(memberDetails.getMember(), todoDate);
+        List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByTodoIndex(memberDetails.getMember(), todoDate);
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
 
-            List<String> tagList = new ArrayList<>();
-            for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
-                tagList.add(todoTagMapper.getTag().getTagContent());
-            }
-
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
-                    .tagList(tagList)
                     .completed(todo.isCompleted())
+                    .todoMemo(todo.getTodoMemo())
                     .build();
 
             todoResponseDtoList.add(todoResponseDto);
@@ -163,10 +142,8 @@ public class TodoService {
                 () -> new RuntimeException("투두가 존재하지 않습니다."));
 
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
-                .todoId(todo.getId())
                 .todoContent(todo.getTodoContent())
-                .tagList((todoTagMapperRepository.findByTodo(todo).stream()
-                        .map(todoTagMapper -> todoTagMapper.getTag().getTagContent()).collect(Collectors.toList())))
+                .todoMemo(todo.getTodoMemo())
                 .completed(todo.isCompleted())
                 .build();
 
@@ -219,24 +196,6 @@ public class TodoService {
 
         todo.edit(todoRequestDto, todoDate);
 
-        todoTagMapperRepository.deleteAllByTodo(todo);
-
-        for (String tagContent : todoRequestDto.getTagList()) {
-            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
-
-            tagRepository.save(tag);
-
-            if (! todoTagMapperRepository.existsByTodoAndTag(todo, tag)) {
-                TodoTagMapper feedTagMapper = TodoTagMapper.builder()
-                        .todo(todo)
-                        .tag(tag)
-                        .build();
-
-                todoTagMapperRepository.save(feedTagMapper);
-            }
-        }
-
-
         return ResponseEntity.ok("투두 수정이 완료되었습니다.");
     }
 
@@ -255,7 +214,6 @@ public class TodoService {
             throw new RuntimeException("본인이 작성한 투두만 삭제가 가능합니다.");
         }
 
-        todoTagMapperRepository.deleteAllByTodo(todo);
         todoRepository.deleteById(id);
 
         return ResponseEntity.ok("투두 삭제가 완료되었습니다.");
@@ -282,20 +240,13 @@ public class TodoService {
                     () -> new NullPointerException("날짜에 해당하는 투두가 없습니다.")
             );
 
-            List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByIndex(memberDetails.getMember(), todoDate);
+            List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByTodoIndex(memberDetails.getMember(), todoDate);
 
             for (Todo todo : todoList) {
-
-                List<String> tagList = new ArrayList<>();
-
-                for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
-                    tagList.add(todoTagMapper.getTag().getTagContent());
-                }
 
                 TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                         .todoId(todo.getId())
                         .todoContent(todo.getTodoContent())
-                        .tagList(tagList)
                         .completed(todo.isCompleted())
                         .day(todoDate.getDate().getDayOfMonth())
                         .build();

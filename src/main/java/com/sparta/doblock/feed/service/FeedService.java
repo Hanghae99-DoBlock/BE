@@ -6,10 +6,8 @@ import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
-import com.sparta.doblock.tag.mapper.TodoTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
 import com.sparta.doblock.tag.repository.TagRepository;
-import com.sparta.doblock.tag.repository.TodoTagMapperRepository;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
 import com.sparta.doblock.todo.entity.Todo;
 import com.sparta.doblock.todo.repository.TodoRepository;
@@ -36,7 +34,6 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
-    private final TodoTagMapperRepository todoTagMapperRepository;
     private final TodoDateRepository todoDateRepository;
     private final S3UploadService s3UploadService;
 
@@ -57,17 +54,11 @@ public class FeedService {
                 continue;
             }
 
-            List<String> tagList = new ArrayList<>();
-            for (TodoTagMapper todoTagMapper : todoTagMapperRepository.findByTodo(todo)) {
-                tagList.add(todoTagMapper.getTag().getTagContent());
-            }
-
             TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
-                    .tagList(tagList)
-                    .completed(true)
                     .build();
+
             todoResponseDtoList.add(todoResponseDto);
         }
 
@@ -189,5 +180,4 @@ public class FeedService {
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
     }
-
 }

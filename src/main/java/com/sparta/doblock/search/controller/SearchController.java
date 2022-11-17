@@ -27,5 +27,8 @@ public class SearchController {
         return searchService.getFollowingFeeds(memberDetails);
     }
 
-    // TODO: search todos
+    @GetMapping("/feed/recommended")
+    public ResponseEntity<?> getRecommendedFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getRecommendedFeeds(memberDetails);
+    }
 }

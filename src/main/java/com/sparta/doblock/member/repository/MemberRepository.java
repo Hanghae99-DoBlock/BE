@@ -14,9 +14,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
     Optional<Member> findByNickname(String nickname);
-
     Optional<Member> findBySocialId(String socialId);
-
+    
     // O(log n + |tags|) with B-Tree implementation
     @Query("SELECT m FROM Member m WHERE m.nickname LIKE %:nickname%")
     List<Member> searchByMemberLike(@Param("nickname") String nickname);

@@ -27,6 +27,11 @@ public class Member {
     private String nickname;
 
     @Column
+    private String socialId;
+
+    private String socialCode;
+
+    @Column
     private String profileImage;
 
     @Column(nullable = false)

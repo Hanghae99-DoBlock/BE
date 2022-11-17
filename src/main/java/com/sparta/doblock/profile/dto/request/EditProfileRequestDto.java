@@ -2,9 +2,11 @@ package com.sparta.doblock.profile.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -19,4 +21,6 @@ public class EditProfileRequestDto {
 
     @Pattern(regexp = "^(?=.*\\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-z0-9A-Z!@#$%^&*]{8,20}$")
     private String newPassword;
+
+    private List<String> tagList;
 }
