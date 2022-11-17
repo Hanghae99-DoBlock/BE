@@ -50,7 +50,15 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
+        TodoResponseDto todoResponseDto = TodoResponseDto.builder()
+                .todoId(todo.getId())
+                .todoContent(todo.getTodoContent())
+                .todoMemo(todo.getTodoMemo())
+                .completed(todo.isCompleted())
+                .build();
+
+        return ResponseEntity.ok(todoResponseDto);
+//        return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
     }
 
     @Transactional
@@ -114,6 +122,7 @@ public class TodoService {
                     .todoId(todo.getId())
                     .todoContent(todo.getTodoContent())
                     .completed(todo.isCompleted())
+                    .todoMemo(todo.getTodoMemo())
                     .build();
 
             todoResponseDtoList.add(todoResponseDto);
