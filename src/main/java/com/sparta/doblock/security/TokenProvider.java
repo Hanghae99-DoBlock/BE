@@ -51,6 +51,7 @@ public class TokenProvider {
         String accessToken = Jwts.builder()
                 .setSubject(member.getEmail())
                 .claim(AUTHORITIES_KEY, member.getAuthority())
+                .claim("memberId", member.getId())
                 .claim("nickname", member.getNickname())
                 .claim("profileImage", member.getProfileImage())
                 .setExpiration(accessTokenExpiresIn)

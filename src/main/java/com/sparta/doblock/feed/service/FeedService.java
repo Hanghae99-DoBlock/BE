@@ -92,10 +92,15 @@ public class FeedService {
                 todoList.add(todo.getTodoContent());
             }
         }
+        List<String> feedImageList;
 
-        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
-                .map(s3UploadService::uploadImage)
-                .collect(Collectors.toList());
+        try {
+            feedImageList = feedRequestDto.getFeedImageList().stream()
+                    .map(s3UploadService::uploadImage)
+                    .collect(Collectors.toList());
+        } catch (NullPointerException e) {
+            feedImageList = new ArrayList<>();
+        }
 
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
@@ -103,6 +108,7 @@ public class FeedService {
                 .feedContent(feedRequestDto.getFeedContent())
                 .feedImageList(feedImageList)
                 .build();
+
 
         feedRepository.save(feed);
 
@@ -179,5 +185,4 @@ public class FeedService {
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
     }
-
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // TODO: OAuth2AuthenticationException
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<?> handleNullPointerException(NullPointerException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
