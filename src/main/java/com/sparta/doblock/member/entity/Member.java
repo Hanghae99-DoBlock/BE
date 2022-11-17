@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "nickname", "authority" }) })
 public class Member {
 
     @Id
@@ -23,12 +24,13 @@ public class Member {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
-    @Column
+    @Column(unique = true)
     private String socialId;
 
+    @Column
     private String socialCode;
 
     @Column
@@ -39,13 +41,8 @@ public class Member {
 
     @JsonIgnore
     @Enumerated(EnumType.STRING)
+    @Column(name = "authority")
     private Authority authority;
-
-    // For OAuth2 Purposes
-    @Column(unique = true)
-    private String socialId;
-
-    private String socialCode;
 
 
     public boolean isEqual(Member other) {

@@ -49,7 +49,7 @@ public class SearchService {
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
             for (Tag tag : tagList) {
-                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByTag(tag);
+                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
 
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
@@ -65,23 +65,14 @@ public class SearchService {
             // member search
             List<MemberResponseDto> memberResponseDtoList = new ArrayList<>();
 
-            if (memberRepository.existsByEmail(keyword)) {
-
-                Member member = memberRepository.findByEmail(keyword).orElseThrow(
-                        () -> new NullPointerException("해당 검색어에 맞는 사용자가 없습니다.")
-                );
-
+            for (Member member : memberRepository.searchByEmailLike(keyword)) {
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname()).build());
+            }
 
-            } else if (memberRepository.existsByNickname(keyword)) {
-
-                Member member = memberRepository.findByNickname(keyword).orElseThrow(
-                        () -> new NullPointerException("해당 검색어에 맞는 사용자가 없습니다.")
-                );
-
+            for (Member member : memberRepository.searchByNicknameLike(keyword)) {
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())

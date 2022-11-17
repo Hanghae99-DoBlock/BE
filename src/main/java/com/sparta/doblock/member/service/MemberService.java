@@ -38,7 +38,7 @@ public class MemberService {
             throw new RuntimeException("이미 사용 중인 이메일입니다.");
         }
 
-        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
 
@@ -64,7 +64,7 @@ public class MemberService {
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByNickname(memberRequestDto.getNickname())){
+        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }

@@ -1,11 +1,9 @@
 package com.sparta.doblock.auth.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.doblock.auth.dto.KakaoProfile;
-import com.sparta.doblock.auth.dto.OauthToken;
-import com.sparta.doblock.member.dto.response.MemberResponseDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
@@ -17,12 +15,12 @@ import com.sparta.doblock.security.token.TokenDto;
 import com.sparta.doblock.util.HeaderUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +35,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class KakaoService {
 
-    private final ApplicationEventPublisher eventPublisher;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final RestTemplate restTemplate;
     private final MemberRepository memberRepository;
     private final HeaderUtil headerUtil;
 
@@ -57,116 +53,104 @@ public class KakaoService {
     @Value("${kakao.userInfoUri}")
     private String KAKAO_SNS_User_URL;
 
-    @Transactional
-    public ResponseEntity<MemberResponseDto> login(String code){
+    public ResponseEntity<?> login(String code) throws JsonProcessingException {
 
-        // 인가코드로 토큰받기
-        OauthToken oauthToken = getAccessToken(code);
+        String oauthToken = getAccessToken(code);
 
-        //토큰으로 유저정보
-        Member member = saveUser(oauthToken.getAccessToken());
+        Member member = saveUser(oauthToken);
 
-        // 토큰발급
         TokenDto tokenDto = generateToken(member);
 
-        // 리턴할 헤더 제작
         HttpHeaders httpHeaders = headerUtil.getHttpHeaders(tokenDto);
 
-        // 리턴할 바디 제작
-        MemberResponseDto memberResponseDto = MemberResponseDto.builder()
-                .memberId(member.getId())
-                .nickname(member.getNickname())
-                .build();
-
-        return ResponseEntity.ok().headers(httpHeaders).body(memberResponseDto);
+        return ResponseEntity.ok().headers(httpHeaders).body("로그인 완료!");
     }
 
-    public OauthToken getAccessToken(String code) {
-        //(3)
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+    public String getAccessToken(String code) throws JsonProcessingException {
 
-        //(4)
+        HttpHeaders headers = new HttpHeaders();
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", KAKAO_SNS_CLIENT_ID);
         params.add("redirect_uri", KAKAO_SNS_CALLBACK_URL);
         params.add("code", code);
 
-        //(5)
-        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest =
-                new HttpEntity<>(params, headers);
+        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_SNS_LOGIN_URL,kakaoTokenRequest,String.class);
 
-        // 밑에 바꾼거 때매 그런가?
-        ResponseEntity<String> tokenResponse1 = restTemplate.postForEntity(KAKAO_SNS_LOGIN_URL,kakaoTokenRequest,String.class);
-        //(6)
-
-        //(7)
+        String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        OauthToken oauthToken = null;
-        try {
-            oauthToken = objectMapper.readValue(tokenResponse1.getBody(), OauthToken.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return oauthToken; //(8)
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
+        return jsonNode.get("access_token").asText();
     }
 
+    @Transactional
+    public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-    private Member saveUser(String access_token){
-        KakaoProfile profile = findProfile(access_token);
-        //(2)
-        Optional<Member> checkmember = memberRepository.findBySocialId(profile.getId());
-        //(3)
-        if(checkmember.isEmpty()) {
+        KakaoProfile profile = findProfile(oauthToken);
+
+        Optional<Member> kakaoMember = memberRepository.findBySocialId(profile.getKakaoMemberId().toString());
+
+        if(kakaoMember.isEmpty()) {
+
+            if (memberRepository.existsByEmail(profile.getEmail())){
+                throw new RuntimeException("이미 사용 중인 이메일입니다.");
+            }
+
             Member member = Member.builder()
-                    .socialId(profile.getId())
-                    .nickname(profile.getKakaoAccount().getProfile().getNickname())
-                    .socialCode(profile.getId().substring(0,5)+ UUID.randomUUID().toString().charAt(0))
-                    .email(profile.getKakaoAccount().getEmail())
-                    .authority(Authority.ROLE_MEMBER)
+                    .email(profile.getEmail())
+                    .nickname(profile.getNickname())
+                    .socialId(profile.getKakaoMemberId().toString())
+                    .socialCode("KAKAO")
+                    .profileImage(profile.getProfileImage())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .authority(Authority.ROLE_SOCIAL)
                     .build();
+
             memberRepository.save(member);
-            eventPublisher.publishEvent(member);
+
             return member;
-        }
-        else
-            return checkmember.get();
+
+        } else return kakaoMember.get();
     }
 
-    private KakaoProfile findProfile(String token) {
+    public KakaoProfile findProfile(String oauthToken) throws JsonProcessingException {
 
-        //(1-3)
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + token); //(1-4)
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers.add("Authorization", "Bearer " + oauthToken); //(1-4)
 
-        //(1-5)
-        HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest =
-                new HttpEntity<>(headers);
+        HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest = new HttpEntity<>(headers);
 
-        //(1-6)
-        // Http 요청 (POST 방식) 후, response 변수에 응답을 받음
-        ResponseEntity<String> kakaoProfileResponse = restTemplate.postForEntity(KAKAO_SNS_User_URL,kakaoProfileRequest,String.class);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_SNS_User_URL,kakaoProfileRequest,String.class);
 
-        //(1-7)
+        String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        KakaoProfile kakaoProfile = null;
-        try {
-            kakaoProfile = objectMapper.readValue(kakaoProfileResponse.getBody(), KakaoProfile.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return kakaoProfile;
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
+
+        Long kakaoMemberId = jsonNode.get("id").asLong();
+        String email = jsonNode.get("kakao_account").get("email").asText();
+        String nickname = jsonNode.get("kakao_account").get("profile").get("nickname").asText();
+        String profileImage = jsonNode.get("kakao_account").get("profile").get("profile_image_url").asText();
+
+        return KakaoProfile.builder()
+                .kakaoMemberId(kakaoMemberId)
+                .email(email)
+                .nickname(nickname)
+                .profileImage(profileImage)
+                .build();
     }
 
+    @Transactional
     public TokenDto generateToken(Member member) {
+
         MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
         Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
-        TokenDto tokenDto = tokenProvider.generateTokenDto((Member) authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .key(member.getSocialId())
@@ -174,6 +158,7 @@ public class KakaoService {
                 .build();
 
         refreshTokenRepository.save(refreshToken);
+
         return tokenDto;
     }
 }

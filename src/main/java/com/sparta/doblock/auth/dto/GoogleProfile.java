@@ -1,12 +1,14 @@
 package com.sparta.doblock.auth.dto;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Getter
+@Builder
 public class GoogleProfile {
-    private String sub;
-    private String name;
-    private String picture;
+
+    private String googleMemberId;
     private String email;
-    private boolean email_verified;
+    private String profileImage;
+    private String nickname;
 }

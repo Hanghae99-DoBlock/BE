@@ -36,5 +36,4 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody(required = false) @Valid MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse){
         return memberService.login(memberRequestDto, httpServletResponse);
     }
-
 }

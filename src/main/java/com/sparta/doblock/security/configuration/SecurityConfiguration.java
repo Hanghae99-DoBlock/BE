@@ -2,7 +2,6 @@ package com.sparta.doblock.security.configuration;
 
 import com.sparta.doblock.exception.AccessDeniedHandlerException;
 import com.sparta.doblock.exception.AuthenticationEntryPointException;
-import com.sparta.doblock.oauth2.service.PrincipalOauth2UserService;
 import com.sparta.doblock.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -30,8 +29,6 @@ public class SecurityConfiguration {
     private final TokenProvider tokenProvider;
     private final AuthenticationEntryPointException authenticationEntryPointException;
     private final AccessDeniedHandlerException accessDeniedHandlerException;
-
-    private final PrincipalOauth2UserService principalOauth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -73,27 +70,9 @@ public class SecurityConfiguration {
                 .antMatchers("/api/members/**").permitAll()
                 .anyRequest()
                 .authenticated()
+
                 .and()
                 .apply(new JwtSecurityConfiguration(tokenProvider));
-
-
-        // for Google & Naver Login
-        http.authorizeRequests()
-                .antMatchers("/user/**").authenticated()
-                .antMatchers("/manager/**").access("hasAuthority('ROLE_MANAGER') or hasAuthority('ROLE_ADMIN')")
-                .antMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-//                .anyRequest().permitAll()
-
-                .and()
-                .oauth2Login() // OAuth2 Login
-                .loginPage("/login")
-                .defaultSuccessUrl("/") // redirect to "/" when login success
-                .failureUrl("/login") // redirect when login failure
-                .userInfoEndpoint() // retrieve user info when login success
-                .userService(principalOauth2UserService); // service process
-
-
-
 
         return http.build();
     }

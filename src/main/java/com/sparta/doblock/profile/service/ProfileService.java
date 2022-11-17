@@ -99,7 +99,7 @@ public class ProfileService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        if (memberRepository.existsByNickname(editProfileRequestDto.getNickname())) {
+        if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
 
@@ -145,7 +145,6 @@ public class ProfileService {
 
         return ResponseEntity.ok("정보 변경 성공");
     }
-
 
     @Transactional
     public ResponseEntity<?> follow(Long memberId, MemberDetailsImpl memberDetails) {
