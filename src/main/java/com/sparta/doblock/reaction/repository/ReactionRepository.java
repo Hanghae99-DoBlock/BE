@@ -13,4 +13,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     Boolean existsByFeedAndMember(Feed feed, Member member);
     Optional<Reaction> findByFeedAndMember(Feed feed, Member member);
     List<Reaction> findAllByFeed(Feed feed);
+    Long countAllByMember(Member member);
 }

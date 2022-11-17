@@ -1,5 +1,6 @@
 package com.sparta.doblock.todo.service;
 
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
@@ -9,6 +10,7 @@ import com.sparta.doblock.todo.dto.request.TodoOrderRequestDto;
 import com.sparta.doblock.todo.entity.TodoDate;
 import com.sparta.doblock.todo.repository.TodoDateRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final TodoDateRepository todoDateRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
@@ -166,6 +169,8 @@ public class TodoService {
         }
 
         todo.completeTask();
+
+        applicationEventPublisher.publishEvent(new BadgeEvents.CompletedTodoBadgeEvent(memberDetails));
 
         if (todo.isCompleted()){
             return ResponseEntity.ok("투두가 완료되었습니다.");

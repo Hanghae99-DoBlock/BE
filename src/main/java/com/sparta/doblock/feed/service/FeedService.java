@@ -1,5 +1,6 @@
 package com.sparta.doblock.feed.service;
 
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -15,6 +16,7 @@ import com.sparta.doblock.todo.entity.TodoDate;
 import com.sparta.doblock.todo.repository.TodoDateRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class FeedService {
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final TodoDateRepository todoDateRepository;
     private final S3UploadService s3UploadService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public ResponseEntity<?> getTodoByDate(int year, int month, int day, MemberDetailsImpl memberDetails) {
@@ -121,6 +124,8 @@ public class FeedService {
 
             feedTagMapperRepository.save(feedTagMapper);
         }
+
+        applicationEventPublisher.publishEvent(new BadgeEvents.CreateFeedBadgeEvent(memberDetails));
 
         return ResponseEntity.ok("성공적으로 피드를 생성하였습니다");
     }

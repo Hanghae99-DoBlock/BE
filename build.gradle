@@ -44,9 +44,7 @@ dependencies {
 
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-    //oauth 로그인
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
     implementation 'com.google.code.gson:gson:2.9.0'
 }
 

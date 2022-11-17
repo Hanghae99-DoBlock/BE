@@ -1,5 +1,6 @@
 package com.sparta.doblock.reaction.service;
 
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
@@ -7,6 +8,7 @@ import com.sparta.doblock.reaction.dto.request.ReactionRequestDto;
 import com.sparta.doblock.reaction.entity.Reaction;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +18,10 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ReactionService {
+
     private final ReactionRepository reactionRepository;
     private final FeedRepository feedRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public ResponseEntity<?> addReaction(Long feedId, ReactionRequestDto reactionRequestDto, MemberDetailsImpl memberDetails) {
@@ -38,6 +42,8 @@ public class ReactionService {
                     .build();
 
             reactionRepository.save(reaction);
+
+            applicationEventPublisher.publishEvent(new BadgeEvents.CreateReactionBadgeEvent(memberDetails));
 
             return ResponseEntity.ok("성공적으로 리액션을 추가했습니다");
 
