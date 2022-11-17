@@ -44,17 +44,17 @@ public class SearchService {
     public ResponseEntity<?> search(String keyword, String category) {
 
         if (category.equals("feed")) {
-            // feed search
-            Tag tag = tagRepository.findByTagContent(keyword).orElseThrow(
-                    () -> new NullPointerException("해당 검색어에 맞는 피드가 없습니다.")
-            );
 
-            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
+            List<Tag> tagList = tagRepository.searchByTagLike(keyword);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-            for (FeedTagMapper feedTagMapper : feedTagMapperList) {
-                Feed feed = feedTagMapper.getFeed();
-                addFeed(feedResponseDtoList, feed);
+            for (Tag tag : tagList) {
+                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findByTag(tag);
+
+                for (FeedTagMapper feedTagMapper : feedTagMapperList) {
+                    Feed feed = feedTagMapper.getFeed();
+                    addFeed(feedResponseDtoList, feed);
+                }
             }
 
             feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
