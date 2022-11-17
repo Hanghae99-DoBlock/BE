@@ -42,6 +42,9 @@ public class Feed extends TimeStamp {
     )
     private List<String> feedImageList;
 
+    @Column
+    private boolean eventFeed;
+
     public boolean isEqual(Feed other) {
         return this.id.equals(other.getId());
     }

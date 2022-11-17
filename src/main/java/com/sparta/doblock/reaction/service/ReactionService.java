@@ -1,6 +1,6 @@
 package com.sparta.doblock.reaction.service;
 
-import com.sparta.doblock.badges.event.BadgeEvents;
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;

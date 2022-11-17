@@ -1,9 +1,9 @@
 package com.sparta.doblock.comment.service;
 
-import com.sparta.doblock.badges.event.BadgeEvents;
 import com.sparta.doblock.comment.dto.request.CommentRequestDto;
 import com.sparta.doblock.comment.entity.Comment;
 import com.sparta.doblock.comment.repository.CommentRepository;
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;

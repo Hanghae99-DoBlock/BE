@@ -1,6 +1,6 @@
 package com.sparta.doblock.profile.service;
 
-import com.sparta.doblock.badges.event.BadgeEvents;
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.exception.CustomExceptions;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;

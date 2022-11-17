@@ -1,6 +1,6 @@
 package com.sparta.doblock.todo.service;
 
-import com.sparta.doblock.badges.event.BadgeEvents;
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
@@ -160,7 +160,7 @@ public class TodoService {
 
         todo.completeTask();
 
-        applicationEventPublisher.publishEvent(new BadgeEvents.CreateTodoBadgeEvent(memberDetails));
+        applicationEventPublisher.publishEvent(new BadgeEvents.CompletedTodoBadgeEvent(memberDetails));
 
         if (todo.isCompleted()){
             return ResponseEntity.ok("투두가 완료되었습니다.");

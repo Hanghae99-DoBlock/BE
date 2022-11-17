@@ -1,4 +1,4 @@
-package com.sparta.doblock.badges.entity;
+package com.sparta.doblock.events.entity;
 
 public enum BadgeType {
 

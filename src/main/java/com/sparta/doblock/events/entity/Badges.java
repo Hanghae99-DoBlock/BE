@@ -1,4 +1,4 @@
-package com.sparta.doblock.badges.entity;
+package com.sparta.doblock.events.entity;
 
 import com.sparta.doblock.member.entity.Member;
 import lombok.AllArgsConstructor;

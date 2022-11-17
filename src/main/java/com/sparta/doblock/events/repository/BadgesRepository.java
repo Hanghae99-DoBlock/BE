@@ -1,7 +1,7 @@
-package com.sparta.doblock.badges.repository;
+package com.sparta.doblock.events.repository;
 
-import com.sparta.doblock.badges.entity.BadgeType;
-import com.sparta.doblock.badges.entity.Badges;
+import com.sparta.doblock.events.entity.BadgeType;
+import com.sparta.doblock.events.entity.Badges;
 import com.sparta.doblock.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 

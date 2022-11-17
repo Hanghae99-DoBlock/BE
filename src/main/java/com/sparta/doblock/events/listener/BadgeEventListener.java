@@ -1,15 +1,18 @@
-package com.sparta.doblock.badges.event;
+package com.sparta.doblock.events.listener;
 
-import com.sparta.doblock.badges.entity.BadgeType;
-import com.sparta.doblock.badges.entity.Badges;
-import com.sparta.doblock.badges.repository.BadgesRepository;
+import com.sparta.doblock.events.entity.BadgeType;
+import com.sparta.doblock.events.entity.Badges;
+import com.sparta.doblock.events.entity.FeedEvents;
+import com.sparta.doblock.events.repository.BadgesRepository;
 import com.sparta.doblock.comment.repository.CommentRepository;
+import com.sparta.doblock.events.entity.BadgeEvents;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.todo.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -27,10 +30,11 @@ public class BadgeEventListener {
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final BadgesRepository badgesRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    @EventListener(classes = BadgeEvents.CreateTodoBadgeEvent.class)
-    public ResponseEntity<?> createTodoBadges(BadgeEvents.CreateTodoBadgeEvent badgeEvents){
+    @EventListener(classes = BadgeEvents.CompletedTodoBadgeEvent.class)
+    public ResponseEntity<?> createTodoBadges(BadgeEvents.CompletedTodoBadgeEvent badgeEvents){
 
         long completedTodo = todoRepository.countAllByMemberAndCompleted(badgeEvents.getMemberDetails().getMember(), true);
 
@@ -114,6 +118,8 @@ public class BadgeEventListener {
                     .build();
 
             badgesRepository.save(badges);
+
+            applicationEventPublisher.publishEvent(new FeedEvents(badgeType, member));
 
             return ResponseEntity.ok("새로운 뱃지를 획득하셨습니다!");
         }else return null;
