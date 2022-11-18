@@ -18,10 +18,13 @@ public class FeedResponseDto {
     private Long memberId;
     private String profileImageUrl;
     private String nickname;
+    private boolean followOrNot;
     private List<String> todoList;
+    private String feedTitle;
     private String feedContent;
     private List<String> feedImagesUrlList;
     private List<String> tagList;
+    private String feedColor;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private List<CommentResponseDto> commentResponseDtoList;
     private LocalDateTime postedAt;

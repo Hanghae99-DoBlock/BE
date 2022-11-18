@@ -23,7 +23,7 @@ public class ProfileController {
     }
 
     @PatchMapping("/edit")
-    public ResponseEntity<?> editProfile(@ModelAttribute @Valid EditProfileRequestDto editProfileRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+    public ResponseEntity<?> editProfile(@ModelAttribute @Valid EditProfileRequestDto editProfileRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) throws IllegalAccessException {
         return profileService.editProfile(editProfileRequestDto, memberDetails);
     }
 

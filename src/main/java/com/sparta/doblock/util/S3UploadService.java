@@ -71,27 +71,6 @@ public class S3UploadService {
         return imageUrl;
     }
 
-    public String uploadVideo(MultipartFile multipartFile) {
-
-        String videoUrl = null;
-
-        String fileName = createVideoFileName(multipartFile.getOriginalFilename());
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(multipartFile.getSize());
-        objectMetadata.setContentType(multipartFile.getContentType());
-
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            s3Client.putObject(new PutObjectRequest(bucket + "/post/media", fileName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
-            videoUrl = (s3Client.getUrl(bucket + "/post/media", fileName).toString());
-
-        } catch (IOException e) {
-            throw new CustomExceptions.UploadFailException();
-        }
-
-        return videoUrl;
-    }
-
     public void delete(String key) {
 
         try {
@@ -111,10 +90,6 @@ public class S3UploadService {
         return UUID.randomUUID().toString().concat(getImageFileExtension(fileName));
     }
 
-    private String createVideoFileName(String fileName) {
-        return UUID.randomUUID().toString().concat(getVideoFileExtension(fileName));
-    }
-
     private String getImageFileExtension(String fileName) {
 
         ArrayList<String> fileValidate = new ArrayList<>();
@@ -124,16 +99,6 @@ public class S3UploadService {
         fileValidate.add(".JPG");
         fileValidate.add(".JPEG");
         fileValidate.add(".PNG");
-
-        return fileName.substring(fileName.lastIndexOf("."));
-    }
-
-    private String getVideoFileExtension(String fileName) {
-
-        ArrayList<String> fileValidate = new ArrayList<>();
-        fileValidate.add(".mp4");
-        fileValidate.add(".mov");
-        fileValidate.add(".mkv");
 
         return fileName.substring(fileName.lastIndexOf("."));
     }

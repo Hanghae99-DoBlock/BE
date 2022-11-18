@@ -27,6 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Null;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -60,7 +62,7 @@ public class ProfileService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        List<Feed> feedList = feedRepository.findAllByMember(member);
+        List<Feed> feedList = feedRepository.findTop3ByMemberOrderByPostedAtDesc(member);
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
         for (Feed feed : feedList) {
@@ -90,7 +92,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
@@ -100,8 +102,8 @@ public class ProfileService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
-            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+        if (editProfileRequestDto.checkNull()) {
+            throw new NullPointerException("변경될 정보가 없습니다.");
         }
 
         if (editProfileRequestDto.getProfileImage() != null) {
@@ -123,25 +125,35 @@ public class ProfileService {
             member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
         }
 
-        member.editNickname(editProfileRequestDto.getNickname());
+        if (editProfileRequestDto.getNickname() != null){
 
-        memberTagMapperRepository.deleteAllByMember(member);
+            if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
+                throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+            }
 
-        if (editProfileRequestDto.getTagList().size() >= 4) {
-            throw new RuntimeException("관심사 태그는 유저 당 3개만 가능합니다.");
+            member.editNickname(editProfileRequestDto.getNickname());
         }
 
-        for (String tagContent : Objects.requireNonNull(editProfileRequestDto.getTagList())) {
-            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+        if (editProfileRequestDto.getTagList() != null){
 
-            tagRepository.save(tag);
+            if (editProfileRequestDto.getTagList().size() >= 4) {
+                throw new RuntimeException("관심사 태그는 유저 당 3개만 가능합니다.");
+            }
 
-            MemberTagMapper memberTagMapper = MemberTagMapper.builder()
-                    .tag(tag)
-                    .member(member)
-                    .build();
+            memberTagMapperRepository.deleteAllByMember(member);
 
-            memberTagMapperRepository.save(memberTagMapper);
+            for (String tagContent : Objects.requireNonNull(editProfileRequestDto.getTagList())) {
+                Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+
+                tagRepository.save(tag);
+
+                MemberTagMapper memberTagMapper = MemberTagMapper.builder()
+                        .tag(tag)
+                        .member(member)
+                        .build();
+
+                memberTagMapperRepository.save(memberTagMapper);
+            }
         }
 
         return ResponseEntity.ok("정보 변경 성공");

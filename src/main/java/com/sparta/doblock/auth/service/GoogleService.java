@@ -3,24 +3,17 @@ package com.sparta.doblock.auth.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.GoogleProfile;
+import com.sparta.doblock.auth.dto.GoogleProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
-import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.TokenProvider;
-import com.sparta.doblock.security.token.RefreshToken;
-import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
-import com.sparta.doblock.util.HeaderUtil;
+import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -35,26 +28,24 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GoogleService {
 
-    private final HeaderUtil headerUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final TokenProvider tokenProvider;
-    private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final LoginUtil loginUtil;
 
     @Value("${google.tokenUri}")
-    private String GOOGLE_SNS_LOGIN_URL;
+    private String googleTokenUrl;
 
     @Value("${google.clientId}")
-    private String GOOGLE_SNS_CLIENT_ID;
+    private String googleClientId;
 
     @Value("${google.redirectUri}")
-    private String GOOGLE_SNS_CALLBACK_URL;
+    private String googleCallbackUrl;
 
     @Value("${google.clientSecret}")
-    private String GOOGLE_SNS_CLIENT_SECRET;
+    private String googleClientSecret;
 
     @Value("${google.userInfoUri}")
-    private String GOOGLE_SNS_User_URL;
+    private String googleProfileUrl;
 
     public ResponseEntity<?> login(String code) throws JsonProcessingException {
 
@@ -62,9 +53,11 @@ public class GoogleService {
 
         Member member = saveUser(oauthToken);
 
-        TokenDto tokenDto = generateToken(member);
+        loginUtil.forceLogin(member);
 
-        HttpHeaders httpHeaders = headerUtil.getHttpHeaders(tokenDto);
+        TokenDto tokenDto = loginUtil.generateToken(member);
+
+        HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
 
         return ResponseEntity.ok().headers(httpHeaders).body("로그인 완료!");
     }
@@ -74,15 +67,15 @@ public class GoogleService {
         HttpHeaders headers = new HttpHeaders();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", GOOGLE_SNS_CLIENT_ID);
-        params.add("client_secret", GOOGLE_SNS_CLIENT_SECRET);
+        params.add("client_id", googleClientId);
+        params.add("client_secret", googleClientSecret);
         params.add("code", code);
-        params.add("redirect_uri", GOOGLE_SNS_CALLBACK_URL);
+        params.add("redirect_uri", googleCallbackUrl);
         params.add("grant_type", "authorization_code");
 
         HttpEntity<MultiValueMap<String, String>> googleTokenRequest = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(GOOGLE_SNS_LOGIN_URL,googleTokenRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(googleTokenUrl,googleTokenRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -94,7 +87,7 @@ public class GoogleService {
     @Transactional
     public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-        GoogleProfile profile = findProfile(oauthToken);
+        GoogleProfileDto profile = findProfile(oauthToken);
 
         Optional<Member> googleMember = memberRepository.findBySocialId(profile.getGoogleMemberId());
 
@@ -121,7 +114,7 @@ public class GoogleService {
         } else return googleMember.get();
     }
 
-    public GoogleProfile findProfile(String oauthToken) throws JsonProcessingException {
+    public GoogleProfileDto findProfile(String oauthToken) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken);
@@ -129,7 +122,7 @@ public class GoogleService {
         HttpEntity<MultiValueMap<String, String>> googleProfileRequest = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(GOOGLE_SNS_User_URL,googleProfileRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(googleProfileUrl,googleProfileRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -140,30 +133,11 @@ public class GoogleService {
         String nickname = jsonNode.get("name").asText();
         String profileImage = jsonNode.get("picture").asText();
 
-        return GoogleProfile.builder()
+        return GoogleProfileDto.builder()
                 .googleMemberId(googleMemberId)
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)
                 .build();
-    }
-
-    @Transactional
-    public TokenDto generateToken(Member member) {
-
-        MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .key(member.getSocialId())
-                .value(tokenDto.getRefreshToken())
-                .build();
-
-        refreshTokenRepository.save(refreshToken);
-
-        return tokenDto;
     }
 }

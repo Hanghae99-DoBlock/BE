@@ -5,10 +5,11 @@ import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
-import com.sparta.doblock.member.dto.response.MemberResponseDto;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
+import com.sparta.doblock.profile.dto.response.FollowResponseDto;
+import com.sparta.doblock.profile.dto.response.ProfileResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
@@ -41,7 +42,7 @@ public class SearchService {
     private final MemberTagMapperRepository memberTagMapperRepository;
 
     @Transactional
-    public ResponseEntity<?> search(String keyword, String category) {
+    public ResponseEntity<?> search(String keyword, String category, MemberDetailsImpl memberDetails) {
 
         if (category.equals("feed")) {
 
@@ -53,7 +54,7 @@ public class SearchService {
 
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
-                    addFeed(feedResponseDtoList, feed);
+                    addFeed(feedResponseDtoList, feed, memberDetails);
                 }
             }
 
@@ -63,23 +64,27 @@ public class SearchService {
 
         } else {
             // member search
-            List<MemberResponseDto> memberResponseDtoList = new ArrayList<>();
+            List<FollowResponseDto> followResponseDtoList = new ArrayList<>();
 
             for (Member member : memberRepository.searchByEmailLike(keyword)) {
-                memberResponseDtoList.add(MemberResponseDto.builder()
+                followResponseDtoList.add(FollowResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
-                        .nickname(member.getNickname()).build());
+                        .nickname(member.getNickname())
+                        .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
+                        .build());
             }
 
             for (Member member : memberRepository.searchByNicknameLike(keyword)) {
-                memberResponseDtoList.add(MemberResponseDto.builder()
+                followResponseDtoList.add(FollowResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
-                        .nickname(member.getNickname()).build());
+                        .nickname(member.getNickname())
+                        .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
+                        .build());
             }
 
-            return ResponseEntity.ok(memberResponseDtoList);
+            return ResponseEntity.ok(followResponseDtoList);
         }
     }
 
@@ -99,12 +104,12 @@ public class SearchService {
 
             List<Feed> feedList = feedRepository.findAllByMember(toMember);
             for (Feed feed : feedList) {
-                addFeed(feedResponseDtoList, feed);
+                addFeed(feedResponseDtoList, feed, memberDetails);
             }
         }
         // add user's own feed too
         for (Feed feed : feedRepository.findAllByMember(memberDetails.getMember())) {
-            addFeed(feedResponseDtoList, feed);
+            addFeed(feedResponseDtoList, feed, memberDetails);
         }
 
         // sort by time created
@@ -124,14 +129,14 @@ public class SearchService {
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (MemberTagMapper memberTagMapper : memberTagMapperList){
+        for (MemberTagMapper memberTagMapper : memberTagMapperList) {
             Tag tag = memberTagMapper.getTag();
 
             List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findTop5ByTagOrderByIdDesc(tag);
 
-            for (FeedTagMapper feedTagMapper : feedTagMapperList){
+            for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                 Feed feed = feedTagMapper.getFeed();
-                addFeed(feedResponseDtoList, feed);
+                addFeed(feedResponseDtoList, feed, memberDetails);
             }
         }
 
@@ -140,7 +145,7 @@ public class SearchService {
         return ResponseEntity.ok(feedResponseDtoList);
     }
 
-    private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed) {
+    private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed, MemberDetailsImpl memberDetails) {
         // TODO: time complexity for taglist
         // O(total number of tags) or O(number of tags a single feed has)?
 
@@ -151,9 +156,12 @@ public class SearchService {
                 .memberId(member.getId())
                 .profileImageUrl(member.getProfileImage())
                 .nickname(member.getNickname())
+                .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
                 .todoList(feed.getTodoList())
+                .feedTitle(feed.getFeedTitle())
                 .feedContent(feed.getFeedContent())
                 .feedImagesUrlList(feed.getFeedImageList())
+                .feedColor(feed.getFeedColor())
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))

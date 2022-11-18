@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class KakaoProfile {
+public class NaverProfileDto {
 
-    private Long kakaoMemberId;
+    private String naverMemberId;
     private String email;
     private String profileImage;
     private String nickname;

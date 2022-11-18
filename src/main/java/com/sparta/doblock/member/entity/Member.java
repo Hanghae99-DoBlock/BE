@@ -44,17 +44,12 @@ public class Member {
     @Column(name = "authority")
     private Authority authority;
 
-
-    public boolean isEqual(Member other) {
-        return this.id.equals(other.getId());
-    }
-
     public void editProfileImage(String profileImage){
         this.profileImage = profileImage;
     }
 
     public void editNickname(String nickname){
-        this.nickname = nickname != null ? nickname : this.getNickname();
+        this.nickname = nickname;
     }
 
     public void editPassword(String password){

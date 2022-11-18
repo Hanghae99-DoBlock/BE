@@ -75,6 +75,14 @@ public class FeedService {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
+        if (feedRequestDto.getFeedContent().length() >= 101) {
+            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+        }
+
+        if (feedRequestDto.getFeedImageList().size() >= 5){
+            throw new RuntimeException("사진은 피드 당 4개까지 가능합니다.");
+        }
+
         List<String> todoList = new ArrayList<>();
 
         for (Long todoId : feedRequestDto.getTodoIdList()) {
@@ -82,16 +90,17 @@ public class FeedService {
                     () -> new NullPointerException("해당 투두가 존재하지 않습니다")
             );
 
-            if (! todo.getMember().isEqual(memberDetails.getMember())) {
+            if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
                 return new ResponseEntity<>("투두의 작성자가 아닙니다", HttpStatus.FORBIDDEN);
 
-            } else if (! todo.isCompleted()) {
+            } else if (!todo.isCompleted()) {
                 return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
 
             } else {
                 todoList.add(todo.getTodoContent());
             }
         }
+
         List<String> feedImageList;
 
         try {
@@ -105,8 +114,10 @@ public class FeedService {
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
                 .todoList(todoList)
+                .feedTitle(feedRequestDto.getFeedTitle())
                 .feedContent(feedRequestDto.getFeedContent())
                 .feedImageList(feedImageList)
+                .feedColor(feedRequestDto.getFeedColor())
                 .build();
 
 
@@ -137,17 +148,25 @@ public class FeedService {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
+        if (feedRequestDto.getFeedContent().length() >= 101) {
+            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+        }
+
+        if (feedRequestDto.getFeedImageList().size() >= 5){
+            throw new RuntimeException("사진은 피드 당 4개까지 가능합니다.");
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("존재하는 피드가 아닙니다")
         );
+
+        //사진 수정 시 배열 문제
 
         List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
                 .map(s3UploadService::uploadImage)
                 .collect(Collectors.toList());
 
-        feed.update(feedRequestDto.getFeedContent(), feedImageList);
-
-        // delete existing tags and create new ones
+        feed.update(feedRequestDto.getFeedTitle(), feedRequestDto.getFeedContent(), feedImageList, feedRequestDto.getFeedColor());
 
         feedTagMapperRepository.deleteAllByFeed(feed);
 
@@ -171,11 +190,12 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> deleteFeed(Long feedId, MemberDetailsImpl memberDetails) {
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("해당 피드가 없습니다")
         );
 
-        if (! feed.getMember().isEqual(memberDetails.getMember())) {
+        if (!feed.getMember().getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
         }
 

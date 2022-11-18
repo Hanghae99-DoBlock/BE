@@ -17,9 +17,9 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam("keyword") String keyword, @RequestParam("category") String category) {
+    public ResponseEntity<?> search(@RequestParam("keyword") String keyword, @RequestParam("category") String category, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         // Search by tag
-        return searchService.search(keyword, category);
+        return searchService.search(keyword, category, memberDetails);
     }
 
     @GetMapping("/feed/following")
