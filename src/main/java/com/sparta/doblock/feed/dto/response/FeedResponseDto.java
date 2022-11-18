@@ -25,6 +25,7 @@ public class FeedResponseDto {
     private List<String> feedImagesUrlList;
     private List<String> tagList;
     private String feedColor;
+    private boolean eventFeed;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private List<CommentResponseDto> commentResponseDtoList;
     private LocalDateTime postedAt;

@@ -69,6 +69,7 @@ public class ProfileService {
             feedResponseDtoList.add(FeedResponseDto.builder()
                     .feedId(feed.getId())
                     .feedContent(feed.getFeedContent())
+                    .eventFeed(feed.isEventFeed())
                     .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                             .map(feedTagMapper -> feedTagMapper.getTag().getTagContent())
                             .collect(Collectors.toList()))
@@ -125,7 +126,7 @@ public class ProfileService {
             member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
         }
 
-        if (editProfileRequestDto.getNickname() != null){
+        if (editProfileRequestDto.getNickname() != null) {
 
             if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
                 throw new RuntimeException("이미 사용 중인 닉네임입니다.");
@@ -134,7 +135,7 @@ public class ProfileService {
             member.editNickname(editProfileRequestDto.getNickname());
         }
 
-        if (editProfileRequestDto.getTagList() != null){
+        if (editProfileRequestDto.getTagList() != null) {
 
             if (editProfileRequestDto.getTagList().size() >= 4) {
                 throw new RuntimeException("관심사 태그는 유저 당 3개만 가능합니다.");

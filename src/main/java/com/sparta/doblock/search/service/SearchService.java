@@ -9,7 +9,6 @@ import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
-import com.sparta.doblock.profile.dto.response.ProfileResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
@@ -162,6 +161,7 @@ public class SearchService {
                 .feedContent(feed.getFeedContent())
                 .feedImagesUrlList(feed.getFeedImageList())
                 .feedColor(feed.getFeedColor())
+                .eventFeed(feed.isEventFeed())
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))
