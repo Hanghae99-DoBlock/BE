@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class TodoOrderRequestDto {
+public class TodoIdOrderRequestDto {
 
     private int year;
     private int month;
     private int day;
-    private List<TodoRequestDto> todoRequestDtoList;
+    private List<Long> todoIdList;
 }
