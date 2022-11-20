@@ -2,7 +2,6 @@ package com.sparta.doblock.events.listener;
 
 import com.sparta.doblock.events.entity.BadgeType;
 import com.sparta.doblock.events.entity.Badges;
-import com.sparta.doblock.events.entity.FeedEvents;
 import com.sparta.doblock.events.repository.BadgesRepository;
 import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.events.entity.BadgeEvents;
@@ -13,9 +12,9 @@ import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.todo.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
-import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.transaction.Transactional;
 import java.util.Objects;
@@ -32,9 +31,10 @@ public class BadgeEventListener {
     private final BadgesRepository badgesRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Transactional
-    @EventListener(classes = BadgeEvents.CompletedTodoBadgeEvent.class)
-    public ResponseEntity<?> createTodoBadges(BadgeEvents.CompletedTodoBadgeEvent badgeEvents){
+    @Async
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @TransactionalEventListener(classes = BadgeEvents.CompletedTodoBadgeEvent.class)
+    public void createTodoBadges(BadgeEvents.CompletedTodoBadgeEvent badgeEvents){
 
         long completedTodo = todoRepository.countAllByMemberAndCompleted(badgeEvents.getMemberDetails().getMember(), true);
 
@@ -43,13 +43,12 @@ public class BadgeEventListener {
         createBadges(completedTodo, 50L, BadgeType.COMPLETED_TODO_FIFTY, badgeEvents.getMemberDetails().getMember());
 
         createBadges(completedTodo, 100L, BadgeType.COMPLETED_TODO_HUNDRED, badgeEvents.getMemberDetails().getMember());
-
-        return null;
     }
 
-    @Transactional
-    @EventListener(classes = BadgeEvents.CreateFeedBadgeEvent.class)
-    public ResponseEntity<?> createFeedBadges(BadgeEvents.CreateFeedBadgeEvent badgeEvents){
+    @Async
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @TransactionalEventListener(classes = BadgeEvents.CreateFeedBadgeEvent.class)
+    public void createFeedBadges(BadgeEvents.CreateFeedBadgeEvent badgeEvents){
 
         long createdFeed = feedRepository.countAllByMember(badgeEvents.getMemberDetails().getMember());
 
@@ -58,43 +57,28 @@ public class BadgeEventListener {
         createBadges(createdFeed, 50L, BadgeType.CREATED_FEED_FIFTY, badgeEvents.getMemberDetails().getMember());
 
         createBadges(createdFeed, 100L, BadgeType.CREATED_FEED_HUNDRED, badgeEvents.getMemberDetails().getMember());
-
-        return null;
     }
 
-    @Transactional
-    @EventListener(classes = BadgeEvents.CreateReactionBadgeEvent.class)
-    public ResponseEntity<?> createReactionBadges(BadgeEvents.CreateReactionBadgeEvent badgeEvents){
+    @Async
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @TransactionalEventListener(classes = BadgeEvents.SocialActiveBadgeEvent.class)
+    public void createReactionBadges(BadgeEvents.SocialActiveBadgeEvent badgeEvents){
 
         long createdReaction = reactionRepository.countAllByMember(badgeEvents.getMemberDetails().getMember());
-
-        createBadges(createdReaction, 10L, BadgeType.CREATED_REACTION_TEN, badgeEvents.getMemberDetails().getMember());
-
-        createBadges(createdReaction, 50L, BadgeType.CREATED_REACTION_FIFTY, badgeEvents.getMemberDetails().getMember());
-
-        createBadges(createdReaction, 100L, BadgeType.CREATED_REACTION_HUNDRED, badgeEvents.getMemberDetails().getMember());
-
-        return null;
-    }
-
-    @Transactional
-    @EventListener(classes = BadgeEvents.CreateCommentBadgeEvent.class)
-    public ResponseEntity<?> createCommentBadges(BadgeEvents.CreateCommentBadgeEvent badgeEvents){
-
         long createdComment = commentRepository.countAllByMember(badgeEvents.getMemberDetails().getMember());
+        long socialActive = createdReaction + createdComment;
 
-        createBadges(createdComment, 10L, BadgeType.CREATED_COMMENT_TEN, badgeEvents.getMemberDetails().getMember());
+        createBadges(socialActive, 10L, BadgeType.SOCIAL_ACTIVE_TEN, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(createdComment, 50L, BadgeType.CREATED_COMMENT_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(socialActive, 50L, BadgeType.SOCIAL_ACTIVE_FIFTY, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(createdComment, 100L, BadgeType.CREATED_COMMENT_HUNDRED, badgeEvents.getMemberDetails().getMember());
-
-        return null;
+        createBadges(socialActive, 100L, BadgeType.SOCIAL_ACTIVE_HUNDRED, badgeEvents.getMemberDetails().getMember());
     }
 
-    @Transactional
-    @EventListener(classes = BadgeEvents.FollowToMemberBadgeEvent.class)
-    public ResponseEntity<?> createFollowingBadges(BadgeEvents.FollowToMemberBadgeEvent badgeEvents){
+    @Async
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @TransactionalEventListener(classes = BadgeEvents.FollowToMemberBadgeEvent.class)
+    public void createFollowingBadges(BadgeEvents.FollowToMemberBadgeEvent badgeEvents){
 
         long followToMember = followRepository.countAllByFromMember(badgeEvents.getMemberDetails().getMember());
 
@@ -103,12 +87,10 @@ public class BadgeEventListener {
         createBadges(followToMember, 50L, BadgeType.FOLLOW_TO_MEMBER_FIFTY, badgeEvents.getMemberDetails().getMember());
 
         createBadges(followToMember, 100L, BadgeType.FOLLOW_TO_MEMBER_HUNDRED, badgeEvents.getMemberDetails().getMember());
-
-        return null;
     }
 
     @Transactional
-    public ResponseEntity<?> createBadges(Long count, Long limit, BadgeType badgeType, Member member){
+    public void createBadges(Long count, Long limit, BadgeType badgeType, Member member){
 
         if(Objects.equals(count, limit) && !badgesRepository.existsByBadgeTypeAndMember(badgeType, member)){
 
@@ -119,9 +101,7 @@ public class BadgeEventListener {
 
             badgesRepository.save(badges);
 
-            applicationEventPublisher.publishEvent(new FeedEvents(badgeType, member));
-
-            return ResponseEntity.ok("새로운 뱃지를 획득하셨습니다!");
-        }else return null;
+            applicationEventPublisher.publishEvent(new BadgeEvents.CreateBadgeEvent(badgeType, member));
+        }
     }
 }

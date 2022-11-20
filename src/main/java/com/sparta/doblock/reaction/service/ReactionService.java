@@ -43,7 +43,7 @@ public class ReactionService {
 
             reactionRepository.save(reaction);
 
-            applicationEventPublisher.publishEvent(new BadgeEvents.CreateReactionBadgeEvent(memberDetails));
+            applicationEventPublisher.publishEvent(new BadgeEvents.SocialActiveBadgeEvent(memberDetails));
 
             return ResponseEntity.ok("성공적으로 리액션을 추가했습니다");
 

@@ -1,5 +1,6 @@
 package com.sparta.doblock.feed.controller;
 
+import com.sparta.doblock.feed.dto.request.EventFeedRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.service.FeedService;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
@@ -35,5 +36,10 @@ public class FeedController {
     @DeleteMapping("/{feedId}")
     public ResponseEntity<?> deleteFeed(@PathVariable Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return feedService.deleteFeed(feedId, memberDetails);
+    }
+
+    @PostMapping("/event")
+    public ResponseEntity<?> createEventFeed(@RequestBody EventFeedRequestDto eventFeedRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return feedService.createEventFeed(eventFeedRequestDto, memberDetails);
     }
 }
