@@ -8,6 +8,7 @@ import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
+import com.sparta.doblock.profile.dto.request.EditPasswordRequestDto;
 import com.sparta.doblock.profile.dto.request.EditProfileRequestDto;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.dto.response.ProfileResponseDto;
@@ -117,15 +118,6 @@ public class ProfileService {
             member.editProfileImage(imageUrl);
         }
 
-        if (editProfileRequestDto.getNewPassword() != null) {
-
-            if (passwordEncoder.matches(editProfileRequestDto.getCurrentPassword(), member.getPassword())) {
-                throw new CustomExceptions.NotMatchedPasswordException();
-            }
-
-            member.editPassword(passwordEncoder.encode(editProfileRequestDto.getNewPassword()));
-        }
-
         if (editProfileRequestDto.getNickname() != null) {
 
             if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
@@ -158,6 +150,33 @@ public class ProfileService {
         }
 
         return ResponseEntity.ok("정보 변경 성공");
+    }
+
+    @Transactional
+    public ResponseEntity<?> editPassword(EditPasswordRequestDto editPasswordRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
+
+        Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
+                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+        );
+
+        if (editPasswordRequestDto.checkNull()) {
+            throw new NullPointerException("변경될 정보가 없습니다.");
+        }
+
+        if (editPasswordRequestDto.getNewPassword() != null) {
+
+            if (!passwordEncoder.matches(editPasswordRequestDto.getCurrentPassword(), member.getPassword())) {
+                throw new CustomExceptions.NotMatchedPasswordException();
+            }
+
+            member.editPassword(passwordEncoder.encode(editPasswordRequestDto.getNewPassword()));
+        }
+
+        return ResponseEntity.ok("비밀번호 변경 성공");
     }
 
     @Transactional
