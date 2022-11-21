@@ -140,12 +140,14 @@ public class ProfileService {
 
                 tagRepository.save(tag);
 
-                MemberTagMapper memberTagMapper = MemberTagMapper.builder()
-                        .tag(tag)
-                        .member(member)
-                        .build();
+                if (! memberTagMapperRepository.existsByMemberAndTag(member, tag)) {
+                    MemberTagMapper memberTagMapper = MemberTagMapper.builder()
+                            .tag(tag)
+                            .member(member)
+                            .build();
 
-                memberTagMapperRepository.save(memberTagMapper);
+                    memberTagMapperRepository.save(memberTagMapper);
+                }
             }
         }
 
