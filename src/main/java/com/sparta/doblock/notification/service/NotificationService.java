@@ -19,7 +19,7 @@ import java.util.Map;
 public class NotificationService {
 
     private final EmitterRepository emitterRepository;
-    private static final long DEFAULT_TIMEOUT = 1000 * 60 * 60;
+    private static final long DEFAULT_TIMEOUT = 1000 * 60;
 
     public SseEmitter subscribe(MemberDetailsImpl memberDetails, String lastEventId) {
 
@@ -76,6 +76,7 @@ public class NotificationService {
 
         NotificationDto notificationDto = NotificationDto.builder()
                 .message(badgeEvent.getMember().getNickname() + "님이 " + badgeEvent.getBadgeType() + "를 획득하셨습니다! 지금 바로 이벤트 피드를 생성하시겠습니까?")
+                .badgeType(badgeEvent.getBadgeType())
                 .build();
 
         String eventId = createTimeIncludeId(badgeEvent.getMember().getId());
