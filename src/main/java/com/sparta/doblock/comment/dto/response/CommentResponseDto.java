@@ -13,6 +13,7 @@ public class CommentResponseDto {
 
     private Long commentId;
     private Long memberId;
+    private String profileImage;
     private String nickname;
     private String commentContent;
     private LocalDateTime postedAt;

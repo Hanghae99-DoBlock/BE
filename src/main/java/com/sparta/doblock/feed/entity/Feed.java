@@ -51,13 +51,11 @@ public class Feed extends TimeStamp {
     @Column
     private boolean eventFeed;
 
-    public void update(String feedTitle, String feedContent, List<String> feedImageList, String feedColor) {
+    public void update(String feedTitle, String feedContent, String feedColor) {
         if (!Objects.isNull(feedTitle))
             this.feedTitle = feedTitle;
         if (!Objects.isNull(feedContent))
             this.feedContent = feedContent;
-        if (!Objects.isNull(feedImageList) && !feedImageList.isEmpty())
-            this.feedImageList = feedImageList;
         if (!Objects.isNull(feedColor))
             this.feedColor = feedColor;
     }

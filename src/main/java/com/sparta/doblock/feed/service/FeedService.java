@@ -120,7 +120,6 @@ public class FeedService {
                 .feedColor(feedRequestDto.getFeedColor())
                 .build();
 
-
         feedRepository.save(feed);
 
         for (String tagContent : feedRequestDto.getTagList()) {
@@ -152,21 +151,11 @@ public class FeedService {
             throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
         }
 
-        if (feedRequestDto.getFeedImageList().size() >= 5){
-            throw new RuntimeException("사진은 피드 당 4개까지 가능합니다.");
-        }
-
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("존재하는 피드가 아닙니다")
         );
 
-        //사진 수정 시 배열 문제
-
-        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
-                .map(s3UploadService::uploadImage)
-                .collect(Collectors.toList());
-
-        feed.update(feedRequestDto.getFeedTitle(), feedRequestDto.getFeedContent(), feedImageList, feedRequestDto.getFeedColor());
+        feed.update(feedRequestDto.getFeedTitle(), feedRequestDto.getFeedContent(), feedRequestDto.getFeedColor());
 
         feedTagMapperRepository.deleteAllByFeed(feed);
 
@@ -197,6 +186,10 @@ public class FeedService {
 
         if (!feed.getMember().getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
+        }
+
+        for (String imageUrl : feed.getFeedImageList()){
+            s3UploadService.delete(imageUrl);
         }
 
         feedTagMapperRepository.deleteAllByFeed(feed);

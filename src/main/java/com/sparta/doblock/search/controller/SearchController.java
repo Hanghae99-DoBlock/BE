@@ -5,10 +5,7 @@ import com.sparta.doblock.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,5 +27,10 @@ public class SearchController {
     @GetMapping("/feed/recommended")
     public ResponseEntity<?> getRecommendedFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return searchService.getRecommendedFeeds(memberDetails);
+    }
+
+    @GetMapping("/feed/{feed_id}")
+    public ResponseEntity<?> getFeed(@PathVariable(name = "feed_id") Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getFeed(feedId, memberDetails);
     }
 }

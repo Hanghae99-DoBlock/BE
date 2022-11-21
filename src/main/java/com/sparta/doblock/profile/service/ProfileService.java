@@ -192,7 +192,7 @@ public class ProfileService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        if (toMember.getNickname().equals(memberDetails.getMember().getNickname())) {
+        if (toMember.getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("본인을 팔로우 할 수 없습니다.");
         }
 

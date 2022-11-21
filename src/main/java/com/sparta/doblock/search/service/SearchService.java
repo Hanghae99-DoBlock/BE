@@ -53,7 +53,7 @@ public class SearchService {
 
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
-                    addFeed(feedResponseDtoList, feed, memberDetails);
+                    addFeed(feedResponseDtoList, feed);
                 }
             }
 
@@ -103,15 +103,14 @@ public class SearchService {
 
             List<Feed> feedList = feedRepository.findAllByMember(toMember);
             for (Feed feed : feedList) {
-                addFeed(feedResponseDtoList, feed, memberDetails);
+                addFeed(feedResponseDtoList, feed);
             }
         }
-        // add user's own feed too
+
         for (Feed feed : feedRepository.findAllByMember(memberDetails.getMember())) {
-            addFeed(feedResponseDtoList, feed, memberDetails);
+            addFeed(feedResponseDtoList, feed);
         }
 
-        // sort by time created
         feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
 
         return ResponseEntity.ok(feedResponseDtoList);
@@ -135,7 +134,7 @@ public class SearchService {
 
             for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                 Feed feed = feedTagMapper.getFeed();
-                addFeed(feedResponseDtoList, feed, memberDetails);
+                addFeed(feedResponseDtoList, feed);
             }
         }
 
@@ -144,9 +143,15 @@ public class SearchService {
         return ResponseEntity.ok(feedResponseDtoList);
     }
 
-    private List<FeedResponseDto> addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed, MemberDetailsImpl memberDetails) {
-        // TODO: time complexity for taglist
-        // O(total number of tags) or O(number of tags a single feed has)?
+    public ResponseEntity<?> getFeed(Long feedId, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
+
+        Feed feed = feedRepository.findById(feedId).orElseThrow(
+                () -> new NullPointerException("해당 피드가 없습니다")
+        );
 
         Member member = feed.getMember();
 
@@ -162,20 +167,29 @@ public class SearchService {
                 .feedImagesUrlList(feed.getFeedImageList())
                 .feedColor(feed.getFeedColor())
                 .eventFeed(feed.isEventFeed())
+                .countReaction(reactionRepository.countAllByFeed(feed))
+                .currentReactionType(reactionRepository.findTop2ByFeedOrderByPostedAtDesc(feed).stream()
+                        .map(r -> ReactionResponseDto.builder()
+                                .reactionType(r.getReactionType())
+                                .build())
+                        .collect(Collectors.toList()))
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))
-                .reactionResponseDtoList(reactionRepository.findAllByFeed(feed).stream()
+                .reactionResponseDtoList(reactionRepository.findAllByFeedOrderByPostedAtDesc(feed).stream()
                         .map(r -> ReactionResponseDto.builder()
                                 .memberId(r.getMember().getId())
+                                .profileImage(r.getMember().getProfileImage())
                                 .nickname(r.getMember().getNickname())
                                 .reactionType(r.getReactionType())
                                 .build())
                         .collect(Collectors.toList()))
+                .countComment(commentRepository.countAllByFeed(feed))
                 .commentResponseDtoList(commentRepository.findByFeed(feed).stream()
                         .map(c -> CommentResponseDto.builder()
                                 .commentId(c.getId())
                                 .memberId(c.getMember().getId())
+                                .profileImage(c.getMember().getProfileImage())
                                 .nickname(c.getMember().getNickname())
                                 .commentContent(c.getCommentContent())
                                 .postedAt(c.getPostedAt())
@@ -184,8 +198,29 @@ public class SearchService {
                 .postedAt(feed.getPostedAt())
                 .build();
 
-        feedResponseDtoList.add(feedResponseDto);
+        return ResponseEntity.ok(feedResponseDto);
+    }
 
-        return feedResponseDtoList;
+    private void addFeed(List<FeedResponseDto> feedResponseDtoList, Feed feed) {
+
+        Member member = feed.getMember();
+
+        FeedResponseDto feedResponseDto = FeedResponseDto.builder()
+                .feedId(feed.getId())
+                .memberId(member.getId())
+                .nickname(member.getNickname())
+                .todoList(feed.getTodoList())
+                .feedTitle(feed.getFeedTitle())
+                .feedColor(feed.getFeedColor())
+                .eventFeed(feed.isEventFeed())
+                .countReaction(reactionRepository.countAllByFeed(feed))
+                .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
+                        .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
+                        .collect(Collectors.toList()))
+                .countComment(commentRepository.countAllByFeed(feed))
+                .postedAt(feed.getPostedAt())
+                .build();
+
+        feedResponseDtoList.add(feedResponseDto);
     }
 }

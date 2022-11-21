@@ -2,6 +2,7 @@ package com.sparta.doblock.reaction.entity;
 
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.util.TimeStamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "member_id", "feed_id" }) })
-public class Reaction {
+public class Reaction extends TimeStamp {
 
     @Id
     @Column(name = "reaction_id")
