@@ -106,7 +106,7 @@ public class FeedService {
 
         try {
             feedImageList = feedRequestDto.getFeedImageList().stream()
-                    .map(s3UploadService::uploadImage)
+                    .map(s3UploadService::uploadFeedImage)
                     .collect(Collectors.toList());
         } catch (NullPointerException e) {
             feedImageList = new ArrayList<>();

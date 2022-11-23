@@ -28,8 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.Null;
-import java.lang.reflect.Field;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,7 +93,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException {
+    public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException, IOException {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
@@ -114,7 +113,7 @@ public class ProfileService {
                 s3UploadService.delete(member.getProfileImage());
             }
 
-            String imageUrl = s3UploadService.uploadImage(editProfileRequestDto.getProfileImage());
+            String imageUrl = s3UploadService.uploadProfileImage(editProfileRequestDto.getProfileImage());
             member.editProfileImage(imageUrl);
         }
 
