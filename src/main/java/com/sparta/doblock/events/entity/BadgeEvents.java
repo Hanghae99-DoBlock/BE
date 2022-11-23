@@ -1,10 +1,19 @@
 package com.sparta.doblock.events.entity;
 
+import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class BadgeEvents {
+
+    @Getter
+    @AllArgsConstructor
+    public static class CreateBadgeEvent{
+
+        private BadgeType badgeType;
+        private Member member;
+    }
 
     @Getter
     @AllArgsConstructor
@@ -22,14 +31,7 @@ public class BadgeEvents {
 
     @Getter
     @AllArgsConstructor
-    public static class CreateReactionBadgeEvent{
-
-        private MemberDetailsImpl memberDetails;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class CreateCommentBadgeEvent{
+    public static class SocialActiveBadgeEvent{
 
         private MemberDetailsImpl memberDetails;
     }

@@ -1,6 +1,7 @@
 package com.sparta.doblock.feed.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.feed.dto.request.EventFeedRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -197,5 +198,39 @@ public class FeedService {
         feedRepository.delete(feed);
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
+    }
+
+    @Transactional
+    public ResponseEntity<?> createEventFeed(EventFeedRequestDto eventFeedRequestDto, MemberDetailsImpl memberDetails) {
+
+        List<String> tagList = new ArrayList<>();
+        tagList.add("두블럭");
+        tagList.add("뱃지획득!");
+        tagList.add("축하합니다 ㅇ_ㅇb");
+        tagList.add("사랑해주셔서");
+        tagList.add("감사합니다!");
+
+        Feed feed = Feed.builder()
+                .member(memberDetails.getMember())
+                .feedContent(memberDetails.getMember() + "님이" + eventFeedRequestDto.getBadgeType() + "뱃지를 얻으셨습니다! 다들 축하해주세요!")
+                .eventFeed(true)
+                .build();
+
+        feedRepository.save(feed);
+
+        for (String tagContent : tagList) {
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+
+            tagRepository.save(tag);
+
+            FeedTagMapper feedTagMapper = FeedTagMapper.builder()
+                    .feed(feed)
+                    .tag(tag)
+                    .build();
+
+            feedTagMapperRepository.save(feedTagMapper);
+        }
+
+        return ResponseEntity.ok("이벤트 피드가 생성되었습니다!");
     }
 }

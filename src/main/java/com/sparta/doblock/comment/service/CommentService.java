@@ -43,7 +43,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        applicationEventPublisher.publishEvent(new BadgeEvents.CreateCommentBadgeEvent(memberDetails));
+        applicationEventPublisher.publishEvent(new BadgeEvents.SocialActiveBadgeEvent(memberDetails));
 
         return ResponseEntity.ok("댓글을 성공적으로 생성하였습니다");
     }
