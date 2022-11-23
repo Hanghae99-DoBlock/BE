@@ -20,6 +20,7 @@ import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
 import com.sparta.doblock.tag.repository.MemberTagMapperRepository;
 import com.sparta.doblock.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,8 @@ public class SearchService {
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final MemberTagMapperRepository memberTagMapperRepository;
+
+    private final int POST_PER_PAGE = 5;
 
     @Transactional
     public ResponseEntity<?> search(String keyword, String category) {
@@ -64,15 +67,21 @@ public class SearchService {
         } else {
             // member search
             List<MemberResponseDto> memberResponseDtoList = new ArrayList<>();
+            Set<Long> searched = new HashSet<>();
 
             for (Member member : memberRepository.searchByEmailLike(keyword)) {
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname()).build());
+
+                searched.add(member.getId());
             }
 
             for (Member member : memberRepository.searchByNicknameLike(keyword)) {
+                if (searched.contains(member.getId())) {
+                    continue;
+                }
                 memberResponseDtoList.add(MemberResponseDto.builder()
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
@@ -84,7 +93,7 @@ public class SearchService {
     }
 
     @Transactional
-    public ResponseEntity<?> getFollowingFeeds(MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getFollowingFeeds(MemberDetailsImpl memberDetails, int page) {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
@@ -108,9 +117,16 @@ public class SearchService {
         }
 
         // sort by time created
-        feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
+        feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
 
-        return ResponseEntity.ok(feedResponseDtoList);
+        int startIdx = page * POST_PER_PAGE;
+        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+
+        if (endIdx <= startIdx) {
+            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
     }
 
     @Transactional
