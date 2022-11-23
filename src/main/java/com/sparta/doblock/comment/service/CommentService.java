@@ -43,7 +43,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        applicationEventPublisher.publishEvent(new BadgeEvents.CreateCommentBadgeEvent(memberDetails));
+        applicationEventPublisher.publishEvent(new BadgeEvents.SocialActiveBadgeEvent(memberDetails));
 
         return ResponseEntity.ok("댓글을 성공적으로 생성하였습니다");
     }
@@ -62,10 +62,10 @@ public class CommentService {
         if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
 
-        } else if (!comment.getFeed().isEqual(feed)) {
+        } else if (!comment.getFeed().getId().equals(feed.getId())) {
             return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
 
-        } else if (!comment.getMember().isEqual(memberDetails.getMember())) {
+        } else if (!comment.getMember().getId().equals(memberDetails.getMember().getId())) {
             return new ResponseEntity<>("본인 댓글만 수정 가능합니다.", HttpStatus.FORBIDDEN);
         }
 
@@ -88,10 +88,10 @@ public class CommentService {
         if (Objects.isNull(memberDetails)) {
             return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
 
-        } else if (!comment.getFeed().isEqual(feed)) {
+        } else if (!comment.getFeed().getId().equals(feed.getId())) {
             return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
 
-        } else if (!comment.getMember().isEqual(memberDetails.getMember())) {
+        } else if (!comment.getMember().getId().equals(memberDetails.getMember().getId())) {
             return new ResponseEntity<>("댓글을 작성한 유저가 아닙니다.", HttpStatus.FORBIDDEN);
 
         } else {

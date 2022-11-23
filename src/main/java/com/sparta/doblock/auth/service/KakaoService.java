@@ -3,24 +3,17 @@ package com.sparta.doblock.auth.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.KakaoProfile;
+import com.sparta.doblock.auth.dto.KakaoProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
-import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.TokenProvider;
-import com.sparta.doblock.security.token.RefreshToken;
-import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
-import com.sparta.doblock.util.HeaderUtil;
+import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,23 +28,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class KakaoService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final TokenProvider tokenProvider;
-    private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    private final HeaderUtil headerUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final LoginUtil loginUtil;
 
     @Value("${kakao.tokenUri}")
-    private String KAKAO_SNS_LOGIN_URL;
+    private String kakaoTokenUrl;
 
     @Value("${kakao.clientId}")
-    private String KAKAO_SNS_CLIENT_ID;
+    private String kakaoClientId;
 
     @Value("${kakao.redirectUri}")
-    private String KAKAO_SNS_CALLBACK_URL;
+    private String kakaoCallbackUrl;
 
     @Value("${kakao.userInfoUri}")
-    private String KAKAO_SNS_User_URL;
+    private String kakaoProfileUrl;
 
     public ResponseEntity<?> login(String code) throws JsonProcessingException {
 
@@ -59,9 +50,11 @@ public class KakaoService {
 
         Member member = saveUser(oauthToken);
 
-        TokenDto tokenDto = generateToken(member);
+        loginUtil.forceLogin(member);
 
-        HttpHeaders httpHeaders = headerUtil.getHttpHeaders(tokenDto);
+        TokenDto tokenDto = loginUtil.generateToken(member);
+
+        HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
 
         return ResponseEntity.ok().headers(httpHeaders).body("로그인 완료!");
     }
@@ -72,13 +65,13 @@ public class KakaoService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", KAKAO_SNS_CLIENT_ID);
-        params.add("redirect_uri", KAKAO_SNS_CALLBACK_URL);
+        params.add("client_id", kakaoClientId);
+        params.add("redirect_uri", kakaoCallbackUrl);
         params.add("code", code);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_SNS_LOGIN_URL,kakaoTokenRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(kakaoTokenUrl,kakaoTokenRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -89,7 +82,7 @@ public class KakaoService {
     @Transactional
     public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-        KakaoProfile profile = findProfile(oauthToken);
+        KakaoProfileDto profile = findProfile(oauthToken);
 
         Optional<Member> kakaoMember = memberRepository.findBySocialId(profile.getKakaoMemberId().toString());
 
@@ -116,7 +109,7 @@ public class KakaoService {
         } else return kakaoMember.get();
     }
 
-    public KakaoProfile findProfile(String oauthToken) throws JsonProcessingException {
+    public KakaoProfileDto findProfile(String oauthToken) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken); //(1-4)
@@ -124,7 +117,7 @@ public class KakaoService {
         HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_SNS_User_URL,kakaoProfileRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(kakaoProfileUrl,kakaoProfileRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -135,30 +128,11 @@ public class KakaoService {
         String nickname = jsonNode.get("kakao_account").get("profile").get("nickname").asText();
         String profileImage = jsonNode.get("kakao_account").get("profile").get("profile_image_url").asText();
 
-        return KakaoProfile.builder()
+        return KakaoProfileDto.builder()
                 .kakaoMemberId(kakaoMemberId)
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)
                 .build();
-    }
-
-    @Transactional
-    public TokenDto generateToken(Member member) {
-
-        MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .key(member.getSocialId())
-                .value(tokenDto.getRefreshToken())
-                .build();
-
-        refreshTokenRepository.save(refreshToken);
-
-        return tokenDto;
     }
 }

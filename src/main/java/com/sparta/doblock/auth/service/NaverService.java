@@ -3,25 +3,18 @@ package com.sparta.doblock.auth.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.NaverProfile;
+import com.sparta.doblock.auth.dto.NaverProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
-import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.TokenProvider;
-import com.sparta.doblock.security.token.RefreshToken;
-import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
-import com.sparta.doblock.util.HeaderUtil;
+import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,26 +30,24 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NaverService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
-    private final HeaderUtil headerUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final LoginUtil loginUtil;
 
     @Value("${naver.tokenUri}")
-    private String NAVER_SNS_LOGIN_URL;
+    private String naverTokenUrl;
 
     @Value("${naver.clientId}")
-    private String NAVER_SNS_CLIENT_ID;
+    private String naverClientId;
 
     @Value("${naver.redirectUri}")
-    private String NAVER_SNS_CALLBACK_URL;
+    private String naverCallbackUrl;
 
     @Value("${naver.clientSecret}")
-    private String NAVER_SNS_CLIENT_SECRET;
+    private String naverClientSecret;
 
     @Value("${naver.userInfoUri}")
-    private String NAVER_SNS_User_URL;
+    private String naverProfileUrl;
 
     public ResponseEntity<?> login(String code, String state) throws JsonProcessingException {
 
@@ -64,22 +55,24 @@ public class NaverService {
 
         Member member = saveUser(oauthToken);
 
-        TokenDto tokenDto = generateToken(member);
+        loginUtil.forceLogin(member);
 
-        HttpHeaders httpHeaders = headerUtil.getHttpHeaders(tokenDto);
+        TokenDto tokenDto = loginUtil.generateToken(member);
+
+        HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
 
         return ResponseEntity.ok().headers(httpHeaders).body("로그인 완료!");
     }
 
     private String getAccessToken(String code, String state) throws JsonProcessingException {
 
-        UriComponents builder = UriComponentsBuilder.fromHttpUrl(NAVER_SNS_LOGIN_URL)
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(naverTokenUrl)
                 .queryParam("grant_type", "authorization_code")
-                .queryParam("client_id", NAVER_SNS_CLIENT_ID)
+                .queryParam("redirect_uri", naverCallbackUrl)
+                .queryParam("client_id", naverClientId)
                 .queryParam("code", code)
                 .queryParam("state", state)
-                .queryParam("client_secret", NAVER_SNS_CLIENT_SECRET)
-                .queryParam("redirect_uri", NAVER_SNS_CALLBACK_URL)
+                .queryParam("client_secret", naverClientSecret)
                 .build();
 
         RestTemplate restTemplate = new RestTemplate();
@@ -95,7 +88,7 @@ public class NaverService {
     @Transactional
     public Member saveUser(String accessToken) throws JsonProcessingException {
 
-        NaverProfile profile = findProfile(accessToken);
+        NaverProfileDto profile = findProfile(accessToken);
 
         Optional<Member> naverMember = memberRepository.findBySocialId(profile.getNaverMemberId());
 
@@ -118,10 +111,11 @@ public class NaverService {
             memberRepository.save(member);
 
             return member;
+
         } else return naverMember.get();
     }
 
-    public NaverProfile findProfile(String token) throws JsonProcessingException {
+    public NaverProfileDto findProfile(String token) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + token);
@@ -129,7 +123,7 @@ public class NaverService {
         HttpEntity<MultiValueMap<String, String>> naverProfileRequest = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(NAVER_SNS_User_URL, naverProfileRequest, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(naverProfileUrl, naverProfileRequest, String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -142,30 +136,11 @@ public class NaverService {
         String nickname = jsonNode.get("response").get("nickname").asText();
         String profileImage = jsonNode.get("response").get("profile_image").asText();
 
-        return NaverProfile.builder()
+        return NaverProfileDto.builder()
                 .naverMemberId(naverMemberId)
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)
                 .build();
-    }
-
-    @Transactional
-    public TokenDto generateToken(Member member) {
-
-        MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .key(member.getSocialId())
-                .value(tokenDto.getRefreshToken())
-                .build();
-
-        refreshTokenRepository.save(refreshToken);
-
-        return tokenDto;
     }
 }

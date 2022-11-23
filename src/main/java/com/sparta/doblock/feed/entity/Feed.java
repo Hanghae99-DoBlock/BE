@@ -32,6 +32,9 @@ public class Feed extends TimeStamp {
     private List<String> todoList;
 
     @Column
+    private String feedTitle;
+
+    @Column
     private String feedContent;
 
     @Column(columnDefinition = "mediumblob")
@@ -43,16 +46,17 @@ public class Feed extends TimeStamp {
     private List<String> feedImageList;
 
     @Column
+    private String feedColor;
+
+    @Column
     private boolean eventFeed;
 
-    public boolean isEqual(Feed other) {
-        return this.id.equals(other.getId());
-    }
-
-    public void update(String feedContent, List<String> feedImageList) {
+    public void update(String feedTitle, String feedContent, String feedColor) {
+        if (!Objects.isNull(feedTitle))
+            this.feedTitle = feedTitle;
         if (!Objects.isNull(feedContent))
             this.feedContent = feedContent;
-        if (!Objects.isNull(feedImageList) && !feedImageList.isEmpty())
-            this.feedImageList = feedImageList;
+        if (!Objects.isNull(feedColor))
+            this.feedColor = feedColor;
     }
 }

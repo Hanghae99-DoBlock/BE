@@ -6,6 +6,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Pattern;
+import java.lang.reflect.Field;
 import java.util.List;
 
 @Getter
@@ -23,4 +24,12 @@ public class EditProfileRequestDto {
     private String newPassword;
 
     private List<String> tagList;
+
+    public boolean checkNull() throws IllegalAccessException {
+
+        for (Field f : getClass().getDeclaredFields()){
+            if (f.get(this) != null)
+                return false;
+        } return true;
+    }
 }

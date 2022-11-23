@@ -1,6 +1,7 @@
 package com.sparta.doblock.feed.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.feed.dto.request.EventFeedRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -75,6 +76,14 @@ public class FeedService {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
+        if (feedRequestDto.getFeedContent().length() >= 101) {
+            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+        }
+
+        if (feedRequestDto.getFeedImageList().size() >= 5){
+            throw new RuntimeException("사진은 피드 당 4개까지 가능합니다.");
+        }
+
         List<String> todoList = new ArrayList<>();
 
         for (Long todoId : feedRequestDto.getTodoIdList()) {
@@ -82,21 +91,22 @@ public class FeedService {
                     () -> new NullPointerException("해당 투두가 존재하지 않습니다")
             );
 
-            if (! todo.getMember().isEqual(memberDetails.getMember())) {
+            if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
                 return new ResponseEntity<>("투두의 작성자가 아닙니다", HttpStatus.FORBIDDEN);
 
-            } else if (! todo.isCompleted()) {
+            } else if (!todo.isCompleted()) {
                 return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
 
             } else {
                 todoList.add(todo.getTodoContent());
             }
         }
+
         List<String> feedImageList;
 
         try {
             feedImageList = feedRequestDto.getFeedImageList().stream()
-                    .map(s3UploadService::uploadImage)
+                    .map(s3UploadService::uploadFeedImage)
                     .collect(Collectors.toList());
         } catch (NullPointerException e) {
             feedImageList = new ArrayList<>();
@@ -105,10 +115,11 @@ public class FeedService {
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
                 .todoList(todoList)
+                .feedTitle(feedRequestDto.getFeedTitle())
                 .feedContent(feedRequestDto.getFeedContent())
                 .feedImageList(feedImageList)
+                .feedColor(feedRequestDto.getFeedColor())
                 .build();
-
 
         feedRepository.save(feed);
 
@@ -137,17 +148,15 @@ public class FeedService {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
+        if (feedRequestDto.getFeedContent().length() >= 101) {
+            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("존재하는 피드가 아닙니다")
         );
 
-        List<String> feedImageList = feedRequestDto.getFeedImageList().stream()
-                .map(s3UploadService::uploadImage)
-                .collect(Collectors.toList());
-
-        feed.update(feedRequestDto.getFeedContent(), feedImageList);
-
-        // delete existing tags and create new ones
+        feed.update(feedRequestDto.getFeedTitle(), feedRequestDto.getFeedContent(), feedRequestDto.getFeedColor());
 
         feedTagMapperRepository.deleteAllByFeed(feed);
 
@@ -171,12 +180,17 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> deleteFeed(Long feedId, MemberDetailsImpl memberDetails) {
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new NullPointerException("해당 피드가 없습니다")
         );
 
-        if (! feed.getMember().isEqual(memberDetails.getMember())) {
+        if (!feed.getMember().getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
+        }
+
+        for (String imageUrl : feed.getFeedImageList()){
+            s3UploadService.delete(imageUrl);
         }
 
         feedTagMapperRepository.deleteAllByFeed(feed);
@@ -184,5 +198,39 @@ public class FeedService {
         feedRepository.delete(feed);
 
         return ResponseEntity.ok("성공적으로 피드를 삭제하였습니다");
+    }
+
+    @Transactional
+    public ResponseEntity<?> createEventFeed(EventFeedRequestDto eventFeedRequestDto, MemberDetailsImpl memberDetails) {
+
+        List<String> tagList = new ArrayList<>();
+        tagList.add("두블럭");
+        tagList.add("뱃지획득!");
+        tagList.add("축하합니다 ㅇ_ㅇb");
+        tagList.add("사랑해주셔서");
+        tagList.add("감사합니다!");
+
+        Feed feed = Feed.builder()
+                .member(memberDetails.getMember())
+                .feedContent(memberDetails.getMember() + "님이" + eventFeedRequestDto.getBadgeType() + "뱃지를 얻으셨습니다! 다들 축하해주세요!")
+                .eventFeed(true)
+                .build();
+
+        feedRepository.save(feed);
+
+        for (String tagContent : tagList) {
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+
+            tagRepository.save(tag);
+
+            FeedTagMapper feedTagMapper = FeedTagMapper.builder()
+                    .feed(feed)
+                    .tag(tag)
+                    .build();
+
+            feedTagMapperRepository.save(feedTagMapper);
+        }
+
+        return ResponseEntity.ok("이벤트 피드가 생성되었습니다!");
     }
 }

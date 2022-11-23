@@ -11,6 +11,7 @@ import lombok.Getter;
 public class ReactionResponseDto {
 
     private Long memberId;
+    private String profileImage;
     private String nickname;
     private ReactionType reactionType;
 }

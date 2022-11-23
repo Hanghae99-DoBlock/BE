@@ -1,7 +1,7 @@
 package com.sparta.doblock.todo.controller;
 
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
-import com.sparta.doblock.todo.dto.request.TodoOrderRequestDto;
+import com.sparta.doblock.todo.dto.request.TodoIdOrderRequestDto;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,8 @@ public class TodoController {
     }
 
     @PutMapping("/switch")
-    public ResponseEntity<?> switchOrder(@RequestBody TodoOrderRequestDto todoOrderRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return todoService.switchOrder(todoOrderRequestDto, memberDetails);
+    public ResponseEntity<?> switchOrder(@RequestBody TodoIdOrderRequestDto todoIdOrderRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return todoService.switchOrder(todoIdOrderRequestDto, memberDetails);
     }
 
     @GetMapping("")

@@ -43,8 +43,8 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column(name = "authority")
     private Authority authority;
-
-
+    
+    // compares two member entity
     public boolean isEqual(Member other) {
         return this.id.equals(other.getId());
     }
@@ -54,7 +54,7 @@ public class Member {
     }
 
     public void editNickname(String nickname){
-        this.nickname = nickname != null ? nickname : this.getNickname();
+        this.nickname = nickname;
     }
 
     public void editPassword(String password){

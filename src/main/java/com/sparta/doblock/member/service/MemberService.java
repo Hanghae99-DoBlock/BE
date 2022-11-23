@@ -5,28 +5,23 @@ import com.sparta.doblock.member.dto.request.MemberRequestDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.JwtAuthFilter;
-import com.sparta.doblock.security.TokenProvider;
-import com.sparta.doblock.security.token.RefreshToken;
-import com.sparta.doblock.security.token.RefreshTokenRepository;
 import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final LoginUtil loginUtil;
 
     @Value("${profile.image}")
     private String profileImage;
@@ -70,7 +65,7 @@ public class MemberService {
     }
 
     @Transactional
-    public ResponseEntity<?> login(MemberRequestDto memberRequestDto, HttpServletResponse httpServletResponse) {
+    public ResponseEntity<?> login(MemberRequestDto memberRequestDto) {
 
         Member member = memberRepository.findByEmail(memberRequestDto.getEmail()).orElseThrow(
                 CustomExceptions.NotFoundMemberException::new
@@ -78,24 +73,10 @@ public class MemberService {
 
         if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())) throw new CustomExceptions.NotMatchedPasswordException();
 
-        TokenDto tokenDto = tokenProvider.generateTokenDto(member);
+        TokenDto tokenDto = loginUtil.generateToken(member);
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .key(member.getEmail())
-                .value(tokenDto.getRefreshToken())
-                .build();
+        HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
 
-        refreshTokenRepository.save(refreshToken);
-
-        tokenToHeader(tokenDto, httpServletResponse);
-
-        return ResponseEntity.ok("로그인 완료");
-    }
-
-    public void tokenToHeader(TokenDto tokenDto, HttpServletResponse httpServletResponse){
-
-        httpServletResponse.setHeader(JwtAuthFilter.AUTHORIZATION_HEADER, JwtAuthFilter.BEARER_PREFIX + tokenDto.getAccessToken());
-        httpServletResponse.setHeader("RefreshToken", tokenDto.getRefreshToken());
-        httpServletResponse.setHeader("AccessTokenExpireTime", tokenDto.getAccessTokenExpiresIn().toString());
+        return ResponseEntity.ok().headers(httpHeaders).body("로그인 성공");
     }
 }
