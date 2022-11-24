@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,25 +50,37 @@ public class SearchService {
     private final int NUM_REC_FEEDS = 20;
 
     @Transactional
-    public ResponseEntity<?> search(String keyword, String category, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> search(String keyword, String category, int page, MemberDetailsImpl memberDetails) {
 
         if (category.equals("feed")) {
 
             List<Tag> tagList = tagRepository.searchByTagLike(keyword);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
+            Set<Long> feedAdded = new HashSet<>();
 
             for (Tag tag : tagList) {
                 List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
 
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
-                    addFeed(feedResponseDtoList, feed);
+                    if (! feedAdded.contains(feed.getId())) {
+                        feedAdded.add(feed.getId());
+                        addFeed(feedResponseDtoList, feed);
+                    }
                 }
             }
 
-            feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
+            // sort by time created
+            feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
 
-            return ResponseEntity.ok(feedResponseDtoList);
+            int startIdx = page * POST_PER_PAGE;
+            int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+
+            if (endIdx <= startIdx) {
+                return new ResponseEntity<>("해당 페이지에 멤버가 없습니다", HttpStatus.BAD_REQUEST);
+            }
+
+            return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
 
         } else {
             // member search
@@ -97,7 +110,14 @@ public class SearchService {
                         .build());
             }
 
-            return ResponseEntity.ok(followResponseDtoList);
+            int startIdx = page * POST_PER_PAGE;
+            int endIdx = Math.min(followResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+
+            if (endIdx <= startIdx) {
+                return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+            }
+
+            return ResponseEntity.ok(followResponseDtoList.subList(startIdx, endIdx));
         }
     }
 
