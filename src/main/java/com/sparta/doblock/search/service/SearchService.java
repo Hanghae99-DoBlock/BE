@@ -42,6 +42,11 @@ public class SearchService {
     private final MemberTagMapperRepository memberTagMapperRepository;
 
     private final int POST_PER_PAGE = 5;
+    
+    // ALPHA factor indicates how much number of likes is factored in for recommended feeds
+    private final int ALPHA = 1;
+
+    private final int NUM_REC_FEEDS = 20;
 
     @Transactional
     public ResponseEntity<?> search(String keyword, String category, MemberDetailsImpl memberDetails) {
@@ -142,20 +147,35 @@ public class SearchService {
 
         List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
 
-        List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
+        Set<Long> feedAdded = new HashSet<>(); // to remove duplicate feeds
+        List<Feed> feedList = new ArrayList<>();
 
         for (MemberTagMapper memberTagMapper : memberTagMapperList) {
             Tag tag = memberTagMapper.getTag();
 
-            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findTop5ByTagOrderByIdDesc(tag);
+            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
 
             for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                 Feed feed = feedTagMapper.getFeed();
-                addFeed(feedResponseDtoList, feed);
+                if (! feedAdded.contains(feed.getId())) {
+                    feedAdded.add(feed.getId());
+                    feedList.add(feed);
+                }
             }
         }
 
-        feedResponseDtoList.sort(Comparator.comparing(FeedResponseDto::getPostedAt));
+        feedList.sort((f1, f2) -> {
+            LocalDateTime t1 = f1.getPostedAt().plusHours(ALPHA * reactionRepository.countAllByFeed(f1));
+            LocalDateTime t2 = f2.getPostedAt().plusHours(ALPHA * reactionRepository.countAllByFeed(f2));
+
+            return t2.compareTo(t1);
+        });
+
+        List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
+
+        for (int i = 0; i < NUM_REC_FEEDS; i++) {
+            addFeed(feedResponseDtoList, feedList.get(i));
+        }
 
         return ResponseEntity.ok(feedResponseDtoList);
     }
