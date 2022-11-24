@@ -20,13 +20,11 @@ public class Follow {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // memberFollowing 이 memberFollowed 를 팔로우함
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_member_id")
+    private Member fromMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_following_id")
-    private Member memberFollowing;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_followed_id")
-    private Member memberFollowed;
+    @JoinColumn(name = "to_member_id", nullable = false)
+    private Member toMember;
 }

@@ -1,0 +1,45 @@
+package com.sparta.doblock.events.entity;
+
+import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+public class BadgeEvents {
+
+    @Getter
+    @AllArgsConstructor
+    public static class CreateBadgeEvent{
+
+        private BadgeType badgeType;
+        private Member member;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class CompletedTodoBadgeEvent {
+
+        private MemberDetailsImpl memberDetails;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class CreateFeedBadgeEvent{
+
+        private MemberDetailsImpl memberDetails;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class SocialActiveBadgeEvent{
+
+        private MemberDetailsImpl memberDetails;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class FollowToMemberBadgeEvent{
+
+        private MemberDetailsImpl memberDetails;
+    }
+}

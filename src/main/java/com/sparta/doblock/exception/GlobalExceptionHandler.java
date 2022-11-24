@@ -2,11 +2,33 @@ package com.sparta.doblock.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // TODO: OAuth2AuthenticationException
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<?> handleNullPointerException(NullPointerException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalAccessException.class)
+    public ResponseEntity<?> handleIllegalAccessException(IllegalAccessException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // General Exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(Exception e) {
+        return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
+    }
+
+    /*
+    ------- CUSTOM EXCEPTIONS --------
+     */
 
     @ExceptionHandler(CustomExceptions.NotFoundMemberException.class)
     public ResponseEntity<?> handleNotFoundMemberException(){
@@ -36,6 +58,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomExceptions.DuplicatedEmailException.class)
     public ResponseEntity<?> handleDuplicatedEmailException(){
         return new ResponseEntity<>(new ErrorMessage(ErrorCodes.DUPLICATED_EMAIL.getCode(), ErrorCodes.DUPLICATED_EMAIL.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleNotValidFormatException(){
+        return new ResponseEntity<>(new ErrorMessage(ErrorCodes.NOT_VALID_FORMAT.getCode(), ErrorCodes.NOT_VALID_FORMAT.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(CustomExceptions.NotValidWriterException.class)

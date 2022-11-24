@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "nickname", "authority" }) })
 public class Member {
 
     @Id
@@ -23,8 +24,14 @@ public class Member {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
+
+    @Column(unique = true)
+    private String socialId;
+
+    @Column
+    private String socialCode;
 
     @Column
     private String profileImage;
@@ -34,5 +41,23 @@ public class Member {
 
     @JsonIgnore
     @Enumerated(EnumType.STRING)
+    @Column(name = "authority")
     private Authority authority;
+    
+    // compares two member entity
+    public boolean isEqual(Member other) {
+        return this.id.equals(other.getId());
+    }
+
+    public void editProfileImage(String profileImage){
+        this.profileImage = profileImage;
+    }
+
+    public void editNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    public void editPassword(String password){
+        this.password = password;
+    }
 }

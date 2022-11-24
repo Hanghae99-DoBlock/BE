@@ -1,6 +1,7 @@
 package com.sparta.doblock.feed.entity;
 
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.util.TimeStamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,13 +9,14 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Feed {
+public class Feed extends TimeStamp {
 
     @Id
     @Column(name = "feed_id")
@@ -30,7 +32,10 @@ public class Feed {
     private List<String> todoList;
 
     @Column
-    private String content;
+    private String feedTitle;
+
+    @Column
+    private String feedContent;
 
     @Column(columnDefinition = "mediumblob")
     @ElementCollection(fetch = FetchType.LAZY)
@@ -38,5 +43,20 @@ public class Feed {
             name = "post_img_url_list",
             joinColumns = @JoinColumn(name = "post_id")
     )
-    private List<String> feedImage;
+    private List<String> feedImageList;
+
+    @Column
+    private String feedColor;
+
+    @Column
+    private boolean eventFeed;
+
+    public void update(String feedTitle, String feedContent, String feedColor) {
+        if (!Objects.isNull(feedTitle))
+            this.feedTitle = feedTitle;
+        if (!Objects.isNull(feedContent))
+            this.feedContent = feedContent;
+        if (!Objects.isNull(feedColor))
+            this.feedColor = feedColor;
+    }
 }

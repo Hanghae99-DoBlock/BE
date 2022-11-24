@@ -1,4 +1,15 @@
 package com.sparta.doblock.comment.repository;
 
-public interface CommentRepository {
+import com.sparta.doblock.comment.entity.Comment;
+import com.sparta.doblock.feed.entity.Feed;
+import com.sparta.doblock.member.entity.Member;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface CommentRepository extends JpaRepository<Comment, Long> {
+
+    List<Comment> findByFeed(Feed feed);
+    Long countAllByMember(Member member);
+    Long countAllByFeed(Feed feed);
 }

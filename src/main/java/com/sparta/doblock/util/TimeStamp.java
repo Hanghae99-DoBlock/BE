@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value={"updatedDate"}, allowGetters = true)
-
 public class TimeStamp {
 
     @CreatedDate
