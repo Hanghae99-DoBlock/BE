@@ -242,16 +242,6 @@ public class SearchService {
                                 .build())
                         .collect(Collectors.toList()))
                 .countComment(commentRepository.countAllByFeed(feed))
-                .commentResponseDtoList(commentRepository.findByFeed(feed).stream()
-                        .map(c -> CommentResponseDto.builder()
-                                .commentId(c.getId())
-                                .memberId(c.getMember().getId())
-                                .profileImage(c.getMember().getProfileImage())
-                                .nickname(c.getMember().getNickname())
-                                .commentContent(c.getCommentContent())
-                                .postedAt(c.getPostedAt())
-                                .build())
-                        .collect(Collectors.toList()))
                 .postedAt(feed.getPostedAt())
                 .build();
 
@@ -266,6 +256,7 @@ public class SearchService {
                 .feedId(feed.getId())
                 .memberId(member.getId())
                 .nickname(member.getNickname())
+                .profileImageUrl(member.getProfileImage())
                 .todoList(feed.getTodoList())
                 .feedTitle(feed.getFeedTitle())
                 .feedColor(feed.getFeedColor())
@@ -274,7 +265,6 @@ public class SearchService {
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
                         .collect(Collectors.toList()))
-                .countComment(commentRepository.countAllByFeed(feed))
                 .postedAt(feed.getPostedAt())
                 .build();
 

@@ -1,6 +1,7 @@
 package com.sparta.doblock.comment.service;
 
 import com.sparta.doblock.comment.dto.request.CommentRequestDto;
+import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.comment.entity.Comment;
 import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.events.entity.BadgeEvents;
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -45,7 +48,45 @@ public class CommentService {
 
         applicationEventPublisher.publishEvent(new BadgeEvents.SocialActiveBadgeEvent(memberDetails));
 
-        return ResponseEntity.ok("댓글을 성공적으로 생성하였습니다");
+        CommentResponseDto commentResponseDto = CommentResponseDto.builder()
+                .commentId(comment.getId())
+                .memberId(comment.getMember().getId())
+                .profileImage(comment.getMember().getProfileImage())
+                .nickname(comment.getMember().getNickname())
+                .commentContent(comment.getCommentContent())
+                .postedAt(comment.getPostedAt())
+                .build();
+
+        return ResponseEntity.ok(commentResponseDto);
+    }
+
+    public ResponseEntity<?> getCommentList(Long feedId, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
+
+        Feed feed = feedRepository.findById(feedId).orElseThrow(
+                () -> new NullPointerException("해당 피드가 존재하지 않습니다.")
+        );
+
+        List<Comment> commentList = commentRepository.findAllByFeedOrderByPostedAt(feed);
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+
+        for (Comment comment : commentList) {
+            commentResponseDtoList.add(
+                    CommentResponseDto.builder()
+                            .commentId(comment.getId())
+                            .memberId(comment.getMember().getId())
+                            .profileImage(comment.getMember().getProfileImage())
+                            .nickname(comment.getMember().getNickname())
+                            .commentContent(comment.getCommentContent())
+                            .postedAt(comment.getPostedAt())
+                            .build()
+            );
+        }
+
+        return ResponseEntity.ok(commentResponseDtoList);
     }
 
     @Transactional

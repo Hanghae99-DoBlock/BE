@@ -1,8 +1,6 @@
 package com.sparta.doblock.feed.dto.response;
 
-import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
-import com.sparta.doblock.reaction.entity.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +29,5 @@ public class FeedResponseDto {
     private List<ReactionResponseDto> currentReactionType;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private Long countComment;
-    private List<CommentResponseDto> commentResponseDtoList;
     private LocalDateTime postedAt;
 }

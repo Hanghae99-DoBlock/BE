@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findByFeed(Feed feed);
+    List<Comment> findAllByFeedOrderByPostedAt(Feed feed);
     Long countAllByMember(Member member);
     Long countAllByFeed(Feed feed);
 }

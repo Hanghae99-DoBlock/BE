@@ -20,6 +20,11 @@ public class CommentController {
         return commentService.addComment(feedId, commentRequestDto, memberDetails);
     }
 
+    @GetMapping("/{feedId}/comment")
+    public ResponseEntity<?> getCommentList(@PathVariable Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return commentService.getCommentList(feedId, memberDetails);
+    }
+
     @PutMapping("/{feedId}/comment")
     public ResponseEntity<?> editComment(@PathVariable Long feedId, @RequestParam(name = "comment-id") Long commentId,
                                          @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
