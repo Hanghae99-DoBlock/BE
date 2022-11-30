@@ -66,3 +66,7 @@ tasks.withType(Test){
     scanForTestClasses = false
     include "**/*Test.class"
 }
+
+jar {
+    enabled = false
+}
