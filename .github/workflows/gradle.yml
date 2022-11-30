@@ -14,7 +14,7 @@ on:
     branches: [ "main" ]
 
 env:
-  S3_BUCKET_NAME: doblock-github-actions-s3-bucket
+  S3_BUCKET_NAME: do-github-actions-s3-bucket
 
 permissions:
   contents: read
@@ -71,8 +71,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run:
         aws deploy create-deployment
-        --application-name doblock-codedeploy-app
-        --deployment-group-name doblock-codedeploy-deployment-group
+        --application-name my-codedeploy-app
+        --deployment-group-name my-codedeploy-deployment-group
         --file-exists-behavior OVERWRITE
-        --s3-location bucket=doblock-github-actions-s3-bucket,bundleType=zip,key=doblock.zip
+        --s3-location bucket=do-github-actions-s3-bucket,bundleType=zip,key=doblock.zip
         --region ap-northeast-2
