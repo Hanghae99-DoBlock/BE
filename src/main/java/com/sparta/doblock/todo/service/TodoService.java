@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +61,6 @@ public class TodoService {
                 .build();
 
         return ResponseEntity.ok(todoResponseDto);
-//        return ResponseEntity.ok("성공적으로 투두를 생성하였습니다");
     }
 
     @Transactional
@@ -97,10 +95,10 @@ public class TodoService {
                     () -> new NullPointerException("해당 투두가 없습니다")
             );
 
-            todo.setTodoIndex(i);
+            todo.editTodoIndex(i);
         }
 
-        todoDate.setLastIndex(todoIdOrderRequestDto.getTodoIdList().size());
+        todoDate.editLastIndex(todoIdOrderRequestDto.getTodoIdList().size());
 
         return ResponseEntity.ok("성공적으로 투두 순서를 바꾸었습니다");
     }
@@ -168,6 +166,10 @@ public class TodoService {
             throw new RuntimeException("본인이 작성한 투두만 완료가 가능합니다.");
         }
 
+        if(LocalDate.now().isBefore(todo.getTodoDate().getDate())){
+            throw new RuntimeException("완료할 수 없는 투두입니다.");
+        }
+
         todo.completeTask();
 
         applicationEventPublisher.publishEvent(new BadgeEvents.CompletedTodoBadgeEvent(memberDetails));
@@ -189,7 +191,7 @@ public class TodoService {
         );
 
         if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
-            throw new RuntimeException("본인이 작성한 투두만 삭제가 가능합니다.");
+            throw new RuntimeException("본인이 작성한 투두만 수정이 가능합니다.");
         }
 
         LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());

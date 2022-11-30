@@ -17,6 +17,7 @@ public class FeedResponseDto {
     private Long memberId;
     private String profileImageUrl;
     private String nickname;
+    private String badgeName;
     private boolean followOrNot;
     private List<String> todoList;
     private String feedTitle;

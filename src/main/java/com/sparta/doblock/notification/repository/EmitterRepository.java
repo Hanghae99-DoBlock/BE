@@ -1,6 +1,5 @@
 package com.sparta.doblock.notification.repository;
 
-import com.sparta.doblock.member.entity.Member;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;

@@ -40,7 +40,7 @@ public class ChatService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        if (!guest.getId().equals(memberDetails.getMember().getId())) {
+        if (guest.getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("본인에게 메세지를 보낼 수 없습니다.");
         }
 
@@ -52,6 +52,8 @@ public class ChatService {
                                 .build()
                 )
         );
+
+        chatRoomRepository.save(chatRoom);
 
         HttpHeaders redirectUri = new HttpHeaders();
         redirectUri.setLocation(URI.create("http://localhost:8080/api/chat/rooms/" + chatRoom.getId()));
@@ -72,34 +74,18 @@ public class ChatService {
 
             ChatMessage latestChatMessage = chatMessageRepository.findByChatRoomOrderByPostedAtDesc(chatRoom).orElse(null);
 
-            if (latestChatMessage != null) {
-                chatRoomResponseDtoList.add(ChatRoomResponseDto.builder()
-                        .chatRoomId(chatRoom.getId())
-                        .hostId(chatRoom.getHost().getId())
-                        .hostNickname(chatRoom.getHost().getNickname())
-                        .hostProfileImage(chatRoom.getHost().getProfileImage())
-                        .guestId(chatRoom.getGuest().getId())
-                        .guestNickname(chatRoom.getGuest().getNickname())
-                        .guestProfileImage(chatRoom.getGuest().getProfileImage())
-                        .latestChatMessage(latestChatMessage.getMessageContent())
-                        .lastPostedAt(latestChatMessage.getPostedAt())
-                        .build()
-                );
-
-            } else {
-                chatRoomResponseDtoList.add(ChatRoomResponseDto.builder()
-                        .chatRoomId(chatRoom.getId())
-                        .hostId(chatRoom.getHost().getId())
-                        .hostNickname(chatRoom.getHost().getNickname())
-                        .hostProfileImage(chatRoom.getHost().getProfileImage())
-                        .guestId(chatRoom.getGuest().getId())
-                        .guestNickname(chatRoom.getGuest().getNickname())
-                        .guestProfileImage(chatRoom.getGuest().getProfileImage())
-                        .latestChatMessage(null)
-                        .lastPostedAt(null)
-                        .build()
-                );
-            }
+            chatRoomResponseDtoList.add(ChatRoomResponseDto.builder()
+                    .chatRoomId(chatRoom.getId())
+                    .hostId(chatRoom.getHost().getId())
+                    .hostNickname(chatRoom.getHost().getNickname())
+                    .hostProfileImage(chatRoom.getHost().getProfileImage())
+                    .guestId(chatRoom.getGuest().getId())
+                    .guestNickname(chatRoom.getGuest().getNickname())
+                    .guestProfileImage(chatRoom.getGuest().getProfileImage())
+                    .latestChatMessage(latestChatMessage != null ? latestChatMessage.getMessageContent() : null)
+                    .lastPostedAt(latestChatMessage != null ? latestChatMessage.getPostedAt() : null)
+                    .build()
+            );
         }
 
         chatRoomResponseDtoList.sort((o1, o2) -> o2.getLastPostedAt().compareTo(o1.getLastPostedAt()));
@@ -117,7 +103,7 @@ public class ChatService {
                 () -> new RuntimeException("채팅방이 존재하지 않습니다.")
         );
 
-        if (!chatRoom.getHost().getId().equals(memberDetails.getMember().getId()) || !chatRoom.getGuest().getId().equals(memberDetails.getMember().getId())) {
+        if (!chatRoom.getHost().getId().equals(memberDetails.getMember().getId()) && !chatRoom.getGuest().getId().equals(memberDetails.getMember().getId())) {
             throw new RuntimeException("채팅방을 이용할 수 없는 사용자입니다.");
         }
 

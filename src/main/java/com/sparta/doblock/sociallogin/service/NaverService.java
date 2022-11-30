@@ -1,13 +1,13 @@
-package com.sparta.doblock.auth.service;
+package com.sparta.doblock.sociallogin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.NaverProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
 import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -88,9 +88,9 @@ public class NaverService {
     @Transactional
     public Member saveUser(String accessToken) throws JsonProcessingException {
 
-        NaverProfileDto profile = findProfile(accessToken);
+        SocialProfileDto profile = findProfile(accessToken);
 
-        Optional<Member> naverMember = memberRepository.findBySocialId(profile.getNaverMemberId());
+        Optional<Member> naverMember = memberRepository.findBySocialId(profile.getSocialMemberId());
 
         if(naverMember.isEmpty()){
 
@@ -101,7 +101,7 @@ public class NaverService {
             Member member = Member.builder()
                     .email(profile.getEmail())
                     .nickname(profile.getNickname())
-                    .socialId(profile.getNaverMemberId())
+                    .socialId(profile.getSocialMemberId())
                     .socialCode("NAVER")
                     .profileImage(profile.getProfileImage())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -115,7 +115,7 @@ public class NaverService {
         } else return naverMember.get();
     }
 
-    public NaverProfileDto findProfile(String token) throws JsonProcessingException {
+    public SocialProfileDto findProfile(String token) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + token);
@@ -136,8 +136,8 @@ public class NaverService {
         String nickname = jsonNode.get("response").get("nickname").asText();
         String profileImage = jsonNode.get("response").get("profile_image").asText();
 
-        return NaverProfileDto.builder()
-                .naverMemberId(naverMemberId)
+        return SocialProfileDto.builder()
+                .socialMemberId(naverMemberId)
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)

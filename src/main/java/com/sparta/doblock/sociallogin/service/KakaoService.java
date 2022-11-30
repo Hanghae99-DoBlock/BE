@@ -1,13 +1,13 @@
-package com.sparta.doblock.auth.service;
+package com.sparta.doblock.sociallogin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.KakaoProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
 import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,9 +82,9 @@ public class KakaoService {
     @Transactional
     public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-        KakaoProfileDto profile = findProfile(oauthToken);
+        SocialProfileDto profile = findProfile(oauthToken);
 
-        Optional<Member> kakaoMember = memberRepository.findBySocialId(profile.getKakaoMemberId().toString());
+        Optional<Member> kakaoMember = memberRepository.findBySocialId(profile.getSocialMemberId());
 
         if(kakaoMember.isEmpty()) {
 
@@ -95,7 +95,7 @@ public class KakaoService {
             Member member = Member.builder()
                     .email(profile.getEmail())
                     .nickname(profile.getNickname())
-                    .socialId(profile.getKakaoMemberId().toString())
+                    .socialId(profile.getSocialMemberId())
                     .socialCode("KAKAO")
                     .profileImage(profile.getProfileImage())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -109,7 +109,7 @@ public class KakaoService {
         } else return kakaoMember.get();
     }
 
-    public KakaoProfileDto findProfile(String oauthToken) throws JsonProcessingException {
+    public SocialProfileDto findProfile(String oauthToken) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken); //(1-4)
@@ -128,8 +128,8 @@ public class KakaoService {
         String nickname = jsonNode.get("kakao_account").get("profile").get("nickname").asText();
         String profileImage = jsonNode.get("kakao_account").get("profile").get("profile_image_url").asText();
 
-        return KakaoProfileDto.builder()
-                .kakaoMemberId(kakaoMemberId)
+        return SocialProfileDto.builder()
+                .socialMemberId(kakaoMemberId.toString())
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)

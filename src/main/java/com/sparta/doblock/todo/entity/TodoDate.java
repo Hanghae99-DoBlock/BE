@@ -29,7 +29,7 @@ public class TodoDate {
         return ++ this.lastIndex;
     }
 
-    public void setLastIndex(int lastIndex) {
+    public void editLastIndex(int lastIndex) {
         this.lastIndex = lastIndex;
     }
 }

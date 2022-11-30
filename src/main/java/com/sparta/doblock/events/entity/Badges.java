@@ -28,4 +28,8 @@ public class Badges {
 
     @Column
     private boolean selectedBadge;
+
+    public void selectBadge(){
+        this.selectedBadge = !this.selectedBadge;
+    }
 }

@@ -1,11 +1,11 @@
 package com.sparta.doblock.feed.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
-import com.sparta.doblock.feed.dto.request.EventFeedRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import com.sparta.doblock.profile.dto.request.BadgesRequestDto;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
@@ -201,7 +201,7 @@ public class FeedService {
     }
 
     @Transactional
-    public ResponseEntity<?> createEventFeed(EventFeedRequestDto eventFeedRequestDto, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> createEventFeed(BadgesRequestDto badgesRequestDto, MemberDetailsImpl memberDetails) {
 
         List<String> tagList = new ArrayList<>();
         tagList.add("두블럭");
@@ -210,9 +210,14 @@ public class FeedService {
         tagList.add("사랑해주셔서");
         tagList.add("감사합니다!");
 
+        List<String> eventImages = new ArrayList<>();
+        eventImages.add(badgesRequestDto.getBadgeType().getBadgeImage());
+
         Feed feed = Feed.builder()
                 .member(memberDetails.getMember())
-                .feedContent(memberDetails.getMember() + "님이" + eventFeedRequestDto.getBadgeType() + "뱃지를 얻으셨습니다! 다들 축하해주세요!")
+                .feedTitle(memberDetails.getMember().getNickname() + "님이 뱃지를 획득했습니다!")
+                .feedContent(memberDetails.getMember().getNickname() + "님이" + badgesRequestDto.getBadgeType().getBadgeName() + "뱃지를 얻으셨습니다! 다들 축하해주세요!")
+                .feedImageList(eventImages)
                 .eventFeed(true)
                 .build();
 

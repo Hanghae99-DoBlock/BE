@@ -75,8 +75,11 @@ public class NotificationService {
     public void send(BadgeEvents.CreateBadgeEvent badgeEvent){
 
         NotificationDto notificationDto = NotificationDto.builder()
-                .message(badgeEvent.getMember().getNickname() + "님이 " + badgeEvent.getBadgeType() + "를 획득하셨습니다! 지금 바로 이벤트 피드를 생성하시겠습니까?")
+                .title("뱃지를 획득했습니다.")
+                .message("축하 게시글을 피드에 업로드할까요?")
                 .badgeType(badgeEvent.getBadgeType())
+                .badgeName(badgeEvent.getBadgeType().getBadgeName())
+                .badgeImage(badgeEvent.getBadgeType().getBadgeImage())
                 .build();
 
         String eventId = createTimeIncludeId(badgeEvent.getMember().getId());

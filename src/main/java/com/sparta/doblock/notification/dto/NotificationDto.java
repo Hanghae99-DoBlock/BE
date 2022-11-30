@@ -10,6 +10,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class NotificationDto {
 
+    private String title;
     private String message;
     private BadgeType badgeType;
+    private String badgeName;
+    private String badgeImage;
 }

@@ -1,7 +1,8 @@
 package com.sparta.doblock.search.service;
 
-import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.comment.repository.CommentRepository;
+import com.sparta.doblock.events.entity.Badges;
+import com.sparta.doblock.events.repository.BadgesRepository;
 import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -41,13 +42,11 @@ public class SearchService {
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final MemberTagMapperRepository memberTagMapperRepository;
+    private final BadgesRepository badgesRepository;
 
-    private final int POST_PER_PAGE = 5;
-    
-    // ALPHA factor indicates how much number of likes is factored in for recommended feeds
-    private final int ALPHA = 1;
+    private static final int POST_PER_PAGE = 5;
 
-    private final int NUM_REC_FEEDS = 20;
+    private static final int ALPHA = 1;
 
     @Transactional
     public ResponseEntity<?> search(String keyword, String category, int page, MemberDetailsImpl memberDetails) {
@@ -63,7 +62,8 @@ public class SearchService {
 
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
-                    if (! feedAdded.contains(feed.getId())) {
+
+                    if (!feedAdded.contains(feed.getId())) {
                         feedAdded.add(feed.getId());
                         addFeed(feedResponseDtoList, feed);
                     }
@@ -92,6 +92,7 @@ public class SearchService {
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname())
+                        .email(member.getEmail())
                         .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
                         .build());
                 searched.add(member.getId());
@@ -101,11 +102,13 @@ public class SearchService {
                 if (searched.contains(member.getId())) {
                     continue;
                 }
+
                 followResponseDtoList.add(FollowResponseDto.builder()
 
                         .memberId(member.getId())
                         .profileImage(member.getProfileImage())
                         .nickname(member.getNickname())
+                        .email(member.getEmail())
                         .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
                         .build());
             }
@@ -122,20 +125,18 @@ public class SearchService {
     }
 
     @Transactional
-    public ResponseEntity<?> getFollowingFeeds(MemberDetailsImpl memberDetails, int page) {
+    public ResponseEntity<?> getFollowingFeeds(int page, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
         List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
-
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
         for (Follow following : followingList) {
-            Member toMember = following.getToMember();
+            List<Feed> feedList = feedRepository.findAllByMember(following.getToMember());
 
-            List<Feed> feedList = feedRepository.findAllByMember(toMember);
             for (Feed feed : feedList) {
                 addFeed(feedResponseDtoList, feed);
             }
@@ -147,7 +148,7 @@ public class SearchService {
 
         // sort by time created
         feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
-        
+
         int startIdx = page * POST_PER_PAGE;
         int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
@@ -159,7 +160,7 @@ public class SearchService {
     }
 
     @Transactional
-    public ResponseEntity<?> getRecommendedFeeds(MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getRecommendedFeeds(int page, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
@@ -167,19 +168,22 @@ public class SearchService {
 
         List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
 
-        Set<Long> feedAdded = new HashSet<>(); // to remove duplicate feeds
+        Set<Long> feedAdded = new HashSet<>();
         List<Feed> feedList = new ArrayList<>();
 
         for (MemberTagMapper memberTagMapper : memberTagMapperList) {
-            Tag tag = memberTagMapper.getTag();
+            List<Tag> tagList = tagRepository.searchByTagLike(memberTagMapper.getTag().getTagContent());
 
-            List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
+            for (Tag tag : tagList) {
+                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
 
-            for (FeedTagMapper feedTagMapper : feedTagMapperList) {
-                Feed feed = feedTagMapper.getFeed();
-                if (! feedAdded.contains(feed.getId())) {
-                    feedAdded.add(feed.getId());
-                    feedList.add(feed);
+                for (FeedTagMapper feedTagMapper : feedTagMapperList) {
+                    Feed feed = feedTagMapper.getFeed();
+
+                    if (!feedAdded.contains(feed.getId())) {
+                        feedAdded.add(feed.getId());
+                        feedList.add(feed);
+                    }
                 }
             }
         }
@@ -193,11 +197,46 @@ public class SearchService {
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (int i = 0; i < NUM_REC_FEEDS; i++) {
-            addFeed(feedResponseDtoList, feedList.get(i));
+        for (Feed feed : feedList) {
+            addFeed(feedResponseDtoList, feed);
         }
 
-        return ResponseEntity.ok(feedResponseDtoList);
+        int startIdx = page * POST_PER_PAGE;
+        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+
+        if (endIdx <= startIdx) {
+            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
+    }
+
+    public ResponseEntity<?> getMyFeeds(Long memberId, int page, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new NullPointerException("로그인이 필요합니다.");
+        }
+
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+        );
+
+        List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
+
+        for (Feed feed : feedRepository.findAllByMember(member)) {
+            addFeed(feedResponseDtoList, feed);
+        }
+
+        feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
+
+        int startIdx = page * POST_PER_PAGE;
+        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+
+        if (endIdx <= startIdx) {
+            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
     }
 
     public ResponseEntity<?> getFeed(Long feedId, MemberDetailsImpl memberDetails) {
@@ -212,11 +251,14 @@ public class SearchService {
 
         Member member = feed.getMember();
 
+        Badges badges = badgesRepository.findByMemberAndSelectedBadge(member, true).orElse(null);
+
         FeedResponseDto feedResponseDto = FeedResponseDto.builder()
                 .feedId(feed.getId())
                 .memberId(member.getId())
                 .profileImageUrl(member.getProfileImage())
                 .nickname(member.getNickname())
+                .badgeName(badges != null ? badges.getBadgeType().getBadgeName() : null)
                 .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
                 .todoList(feed.getTodoList())
                 .feedTitle(feed.getFeedTitle())
@@ -227,7 +269,7 @@ public class SearchService {
                 .countReaction(reactionRepository.countAllByFeed(feed))
                 .currentReactionType(reactionRepository.findTop2ByFeedOrderByPostedAtDesc(feed).stream()
                         .map(r -> ReactionResponseDto.builder()
-                                .reactionType(r.getReactionType())
+                                .reactionType(r.getReactionType().getEmoji())
                                 .build())
                         .collect(Collectors.toList()))
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
@@ -238,7 +280,8 @@ public class SearchService {
                                 .memberId(r.getMember().getId())
                                 .profileImage(r.getMember().getProfileImage())
                                 .nickname(r.getMember().getNickname())
-                                .reactionType(r.getReactionType())
+                                .email(r.getMember().getEmail())
+                                .reactionType(r.getReactionType().getEmoji())
                                 .build())
                         .collect(Collectors.toList()))
                 .countComment(commentRepository.countAllByFeed(feed))

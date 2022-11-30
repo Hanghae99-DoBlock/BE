@@ -21,14 +21,21 @@ public class SearchController {
     }
 
     @GetMapping("/feed/following")
-    public ResponseEntity<?> getFollowingFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails,
-                                               @RequestParam("page") int page) {
-        return searchService.getFollowingFeeds(memberDetails, page);
+    public ResponseEntity<?> getFollowingFeeds(@RequestParam("page") int page,
+                                               @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getFollowingFeeds(page, memberDetails);
     }
 
     @GetMapping("/feed/recommended")
-    public ResponseEntity<?> getRecommendedFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return searchService.getRecommendedFeeds(memberDetails);
+    public ResponseEntity<?> getRecommendedFeeds(@RequestParam("page") int page,
+                                                 @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getRecommendedFeeds(page, memberDetails);
+    }
+
+    @GetMapping("/members/{memberId}/feed")
+    public ResponseEntity<?> getMyFeeds(@PathVariable(name = "memberId") Long memberId, @RequestParam("page") int page,
+                                        @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return searchService.getMyFeeds(memberId, page, memberDetails);
     }
 
     @GetMapping("/feed/{feed_id}")

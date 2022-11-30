@@ -1,9 +1,9 @@
-package com.sparta.doblock.auth.service;
+package com.sparta.doblock.sociallogin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.GoogleProfileDto;
+import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
@@ -87,9 +87,9 @@ public class GoogleService {
     @Transactional
     public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-        GoogleProfileDto profile = findProfile(oauthToken);
+        SocialProfileDto profile = findProfile(oauthToken);
 
-        Optional<Member> googleMember = memberRepository.findBySocialId(profile.getGoogleMemberId());
+        Optional<Member> googleMember = memberRepository.findBySocialId(profile.getSocialMemberId());
 
         if(googleMember.isEmpty()) {
 
@@ -100,7 +100,7 @@ public class GoogleService {
             Member member = Member.builder()
                     .email(profile.getEmail())
                     .nickname(profile.getNickname())
-                    .socialId(profile.getGoogleMemberId())
+                    .socialId(profile.getSocialMemberId())
                     .socialCode("GOOGLE")
                     .profileImage(profile.getProfileImage())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -114,7 +114,7 @@ public class GoogleService {
         } else return googleMember.get();
     }
 
-    public GoogleProfileDto findProfile(String oauthToken) throws JsonProcessingException {
+    public SocialProfileDto findProfile(String oauthToken) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken);
@@ -133,8 +133,8 @@ public class GoogleService {
         String nickname = jsonNode.get("name").asText();
         String profileImage = jsonNode.get("picture").asText();
 
-        return GoogleProfileDto.builder()
-                .googleMemberId(googleMemberId)
+        return SocialProfileDto.builder()
+                .socialMemberId(googleMemberId)
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)

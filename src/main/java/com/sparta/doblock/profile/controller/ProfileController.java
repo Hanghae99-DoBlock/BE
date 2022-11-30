@@ -25,27 +25,14 @@ public class ProfileController {
     }
 
     @PatchMapping("/edit")
-    public ResponseEntity<?> editProfile(@ModelAttribute @Valid EditProfileRequestDto editProfileRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) throws IllegalAccessException, IOException {
+    public ResponseEntity<?> editProfile(@ModelAttribute @Valid EditProfileRequestDto editProfileRequestDto,
+                                         @AuthenticationPrincipal MemberDetailsImpl memberDetails) throws IllegalAccessException, IOException {
         return profileService.editProfile(editProfileRequestDto, memberDetails);
     }
 
     @PatchMapping("/edit/password")
-    public ResponseEntity<?> editPassword(@RequestBody @Valid EditPasswordRequestDto editPasswordRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails) throws IllegalAccessException {
+    public ResponseEntity<?> editPassword(@RequestBody @Valid EditPasswordRequestDto editPasswordRequestDto,
+                                          @AuthenticationPrincipal MemberDetailsImpl memberDetails) throws IllegalAccessException {
         return profileService.editPassword(editPasswordRequestDto, memberDetails);
-    }
-
-    @PostMapping("/{memberId}/follow")
-    public ResponseEntity<?> follow(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.follow(memberId, memberDetails);
-    }
-
-    @GetMapping("/{memberId}/following")
-    public ResponseEntity<?> getFollowingList(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.getFollowingList(memberId, memberDetails);
-    }
-
-    @GetMapping("/{memberId}/follower")
-    public ResponseEntity<?> getFollowerList(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return profileService.getFollowerList(memberId, memberDetails);
     }
 }

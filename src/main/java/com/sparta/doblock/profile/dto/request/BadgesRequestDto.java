@@ -1,4 +1,4 @@
-package com.sparta.doblock.feed.dto.request;
+package com.sparta.doblock.profile.dto.request;
 
 import com.sparta.doblock.events.entity.BadgeType;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventFeedRequestDto {
+public class BadgesRequestDto {
 
     private BadgeType badgeType;
 }

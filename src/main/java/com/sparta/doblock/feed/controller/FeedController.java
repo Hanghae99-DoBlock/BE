@@ -1,15 +1,13 @@
 package com.sparta.doblock.feed.controller;
 
-import com.sparta.doblock.feed.dto.request.EventFeedRequestDto;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.service.FeedService;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
+import com.sparta.doblock.profile.dto.request.BadgesRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,7 +39,7 @@ public class FeedController {
     }
 
     @PostMapping("/event")
-    public ResponseEntity<?> createEventFeed(@RequestBody EventFeedRequestDto eventFeedRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return feedService.createEventFeed(eventFeedRequestDto, memberDetails);
+    public ResponseEntity<?> createEventFeed(@RequestBody BadgesRequestDto badgesRequestDto, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
+        return feedService.createEventFeed(badgesRequestDto, memberDetails);
     }
 }
