@@ -9,9 +9,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "cicdTest" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "cicdTest" ]
 
 env:
   S3_BUCKET_NAME: doblock-github-actions-s3-bucket
