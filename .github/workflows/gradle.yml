@@ -13,9 +13,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  S3_BUCKET_NAME: do-github-actions-s3-bucket
-
 permissions:
   contents: read
 
@@ -26,6 +23,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
@@ -49,30 +47,3 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
       shell: bash
-
-    - name: Make zip file
-      run: zip -r ./doblock.zip .
-      shell: bash
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-2
-
-    - name: Upload to S3
-      run: aws s3 cp --region ap-northeast-2 ./doblock.zip s3://$S3_BUCKET_NAME/
-
-    # Deploy
-    - name: Deploy
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run:
-        aws deploy create-deployment
-        --application-name my-codedeploy-app
-        --deployment-group-name my-codedeploy-deployment-group
-        --file-exists-behavior OVERWRITE
-        --s3-location bucket=do-github-actions-s3-bucket,bundleType=zip,key=doblock.zip
-        --region ap-northeast-2
