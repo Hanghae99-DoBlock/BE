@@ -11,7 +11,7 @@ on:
   push:
     branches: [ "cicdTest" ]
   pull_request:
-    branches: [ "cicdTest" ]
+    branches: [ "main" ]
 
 env:
   S3_BUCKET_NAME: doblock-github-actions-s3-bucket
