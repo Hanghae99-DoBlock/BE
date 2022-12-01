@@ -2,7 +2,7 @@ name: Deploy to Amazon EC2
 
 on:
   push:
-    branches: [ "cicdTest" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
