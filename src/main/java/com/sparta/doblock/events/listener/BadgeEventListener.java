@@ -38,11 +38,11 @@ public class BadgeEventListener {
 
         long completedTodo = todoRepository.countAllByMemberAndCompleted(badgeEvents.getMemberDetails().getMember(), true);
 
-        createBadges(completedTodo, 3L, BadgeType.COMPLETED_TODO_THREE, badgeEvents.getMemberDetails().getMember());
+        createBadges(completedTodo, 3L, BadgeType.CTT, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(completedTodo, 30L, BadgeType.COMPLETED_TODO_THIRTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(completedTodo, 30L, BadgeType.CTTY, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(completedTodo, 50L, BadgeType.COMPLETED_TODO_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(completedTodo, 50L, BadgeType.CTF, badgeEvents.getMemberDetails().getMember());
     }
 
     @Async
@@ -52,11 +52,11 @@ public class BadgeEventListener {
 
         long createdFeed = feedRepository.countAllByMember(badgeEvents.getMemberDetails().getMember());
 
-        createBadges(createdFeed, 1L, BadgeType.CREATED_FEED_ONE, badgeEvents.getMemberDetails().getMember());
+        createBadges(createdFeed, 1L, BadgeType.CFO, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(createdFeed, 30L, BadgeType.CREATED_FEED_THIRTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(createdFeed, 30L, BadgeType.CFT, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(createdFeed, 50L, BadgeType.CREATED_FEED_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(createdFeed, 50L, BadgeType.CFF, badgeEvents.getMemberDetails().getMember());
     }
 
     @Async
@@ -68,11 +68,11 @@ public class BadgeEventListener {
         long createdComment = commentRepository.countAllByMember(badgeEvents.getMemberDetails().getMember());
         long socialActive = createdReaction + createdComment;
 
-        createBadges(socialActive, 1L, BadgeType.SOCIAL_ACTIVE_ONE, badgeEvents.getMemberDetails().getMember());
+        createBadges(socialActive, 1L, BadgeType.SAO, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(socialActive, 30L, BadgeType.SOCIAL_ACTIVE_THIRTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(socialActive, 30L, BadgeType.SAT, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(socialActive, 50L, BadgeType.SOCIAL_ACTIVE_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(socialActive, 50L, BadgeType.SAF, badgeEvents.getMemberDetails().getMember());
     }
 
     @Async
@@ -82,11 +82,11 @@ public class BadgeEventListener {
 
         long followToMember = followRepository.countAllByFromMember(badgeEvents.getMemberDetails().getMember());
 
-        createBadges(followToMember, 7L, BadgeType.FOLLOW_TO_MEMBER_SEVEN, badgeEvents.getMemberDetails().getMember());
+        createBadges(followToMember, 7L, BadgeType.FMS, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(followToMember, 50L, BadgeType.FOLLOW_TO_MEMBER_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(followToMember, 50L, BadgeType.FMF, badgeEvents.getMemberDetails().getMember());
 
-        createBadges(followToMember, 150L, BadgeType.FOLLOW_TO_MEMBER_HUNDRED_FIFTY, badgeEvents.getMemberDetails().getMember());
+        createBadges(followToMember, 150L, BadgeType.FMH, badgeEvents.getMemberDetails().getMember());
     }
 
     @Transactional

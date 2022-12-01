@@ -1,5 +1,6 @@
 package com.sparta.doblock.profile.service;
 
+import com.sparta.doblock.events.entity.BadgeType;
 import com.sparta.doblock.events.entity.Badges;
 import com.sparta.doblock.events.repository.BadgesRepository;
 import com.sparta.doblock.member.entity.Member;
@@ -47,13 +48,13 @@ public class BadgeService {
         return ResponseEntity.ok(badgeListResponseDto);
     }
 
-    public ResponseEntity<?> getBadges(Long memberId, BadgesRequestDto badgesRequestDto, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getBadges(Long memberId, String badgetype, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
             throw new NullPointerException("로그인이 필요합니다.");
         }
 
-        if (Objects.isNull(badgesRequestDto.getBadgeType())) {
+        if (Objects.isNull(badgetype)) {
             throw new NullPointerException("뱃지를 선택해주세요.");
         }
 
@@ -61,7 +62,7 @@ public class BadgeService {
                 () -> new RuntimeException("사용자를 찾을 수 없습니다.")
         );
 
-        Badges badges = badgesRepository.findByMemberAndBadgeType(member, badgesRequestDto.getBadgeType()).orElseThrow(
+        Badges badges = badgesRepository.findByMemberAndBadgeType(member, BadgeType.valueOf(badgetype.toUpperCase())).orElseThrow(
                 () -> new RuntimeException("사용자가 획득한 뱃지가 아닙니다.")
         );
 

@@ -21,9 +21,9 @@ public class BadgeController {
     }
 
     @GetMapping("/{memberId}/badges")
-    public ResponseEntity<?> getBadges(@PathVariable(name = "memberId") Long memberId, @RequestBody BadgesRequestDto badgesRequestDto,
+    public ResponseEntity<?> getBadges(@PathVariable(name = "memberId") Long memberId, @RequestParam String badgetype,
                                        @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return badgeservice.getBadges(memberId, badgesRequestDto, memberDetails);
+        return badgeservice.getBadges(memberId, badgetype, memberDetails);
     }
 
     @PatchMapping("/edit/badges")

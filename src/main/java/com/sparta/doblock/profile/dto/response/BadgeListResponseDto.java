@@ -36,17 +36,17 @@ public class BadgeListResponseDto {
             badgeTypes.add(badges.getBadgeType());
         }
 
-        this.completedTodoThree = badgeTypes.contains(BadgeType.COMPLETED_TODO_THREE);
-        this.completedTodoThirty = badgeTypes.contains(BadgeType.COMPLETED_TODO_THIRTY);
-        this.completedTodoFifty = badgeTypes.contains(BadgeType.COMPLETED_TODO_FIFTY);
-        this.createdFeedOne = badgeTypes.contains(BadgeType.CREATED_FEED_ONE);
-        this.createdFeedThirty = badgeTypes.contains(BadgeType.CREATED_FEED_THIRTY);
-        this.createdFeedFifty = badgeTypes.contains(BadgeType.CREATED_FEED_FIFTY);
-        this.socialActiveOne = badgeTypes.contains(BadgeType.SOCIAL_ACTIVE_ONE);
-        this.socialActiveThirty = badgeTypes.contains(BadgeType.SOCIAL_ACTIVE_THIRTY);
-        this.socialActiveFifty = badgeTypes.contains(BadgeType.SOCIAL_ACTIVE_FIFTY);
-        this.followToMemberSeven = badgeTypes.contains(BadgeType.FOLLOW_TO_MEMBER_SEVEN);
-        this.followToMemberFifty = badgeTypes.contains(BadgeType.FOLLOW_TO_MEMBER_FIFTY);
-        this.followToMemberHundredFifty = badgeTypes.contains(BadgeType.FOLLOW_TO_MEMBER_HUNDRED_FIFTY);
+        this.completedTodoThree = badgeTypes.contains(BadgeType.CTT);
+        this.completedTodoThirty = badgeTypes.contains(BadgeType.CTTY);
+        this.completedTodoFifty = badgeTypes.contains(BadgeType.CTF);
+        this.createdFeedOne = badgeTypes.contains(BadgeType.CFO);
+        this.createdFeedThirty = badgeTypes.contains(BadgeType.CFT);
+        this.createdFeedFifty = badgeTypes.contains(BadgeType.CFF);
+        this.socialActiveOne = badgeTypes.contains(BadgeType.SAO);
+        this.socialActiveThirty = badgeTypes.contains(BadgeType.SAT);
+        this.socialActiveFifty = badgeTypes.contains(BadgeType.SAF);
+        this.followToMemberSeven = badgeTypes.contains(BadgeType.FMS);
+        this.followToMemberFifty = badgeTypes.contains(BadgeType.FMF);
+        this.followToMemberHundredFifty = badgeTypes.contains(BadgeType.FMH);
     }
 }
