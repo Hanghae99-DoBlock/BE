@@ -23,6 +23,7 @@ public enum ErrorCodes {
     NOT_ABLE_FOLLOW(HttpStatus.BAD_REQUEST, "NOT_ABLE_FOLLOW", "본인을 팔로우할 수 없습니다."),
     EXCEED_FEED_CONTENT(HttpStatus.BAD_REQUEST, "EXCEED_FEED_CONTENT", "피드 내용은 최대 100자까지 등록 가능합니다."),
     EXCEED_FEED_IMAGE(HttpStatus.BAD_REQUEST, "EXCEED_FEED_IMAGE", "피드 사진은 최대 4개까지 등록 가능합니다."),
+    EXCEED_FILE_SIZE(HttpStatus.BAD_REQUEST, "EXCEED_FILE_SIZE", "이미지는 1장당 최대 5MB까지 등록 가능합니다."),
     EXCEED_MEMBER_TAG(HttpStatus.BAD_REQUEST, "EXCEED_MEMBER_TAG", "관심사 태그는 최대 3개까지 등록 가능합니다."),
     NOT_OBTAINED_BADGES(HttpStatus.BAD_REQUEST, "NOT_OBTAINED_BADGES", "획득된 뱃지만 조회 가능합니다."),
     UPLOAD_IMAGE_FAILED(HttpStatus.BAD_REQUEST, "UPLOAD_IMAGE_FAILED", "파일 업로드에 실패했습니다."),

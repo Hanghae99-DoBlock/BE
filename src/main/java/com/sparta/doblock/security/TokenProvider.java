@@ -1,7 +1,6 @@
 package com.sparta.doblock.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
@@ -12,6 +11,9 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -52,8 +54,6 @@ public class TokenProvider {
                 .setSubject(member.getEmail())
                 .claim(AUTHORITIES_KEY, member.getAuthority())
                 .claim("memberId", member.getId())
-                .claim("nickname", member.getNickname())
-                .claim("profileImage", member.getProfileImage())
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -106,19 +106,34 @@ public class TokenProvider {
         }
     }
 
-    public boolean validateToken(String token){
+    public boolean validateToken(String token, HttpServletResponse response) throws IOException {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("유효하지 않은 서명입니다.");
+            sendErrorResponse(response, "유효하지 않은 서명입니다.");
         } catch (ExpiredJwtException e) {
             log.info("만료된 서명입니다.");
+            sendErrorResponse(response, "만료된 서명입니다.");
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 서명입니다.");
+            sendErrorResponse(response, "지원되지 않는 서명입니다.");
         } catch (IllegalArgumentException e) {
             log.info("서명을 입력해주세요.");
+            sendErrorResponse(response, "서명을 입력해주세요.");
         }
         return false;
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.setCharacterEncoding("utf-8");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(objectMapper.writeValueAsString(ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(message)
+        ));
     }
 }
