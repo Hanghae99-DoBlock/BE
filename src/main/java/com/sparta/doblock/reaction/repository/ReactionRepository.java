@@ -16,4 +16,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Reaction> findTop2ByFeedOrderByPostedAtDesc(Feed feed);
     Long countAllByMember(Member member);
     Long countAllByFeed(Feed feed);
+    void deleteAllByFeed(Feed feed);
 }

@@ -3,6 +3,8 @@ package com.sparta.doblock.sociallogin.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
@@ -94,7 +96,7 @@ public class GoogleService {
         if(googleMember.isEmpty()) {
 
             if (memberRepository.existsByEmail(profile.getEmail())){
-                throw new RuntimeException("이미 사용 중인 이메일입니다.");
+                throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
             }
 
             Member member = Member.builder()

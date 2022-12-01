@@ -5,12 +5,13 @@ import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.comment.entity.Comment;
 import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -31,11 +32,11 @@ public class CommentService {
     public ResponseEntity<?> addComment(Long feedId, CommentRequestDto commentRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         Comment comment = Comment.builder()
@@ -63,11 +64,11 @@ public class CommentService {
     public ResponseEntity<?> getCommentList(Long feedId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         List<Comment> commentList = commentRepository.findAllByFeedOrderByPostedAt(feed);
@@ -92,22 +93,23 @@ public class CommentService {
     @Transactional
     public ResponseEntity<?> editComment(Long feedId, Long commentId, CommentRequestDto commentRequestDto, MemberDetailsImpl memberDetails) {
 
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_COMMENT)
         );
 
-        if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
-
-        } else if (!comment.getFeed().getId().equals(feed.getId())) {
-            return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        if (!comment.getFeed().getId().equals(feed.getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_MATCHED_FEED_COMMENT);
 
         } else if (!comment.getMember().getId().equals(memberDetails.getMember().getId())) {
-            return new ResponseEntity<>("본인 댓글만 수정 가능합니다.", HttpStatus.FORBIDDEN);
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
         comment.update(commentRequestDto);
@@ -118,22 +120,24 @@ public class CommentService {
     @Transactional
     public ResponseEntity<?> deleteComment(Long feedId, Long commentId, MemberDetailsImpl memberDetails) {
 
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_COMMENT)
         );
 
-        if (Objects.isNull(memberDetails)) {
-            return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
-
-        } else if (!comment.getFeed().getId().equals(feed.getId())) {
-            return new ResponseEntity<>("댓글과 포스트가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        if (!comment.getFeed().getId().equals(feed.getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_MATCHED_FEED_COMMENT);
 
         } else if (!comment.getMember().getId().equals(memberDetails.getMember().getId())) {
-            return new ResponseEntity<>("댓글을 작성한 유저가 아닙니다.", HttpStatus.FORBIDDEN);
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
 
         } else {
             commentRepository.delete(comment);

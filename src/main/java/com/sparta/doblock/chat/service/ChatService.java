@@ -7,6 +7,8 @@ import com.sparta.doblock.chat.entity.ChatMessage;
 import com.sparta.doblock.chat.entity.ChatRoom;
 import com.sparta.doblock.chat.repository.ChatMessageRepository;
 import com.sparta.doblock.chat.repository.ChatRoomRepository;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
@@ -33,15 +35,15 @@ public class ChatService {
     public ResponseEntity<?> createChatRoom(Long memberId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member guest = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         if (guest.getId().equals(memberDetails.getMember().getId())) {
-            throw new RuntimeException("본인에게 메세지를 보낼 수 없습니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_ABLE_SEND_MESSAGE);
         }
 
         ChatRoom chatRoom = chatRoomRepository.findByHostAndGuest(memberDetails.getMember(), guest).orElse(
@@ -64,7 +66,7 @@ public class ChatService {
     public ResponseEntity<?> getChatRooms(MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         List<ChatRoom> chatRoomList = chatRoomRepository.findAllByHostOrGuest(memberDetails.getMember(), memberDetails.getMember());
@@ -96,15 +98,15 @@ public class ChatService {
     public ResponseEntity<?> getChatMessages(Long roomId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(
-                () -> new RuntimeException("채팅방이 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_CHATROOM)
         );
 
         if (!chatRoom.getHost().getId().equals(memberDetails.getMember().getId()) && !chatRoom.getGuest().getId().equals(memberDetails.getMember().getId())) {
-            throw new RuntimeException("채팅방을 이용할 수 없는 사용자입니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_CHATROOM_MEMBER);
         }
 
         List<ChatMessage> chatMessageList = chatMessageRepository.findAllByChatRoomOrderByPostedAtAsc(chatRoom);
@@ -128,11 +130,11 @@ public class ChatService {
     public ChatMessageResponseDto sendMessage(Long roomId, ChatMessageRequestDto chatMessageRequestDto) {
 
         Member sender = memberRepository.findById(chatMessageRequestDto.getSenderId()).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(
-                () -> new RuntimeException("채팅방이 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_CHATROOM)
         );
 
         ChatMessage chatMessage = ChatMessage.builder()

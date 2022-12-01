@@ -17,7 +17,8 @@ public class AccessDeniedHandlerException implements AccessDeniedHandler {
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(
                 new ObjectMapper().writeValueAsString(
-                        ErrorCodes.ACCESS_DENIED
+                        //ErrorCodes.ACCESS_DENIED
+                        "나도 몰루"
                 )
         );
 

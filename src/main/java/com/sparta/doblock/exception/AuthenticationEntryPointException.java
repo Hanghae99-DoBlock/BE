@@ -17,7 +17,8 @@ public class AuthenticationEntryPointException implements AuthenticationEntryPoi
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(
                 new ObjectMapper().writeValueAsString(
-                        ErrorCodes.NOT_AUTHENTICATION_ENTRY
+                        //ErrorCodes.NOT_AUTHENTICATION_ENTRY
+                        "나도 몰루"
                 )
         );
 

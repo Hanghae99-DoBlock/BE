@@ -1,6 +1,8 @@
 package com.sparta.doblock.reaction.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
@@ -27,11 +29,11 @@ public class ReactionService {
     public ResponseEntity<?> addReaction(Long feedId, ReactionRequestDto reactionRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         if (! reactionRepository.existsByFeedAndMember(feed, memberDetails.getMember())) {

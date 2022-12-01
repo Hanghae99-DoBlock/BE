@@ -27,6 +27,8 @@ public class FeedResponseDto {
     private String feedColor;
     private boolean eventFeed;
     private Long countReaction;
+    private boolean myReaction;
+    private String myReactionType;
     private List<ReactionResponseDto> currentReactionType;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private Long countComment;

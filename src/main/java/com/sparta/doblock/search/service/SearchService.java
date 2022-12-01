@@ -3,6 +3,8 @@ package com.sparta.doblock.search.service;
 import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.events.entity.Badges;
 import com.sparta.doblock.events.repository.BadgesRepository;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -13,6 +15,7 @@ import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
+import com.sparta.doblock.reaction.entity.Reaction;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
@@ -21,7 +24,6 @@ import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
 import com.sparta.doblock.tag.repository.MemberTagMapperRepository;
 import com.sparta.doblock.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +79,7 @@ public class SearchService {
             int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
             if (endIdx <= startIdx) {
-                return new ResponseEntity<>("해당 페이지에 멤버가 없습니다", HttpStatus.BAD_REQUEST);
+                throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
             }
 
             return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
@@ -117,7 +119,7 @@ public class SearchService {
             int endIdx = Math.min(followResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
             if (endIdx <= startIdx) {
-                return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+                throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
             }
 
             return ResponseEntity.ok(followResponseDtoList.subList(startIdx, endIdx));
@@ -128,7 +130,7 @@ public class SearchService {
     public ResponseEntity<?> getFollowingFeeds(int page, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
@@ -153,7 +155,7 @@ public class SearchService {
         int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
         if (endIdx <= startIdx) {
-            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
         }
 
         return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
@@ -163,7 +165,7 @@ public class SearchService {
     public ResponseEntity<?> getRecommendedFeeds(int page, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
@@ -205,7 +207,7 @@ public class SearchService {
         int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
         if (endIdx <= startIdx) {
-            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
         }
 
         return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
@@ -214,11 +216,11 @@ public class SearchService {
     public ResponseEntity<?> getMyFeeds(Long memberId, int page, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member member = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
@@ -233,7 +235,7 @@ public class SearchService {
         int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
 
         if (endIdx <= startIdx) {
-            return new ResponseEntity<>("해당 페이지에 포스트가 없습니다", HttpStatus.BAD_REQUEST);
+            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
         }
 
         return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
@@ -242,16 +244,16 @@ public class SearchService {
     public ResponseEntity<?> getFeed(Long feedId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         Member member = feed.getMember();
-
         Badges badges = badgesRepository.findByMemberAndSelectedBadge(member, true).orElse(null);
+        Reaction reaction = reactionRepository.findByFeedAndMember(feed, memberDetails.getMember()).orElse(null);
 
         FeedResponseDto feedResponseDto = FeedResponseDto.builder()
                 .feedId(feed.getId())
@@ -267,6 +269,8 @@ public class SearchService {
                 .feedColor(feed.getFeedColor())
                 .eventFeed(feed.isEventFeed())
                 .countReaction(reactionRepository.countAllByFeed(feed))
+                .myReaction(reactionRepository.existsByFeedAndMember(feed, memberDetails.getMember()))
+                .myReactionType(reaction != null ? reaction.getReactionType().getEmoji() : null)
                 .currentReactionType(reactionRepository.findTop2ByFeedOrderByPostedAtDesc(feed).stream()
                         .map(r -> ReactionResponseDto.builder()
                                 .reactionType(r.getReactionType().getEmoji())

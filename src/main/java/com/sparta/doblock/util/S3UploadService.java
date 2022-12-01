@@ -10,7 +10,8 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.sparta.doblock.exception.CustomExceptions;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import lombok.RequiredArgsConstructor;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +73,7 @@ public class S3UploadService {
             imageUrl = (s3Client.getUrl(bucket + "/post/image", fileName).toString());
 
         } catch (IOException e) {
-            throw new CustomExceptions.UploadFailException();
+            throw new DoBlockExceptions(ErrorCodes.UPLOAD_IMAGE_FAILED);
         }
 
         return imageUrl;
@@ -100,7 +101,7 @@ public class S3UploadService {
             imageUrl = s3Client.getUrl(bucket + "/post/image", fileName).toString();
 
         } catch (IOException e){
-            throw new CustomExceptions.UploadFailException();
+            throw new DoBlockExceptions(ErrorCodes.UPLOAD_IMAGE_FAILED);
         }
 
         return imageUrl;
@@ -113,7 +114,7 @@ public class S3UploadService {
             this.s3Client.deleteObject(deleteObjectRequest);
 
         } catch (SdkClientException e) {
-            e.printStackTrace();
+            throw new DoBlockExceptions(ErrorCodes.UPLOAD_IMAGE_FAILED);
         }
     }
 
@@ -130,7 +131,7 @@ public class S3UploadService {
         String[] fileValidate = {"jpg", "jpeg", "png"};
 
         if (!Arrays.asList(fileValidate).contains(fileFormat)) {
-            throw new RuntimeException("지원하지 않는 형식입니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_IMAGE);
         }
     }
 

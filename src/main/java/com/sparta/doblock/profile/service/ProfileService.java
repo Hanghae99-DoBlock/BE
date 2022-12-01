@@ -1,7 +1,8 @@
 package com.sparta.doblock.profile.service;
 
 import com.sparta.doblock.events.repository.BadgesRepository;
-import com.sparta.doblock.exception.CustomExceptions;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.feed.dto.response.FeedResponseDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
@@ -49,11 +50,11 @@ public class ProfileService {
     public ResponseEntity<?> getProfile(Long memberId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member member = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         List<Feed> feedList = feedRepository.findTop3ByMemberOrderByPostedAtDesc(member);
@@ -91,15 +92,15 @@ public class ProfileService {
     public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException, IOException {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         if (editProfileRequestDto.checkNull()) {
-            throw new NullPointerException("변경될 정보가 없습니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_INPUT_INFORMATION);
         }
 
         if (editProfileRequestDto.getProfileImage() != null) {
@@ -115,7 +116,7 @@ public class ProfileService {
         if (editProfileRequestDto.getNickname() != null) {
 
             if (memberRepository.existsByNicknameAndAuthority(editProfileRequestDto.getNickname(), memberDetails.getMember().getAuthority())) {
-                throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+                throw new DoBlockExceptions(ErrorCodes.DUPLICATED_NICKNAME);
             }
 
             member.editNickname(editProfileRequestDto.getNickname());
@@ -124,7 +125,7 @@ public class ProfileService {
         if (editProfileRequestDto.getTagList() != null) {
 
             if (editProfileRequestDto.getTagList().size() >= 4) {
-                throw new RuntimeException("관심사 태그는 유저 당 3개만 가능합니다.");
+                throw new DoBlockExceptions(ErrorCodes.EXCEED_MEMBER_TAG);
             }
 
             memberTagMapperRepository.deleteAllByMember(member);
@@ -152,21 +153,21 @@ public class ProfileService {
     public ResponseEntity<?> editPassword(EditPasswordRequestDto editPasswordRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         if (editPasswordRequestDto.checkNull()) {
-            throw new NullPointerException("변경될 정보가 없습니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_INPUT_INFORMATION);
         }
 
         if (editPasswordRequestDto.getNewPassword() != null) {
 
             if (!passwordEncoder.matches(editPasswordRequestDto.getCurrentPassword(), member.getPassword())) {
-                throw new CustomExceptions.NotMatchedPasswordException();
+                throw new DoBlockExceptions(ErrorCodes.NOT_VALID_PASSWORD);
             }
 
             member.editPassword(passwordEncoder.encode(editPasswordRequestDto.getNewPassword()));

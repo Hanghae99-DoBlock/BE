@@ -1,6 +1,8 @@
 package com.sparta.doblock.todo.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.todo.dto.request.TodoRequestDto;
 import com.sparta.doblock.todo.dto.response.TodoResponseDto;
@@ -30,7 +32,7 @@ public class TodoService {
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
@@ -67,24 +69,24 @@ public class TodoService {
     public ResponseEntity<?> switchOrder(TodoIdOrderRequestDto todoIdOrderRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         LocalDate date = LocalDate.of(todoIdOrderRequestDto.getYear(), todoIdOrderRequestDto.getMonth(), todoIdOrderRequestDto.getDay());
         TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
-                () -> new NullPointerException("해당 날짜에 등록된 투두가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_DATE)
         );
 
-        if (todoIdOrderRequestDto.getTodoIdList().size() != todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate).size()){
-            throw new IllegalArgumentException("투두리스트 갯수가 정확하지 않습니다.");
+        if (todoIdOrderRequestDto.getTodoIdList().size() != todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate).size()) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_COUNT);
         }
 
         Set<Long> todoIdSet = new HashSet<>(todoIdOrderRequestDto.getTodoIdList());
 
-        for(Todo todo : todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate)){
+        for (Todo todo : todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate)) {
 
-            if (! todoIdSet.contains(todo.getId())){
-                throw new IllegalArgumentException("해당 날짜의 투두가 아닙니다.");
+            if (!todoIdSet.contains(todo.getId())) {
+                throw new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_DATE);
             }
         }
 
@@ -92,7 +94,7 @@ public class TodoService {
 
             Long todoId = todoIdOrderRequestDto.getTodoIdList().get(i);
             Todo todo = todoRepository.findById(todoId).orElseThrow(
-                    () -> new NullPointerException("해당 투두가 없습니다")
+                    () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
             );
 
             todo.editTodoIndex(i);
@@ -106,13 +108,13 @@ public class TodoService {
     public ResponseEntity<?> getTodayTodo(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         LocalDate date = LocalDate.of(year, month, day);
 
         TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
-                () -> new NullPointerException("해당 날짜에 등록한 투두가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_DATE)
         );
 
         List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByTodoIndex(memberDetails.getMember(), todoDate);
@@ -136,11 +138,12 @@ public class TodoService {
     public ResponseEntity<?> getTodo(Long id, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("투두가 존재하지 않습니다."));
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
+        );
 
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                 .todoContent(todo.getTodoContent())
@@ -155,26 +158,26 @@ public class TodoService {
     public ResponseEntity<?> completedTodo(Long id, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("완료할 투두가 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
         );
 
-        if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
-            throw new RuntimeException("본인이 작성한 투두만 완료가 가능합니다.");
+        if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
-        if(LocalDate.now().isBefore(todo.getTodoDate().getDate())){
-            throw new RuntimeException("완료할 수 없는 투두입니다.");
+        if (LocalDate.now().isBefore(todo.getTodoDate().getDate())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_ABLE_COMPLETE_TODO);
         }
 
         todo.completeTask();
 
         applicationEventPublisher.publishEvent(new BadgeEvents.CompletedTodoBadgeEvent(memberDetails));
 
-        if (todo.isCompleted()){
+        if (todo.isCompleted()) {
             return ResponseEntity.ok("투두가 완료되었습니다.");
         } else return ResponseEntity.ok("투두 완료가 취소되었습니다.");
     }
@@ -183,15 +186,15 @@ public class TodoService {
     public ResponseEntity<?> editTodo(Long id, TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("수정할 투두가 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
         );
 
-        if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
-            throw new RuntimeException("본인이 작성한 투두만 수정이 가능합니다.");
+        if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
         LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
@@ -210,15 +213,15 @@ public class TodoService {
     public ResponseEntity<?> deleteTodo(Long id, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("삭제할 투두가 존재하지 않습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
         );
 
-        if(!todo.getMember().getNickname().equals(memberDetails.getMember().getNickname())) {
-            throw new RuntimeException("본인이 작성한 투두만 삭제가 가능합니다.");
+        if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
         todoRepository.deleteById(id);
@@ -229,7 +232,7 @@ public class TodoService {
     public ResponseEntity<?> getMonthTodo(int year, int month, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         LocalDate startDate = LocalDate.of(year, month, 1);
@@ -237,14 +240,14 @@ public class TodoService {
 
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
-        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)){
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
 
-            if (!todoDateRepository.existsByDate(date)){
+            if (!todoDateRepository.existsByDate(date)) {
                 continue;
             }
 
             TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
-                    () -> new NullPointerException("날짜에 해당하는 투두가 없습니다.")
+                    () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO_DATE)
             );
 
             List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByTodoIndex(memberDetails.getMember(), todoDate);

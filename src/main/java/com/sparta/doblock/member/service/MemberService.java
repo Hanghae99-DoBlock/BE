@@ -1,6 +1,7 @@
 package com.sparta.doblock.member.service;
 
-import com.sparta.doblock.exception.CustomExceptions;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.dto.request.MemberRequestDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
@@ -30,11 +31,11 @@ public class MemberService {
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+            throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
         }
 
         if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
-            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+            throw new DoBlockExceptions(ErrorCodes.DUPLICATED_NICKNAME);
         }
 
         Member member = Member.builder()
@@ -53,14 +54,14 @@ public class MemberService {
     public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
-            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+            throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
         } else return ResponseEntity.ok("사용 가능한 이메일입니다.");
     }
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
-            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
+            throw new DoBlockExceptions(ErrorCodes.DUPLICATED_NICKNAME);
         } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }
 
@@ -68,10 +69,12 @@ public class MemberService {
     public ResponseEntity<?> login(MemberRequestDto memberRequestDto) {
 
         Member member = memberRepository.findByEmail(memberRequestDto.getEmail()).orElseThrow(
-                CustomExceptions.NotFoundMemberException::new
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
-        if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())) throw new CustomExceptions.NotMatchedPasswordException();
+        if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())){
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_PASSWORD);
+        }
 
         TokenDto tokenDto = loginUtil.generateToken(member);
 

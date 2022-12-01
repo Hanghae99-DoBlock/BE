@@ -1,6 +1,8 @@
 package com.sparta.doblock.profile.service;
 
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
@@ -30,15 +32,15 @@ public class FollowService {
     public ResponseEntity<?> follow(Long memberId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member toMember = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         if (toMember.getId().equals(memberDetails.getMember().getId())) {
-            throw new RuntimeException("본인을 팔로우 할 수 없습니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_ABLE_FOLLOW);
         }
 
         Optional<Follow> followingMember = followRepository.findByFromMemberAndToMember(memberDetails.getMember(), toMember);
@@ -65,11 +67,11 @@ public class FollowService {
     public ResponseEntity<?> getFollowingList(Long memberId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member fromMember = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         List<Follow> followingList = followRepository.findAllByFromMember(fromMember);
@@ -93,11 +95,11 @@ public class FollowService {
     public ResponseEntity<?> getFollowerList(Long memberId, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Member toMember = memberRepository.findById(memberId).orElseThrow(
-                () -> new RuntimeException("사용자를 찾을 수 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
         List<Follow> followerList = followRepository.findAllByToMember(toMember);

@@ -12,4 +12,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllByFeedOrderByPostedAt(Feed feed);
     Long countAllByMember(Member member);
     Long countAllByFeed(Feed feed);
+    void deleteAllByFeed(Feed feed);
 }

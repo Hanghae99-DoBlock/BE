@@ -1,11 +1,15 @@
 package com.sparta.doblock.feed.service;
 
+import com.sparta.doblock.comment.repository.CommentRepository;
 import com.sparta.doblock.events.entity.BadgeEvents;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.feed.dto.request.FeedRequestDto;
 import com.sparta.doblock.feed.entity.Feed;
 import com.sparta.doblock.feed.repository.FeedRepository;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.profile.dto.request.BadgesRequestDto;
+import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.tag.entity.Tag;
 import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
@@ -18,7 +22,6 @@ import com.sparta.doblock.todo.repository.TodoDateRepository;
 import com.sparta.doblock.util.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +40,8 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
+    private final CommentRepository commentRepository;
+    private final ReactionRepository reactionRepository;
     private final TodoDateRepository todoDateRepository;
     private final S3UploadService s3UploadService;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -44,10 +49,14 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> getTodoByDate(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+        }
+
         LocalDate date = LocalDate.of(year, month, day);
 
         TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
-                () -> new NullPointerException("해당 날짜에 등록된 투두가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO_DATE)
         );
 
         List<Todo> todoList = todoRepository.findAllByMemberAndTodoDate(memberDetails.getMember(), todoDate);
@@ -73,29 +82,29 @@ public class FeedService {
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         if (feedRequestDto.getFeedContent().length() >= 101) {
-            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+            throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_CONTENT);
         }
 
         if (feedRequestDto.getFeedImageList().size() >= 5){
-            throw new RuntimeException("사진은 피드 당 4개까지 가능합니다.");
+            throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_IMAGE);
         }
 
         List<String> todoList = new ArrayList<>();
 
         for (Long todoId : feedRequestDto.getTodoIdList()) {
             Todo todo = todoRepository.findById(todoId).orElseThrow(
-                    () -> new NullPointerException("해당 투두가 존재하지 않습니다")
+                    () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
             );
 
             if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
-                return new ResponseEntity<>("투두의 작성자가 아닙니다", HttpStatus.FORBIDDEN);
+                throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
 
             } else if (!todo.isCompleted()) {
-                return new ResponseEntity<>("투두가 완성되지 않았습니다", HttpStatus.FORBIDDEN);
+                throw new DoBlockExceptions(ErrorCodes.NOT_COMPLETED_TODO);
 
             } else {
                 todoList.add(todo.getTodoContent());
@@ -145,16 +154,20 @@ public class FeedService {
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         if (feedRequestDto.getFeedContent().length() >= 101) {
-            throw new RuntimeException("피드 내용은 최대 100자까지 입력 가능합니다.");
+            throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_CONTENT);
         }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("존재하는 피드가 아닙니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
+
+        if (!feed.getMember().getId().equals(memberDetails.getMember().getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
+        }
 
         feed.update(feedRequestDto.getFeedTitle(), feedRequestDto.getFeedContent(), feedRequestDto.getFeedColor());
 
@@ -181,17 +194,25 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> deleteFeed(Long feedId, MemberDetailsImpl memberDetails) {
 
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+        }
+
         Feed feed = feedRepository.findById(feedId).orElseThrow(
-                () -> new NullPointerException("해당 피드가 없습니다")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
 
         if (!feed.getMember().getId().equals(memberDetails.getMember().getId())) {
-            throw new RuntimeException("본인이 작성한 피드가 아닙니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
         for (String imageUrl : feed.getFeedImageList()){
             s3UploadService.delete(imageUrl);
         }
+
+        commentRepository.deleteAllByFeed(feed);
+
+        reactionRepository.deleteAllByFeed(feed);
 
         feedTagMapperRepository.deleteAllByFeed(feed);
 
@@ -202,6 +223,10 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> createEventFeed(BadgesRequestDto badgesRequestDto, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+        }
 
         List<String> tagList = new ArrayList<>();
         tagList.add("두블럭");

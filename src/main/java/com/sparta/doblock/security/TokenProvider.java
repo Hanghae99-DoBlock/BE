@@ -81,7 +81,8 @@ public class TokenProvider {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(
                     new ObjectMapper().writeValueAsString(
-                            ErrorCodes.NOT_VALID_TOKEN
+                            //ErrorCodes.NOT_VALID_TOKEN
+                            "이게 여기에도?"
                     )
             );
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

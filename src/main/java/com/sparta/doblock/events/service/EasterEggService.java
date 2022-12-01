@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.doblock.events.entity.Payment;
 import com.sparta.doblock.events.repository.PaymentRepository;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +42,13 @@ public class EasterEggService {
     public ResponseEntity<?> paymentReady(MemberDetailsImpl memberDetails) throws JsonProcessingException {
 
         if (Objects.isNull(memberDetails)) {
-            throw new NullPointerException("로그인이 필요합니다.");
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
         }
 
         Payment payment = Payment.builder()
                 .paymentId(UUID.randomUUID().toString())
                 .member(memberDetails.getMember())
-                .amount(5000)
+                .amount(1000)
                 .paycheck(false)
                 .build();
 
@@ -87,8 +89,12 @@ public class EasterEggService {
     @Transactional
     public ResponseEntity<?> paymentApproval(String pgToken, MemberDetailsImpl memberDetails) {
 
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+        }
+
         Payment payment = paymentRepository.findByMemberOrderByPostedAtDesc(memberDetails.getMember()).orElseThrow(
-                () -> new RuntimeException("최근 결제 내역이 없습니다.")
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAYMENT)
         );
 
         HttpHeaders httpHeaders = new HttpHeaders();
