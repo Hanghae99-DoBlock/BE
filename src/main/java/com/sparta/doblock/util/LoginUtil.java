@@ -1,11 +1,13 @@
 package com.sparta.doblock.util;
 
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.security.TokenProvider;
-import com.sparta.doblock.security.token.RefreshToken;
-import com.sparta.doblock.security.token.RefreshTokenRepository;
-import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.security.entity.RefreshToken;
+import com.sparta.doblock.security.repository.RefreshTokenRepository;
+import com.sparta.doblock.security.dto.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +43,7 @@ public class LoginUtil {
         return tokenDto;
     }
 
-    public HttpHeaders setHttpHeaders(TokenDto tokenDto){
+    public HttpHeaders setHttpHeaders(TokenDto tokenDto) {
 
         HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -47,10 +54,25 @@ public class LoginUtil {
         return httpHeaders;
     }
 
-    public void forceLogin(Member member){
+    public void forceLogin(Member member) {
 
         MemberDetailsImpl memberDetails = new MemberDetailsImpl(member);
         Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetails, null, memberDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    public void validateRefreshToken(HttpServletRequest httpServletRequest, Member member) {
+
+        if (!tokenProvider.validateToken(httpServletRequest.getHeader("RefreshToken"))) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);
+        }
+
+        RefreshToken refreshToken = refreshTokenRepository.findByKey(member.getEmail()).orElseThrow(
+                () -> new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION)
+        );
+
+        if (!refreshToken.getValue().equals(httpServletRequest.getHeader("RefreshToken"))) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);
+        }
     }
 }

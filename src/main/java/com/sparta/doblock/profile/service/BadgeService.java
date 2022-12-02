@@ -50,6 +50,7 @@ public class BadgeService {
             badgeResponseDtoList.add(BadgeResponseDto.builder()
                     .badgeType(badgeType)
                     .badgeName(badgeType.getBadgeName())
+                    .badgeImage(badgeType.getBadgeImage())
                     .obtainedBadge(badgeTypes.contains(badgeType))
                     .build());
         }

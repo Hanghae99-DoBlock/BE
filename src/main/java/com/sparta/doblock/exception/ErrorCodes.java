@@ -29,6 +29,8 @@ public enum ErrorCodes {
     UPLOAD_IMAGE_FAILED(HttpStatus.BAD_REQUEST, "UPLOAD_IMAGE_FAILED", "파일 업로드에 실패했습니다."),
     NOT_LOGIN_MEMBER(HttpStatus.BAD_REQUEST, "NOT_LOGIN_MEMBER", "로그인이 필요합니다."),
 
+    NOT_VALID_AUTHENTICATION(HttpStatus.UNAUTHORIZED, "NOT_VALID_AUTHENTICATION", "인증이 유효하지 않습니다."),
+
     NOT_VALID_WRITER(HttpStatus.FORBIDDEN, "NOT_VALID_WRITER", "작성자만 이용 가능합니다."),
     NOT_VALID_CHATROOM_MEMBER(HttpStatus.FORBIDDEN, "NOT_VALID_CHATROOM_MEMBER", "채팅방을 이용할 수 없는 사용자입니다."),
 
