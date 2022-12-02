@@ -1,6 +1,5 @@
 package com.sparta.doblock.exception;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -29,11 +28,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<?> handleAuthenticationException(Exception exception){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getMessage());
+        return ResponseEntity.status(ErrorCodes.NOT_VALID_AUTHENTICATION.getHttpStatus()).body(new ErrorMessage(ErrorCodes.NOT_VALID_AUTHENTICATION.getCode(), ErrorCodes.NOT_VALID_AUTHENTICATION.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleAccessDeniedException(Exception exception){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getMessage());
+    public ResponseEntity<?> handleAccessDeniedException(){
+        return ResponseEntity.status(ErrorCodes.NOT_VALID_AUTHENTICATION.getHttpStatus()).body(new ErrorMessage(ErrorCodes.NOT_VALID_AUTHENTICATION.getCode(), ErrorCodes.NOT_VALID_AUTHENTICATION.getMessage()));
     }
 }

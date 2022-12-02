@@ -39,19 +39,19 @@ public class BadgeService {
 
         List<Badges> badgesList = badgesRepository.findAllByMember(member);
 
-        HashSet<BadgeType> badgeTypes = new HashSet<>();
+        HashSet<BadgeType> badgeTypeHashSet = new HashSet<>();
         List<BadgeResponseDto> badgeResponseDtoList = new ArrayList<>();
 
         for (Badges badges : badgesList) {
-            badgeTypes.add(badges.getBadgeType());
+            badgeTypeHashSet.add(badges.getBadgeType());
         }
 
         for (BadgeType badgeType : BadgeType.values()) {
             badgeResponseDtoList.add(BadgeResponseDto.builder()
                     .badgeType(badgeType)
                     .badgeName(badgeType.getBadgeName())
-                    .badgeImage(badgeType.getBadgeImage())
-                    .obtainedBadge(badgeTypes.contains(badgeType))
+                    .badgeImage(badgeTypeHashSet.contains(badgeType) ? badgeType.getBadgeImage() : badgeType.getGrayImage())
+                    .obtainedBadge(badgeTypeHashSet.contains(badgeType))
                     .build());
         }
 
