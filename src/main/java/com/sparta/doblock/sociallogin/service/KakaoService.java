@@ -8,7 +8,7 @@ import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.security.dto.TokenDto;
 import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;

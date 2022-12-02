@@ -47,6 +47,7 @@ public class SearchService {
     private final BadgesRepository badgesRepository;
 
     private static final int POST_PER_PAGE = 5;
+    private static final int MEMBER_PER_PAGE = 10;
 
     private static final int ALPHA = 1;
 
@@ -115,8 +116,8 @@ public class SearchService {
                         .build());
             }
 
-            int startIdx = page * POST_PER_PAGE;
-            int endIdx = Math.min(followResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
+            int startIdx = page * MEMBER_PER_PAGE;
+            int endIdx = Math.min(followResponseDtoList.size(), (page + 1) * MEMBER_PER_PAGE);
 
             if (endIdx <= startIdx) {
                 throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);

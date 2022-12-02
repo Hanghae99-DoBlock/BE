@@ -5,8 +5,9 @@ import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.dto.request.MemberRequestDto;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
+import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.security.dto.TokenDto;
 import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +33,11 @@ public class MemberService {
     @Transactional
     public ResponseEntity<?> signup(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())) {
             throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
         }
 
-        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
+        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)) {
             throw new DoBlockExceptions(ErrorCodes.DUPLICATED_NICKNAME);
         }
 
@@ -53,14 +56,14 @@ public class MemberService {
 
     public ResponseEntity<?> checkEmail(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByEmail(memberRequestDto.getEmail())){
+        if (memberRepository.existsByEmail(memberRequestDto.getEmail())) {
             throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
         } else return ResponseEntity.ok("사용 가능한 이메일입니다.");
     }
 
     public ResponseEntity<?> checkNickname(MemberRequestDto memberRequestDto) {
 
-        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)){
+        if (memberRepository.existsByNicknameAndAuthority(memberRequestDto.getNickname(), Authority.ROLE_MEMBER)) {
             throw new DoBlockExceptions(ErrorCodes.DUPLICATED_NICKNAME);
         } else return ResponseEntity.ok("사용 가능한 닉네임입니다.");
     }
@@ -72,7 +75,7 @@ public class MemberService {
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
-        if(!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())){
+        if (!passwordEncoder.matches(memberRequestDto.getPassword(), member.getPassword())) {
             throw new DoBlockExceptions(ErrorCodes.NOT_VALID_PASSWORD);
         }
 
@@ -81,5 +84,21 @@ public class MemberService {
         HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
 
         return ResponseEntity.ok().headers(httpHeaders).body("로그인 성공");
+    }
+
+    @Transactional
+    public ResponseEntity<?> reissue(HttpServletRequest httpServletRequest, MemberDetailsImpl memberDetails) {
+
+        Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
+                () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
+        );
+
+        loginUtil.validateRefreshToken(httpServletRequest, member);
+
+        TokenDto tokenDto = loginUtil.generateToken(member);
+
+        HttpHeaders httpHeaders = loginUtil.setHttpHeaders(tokenDto);
+
+        return ResponseEntity.ok().headers(httpHeaders).body("갱신 성공");
     }
 }
