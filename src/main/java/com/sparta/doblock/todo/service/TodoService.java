@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -169,7 +171,7 @@ public class TodoService {
             throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
-        if (LocalDate.now().isBefore(todo.getTodoDate().getDate())) {
+        if (LocalDate.now(ZoneId.of("Asia/Tokyo")).isBefore(todo.getTodoDate().getDate())) {
             throw new DoBlockExceptions(ErrorCodes.NOT_ABLE_COMPLETE_TODO);
         }
 
