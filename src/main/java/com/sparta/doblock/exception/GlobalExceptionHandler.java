@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<?> handleAuthenticationException(Exception exception){
+    public ResponseEntity<?> handleAuthenticationException(){
         return ResponseEntity.status(ErrorCodes.NOT_VALID_AUTHENTICATION.getHttpStatus()).body(new ErrorMessage(ErrorCodes.NOT_VALID_AUTHENTICATION.getCode(), ErrorCodes.NOT_VALID_AUTHENTICATION.getMessage()));
     }
 
