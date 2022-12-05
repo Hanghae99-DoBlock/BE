@@ -31,7 +31,7 @@ public class LoginUtil {
         TokenDto tokenDto = tokenProvider.generateTokenDto(member);
 
         RefreshToken refreshToken = RefreshToken.builder()
-                .key(member.getEmail())
+                .id(member.getEmail())
                 .value(tokenDto.getRefreshToken())
                 .build();
 
@@ -64,9 +64,11 @@ public class LoginUtil {
             throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);
         }
 
-        RefreshToken refreshToken = refreshTokenRepository.findByKey(member.getEmail()).orElseThrow(
+        RefreshToken refreshToken = refreshTokenRepository.findById(member.getEmail()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION)
         );
+
+
 
         if (!refreshToken.getValue().equals(httpServletRequest.getHeader("RefreshToken"))) {
             throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);

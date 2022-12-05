@@ -2,7 +2,6 @@ package com.sparta.doblock.profile.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Pattern;
