@@ -57,18 +57,6 @@ public class ProfileService {
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
 
-        List<Feed> feedList = feedRepository.findTop3ByMemberOrderByPostedAtDesc(member);
-        List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
-
-        for (Feed feed : feedList) {
-            feedResponseDtoList.add(FeedResponseDto.builder()
-                    .feedId(feed.getId())
-                    .feedTitle(feed.getFeedTitle())
-                    .feedContent(feed.getFeedContent())
-                    .build()
-            );
-        }
-
         ProfileResponseDto profileResponseDto = ProfileResponseDto.builder()
                 .memberId(member.getId())
                 .profileImage(member.getProfileImage())
@@ -79,10 +67,19 @@ public class ProfileService {
                 .countFollower(followRepository.countAllByToMember(member))
                 .countFollowing(followRepository.countAllByFromMember(member))
                 .countBadge(badgesRepository.countAllByMember(member))
+                .tagList(memberTagMapperRepository.findAllByMember(member).stream()
+                        .map(tag -> tag.getTag().getTagContent())
+                        .collect(Collectors.toList()))
                 .badgeImageList(badgesRepository.findAllByMember(member).stream()
                         .map(badges -> badges.getBadgeType().getBadgeImage())
                         .collect(Collectors.toList()))
-                .feedResponseDtoList(feedResponseDtoList)
+                .feedResponseDtoList(feedRepository.findTop3ByMemberOrderByPostedAtDesc(member).stream()
+                        .map(feed -> FeedResponseDto.builder()
+                                .feedId(feed.getId())
+                                .feedTitle(feed.getFeedTitle())
+                                .feedContent(feed.getFeedContent())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
 
         return ResponseEntity.ok(profileResponseDto);

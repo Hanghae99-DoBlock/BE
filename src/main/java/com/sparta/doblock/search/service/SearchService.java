@@ -309,6 +309,7 @@ public class SearchService {
                 .feedTitle(feed.getFeedTitle())
                 .feedColor(feed.getFeedColor())
                 .eventFeed(feed.isEventFeed())
+                .countComment(commentRepository.countAllByFeed(feed))
                 .countReaction(reactionRepository.countAllByFeed(feed))
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())

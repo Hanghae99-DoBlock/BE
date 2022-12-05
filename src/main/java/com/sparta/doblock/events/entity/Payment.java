@@ -24,7 +24,6 @@ public class Payment extends TimeStamp {
     @Column
     private String tid;
 
-
     @Column
     private int amount;
 
