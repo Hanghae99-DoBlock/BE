@@ -10,20 +10,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/members/profile")
+@RequestMapping("/api/profile")
 public class BadgeController {
 
     private final BadgeService badgeservice;
 
     @GetMapping("/{memberId}/badgelist")
-    public ResponseEntity<?> getBadgeList(@PathVariable(name = "memberId") Long memberId, @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return badgeservice.getBadgeList(memberId, memberDetails);
+    public ResponseEntity<?> getBadgeList(@PathVariable(name = "memberId") Long memberId){
+        return badgeservice.getBadgeList(memberId);
     }
 
     @GetMapping("/{memberId}/badges")
-    public ResponseEntity<?> getBadges(@PathVariable(name = "memberId") Long memberId, @RequestParam String badgetype,
-                                       @AuthenticationPrincipal MemberDetailsImpl memberDetails){
-        return badgeservice.getBadges(memberId, badgetype, memberDetails);
+    public ResponseEntity<?> getBadges(@PathVariable(name = "memberId") Long memberId, @RequestParam String badgetype){
+        return badgeservice.getBadges(memberId, badgetype);
     }
 
     @PatchMapping("/edit/badges")

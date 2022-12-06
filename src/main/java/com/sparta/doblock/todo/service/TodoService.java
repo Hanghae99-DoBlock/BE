@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -33,14 +32,15 @@ public class TodoService {
     @Transactional
     public ResponseEntity<?> createTodo(TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
 
-        TodoDate todoDate = todoDateRepository.findByDate(date).orElse(TodoDate.builder()
-                .date(date).lastIndex(0).build());
+        TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElse(
+                TodoDate.builder()
+                        .date(date)
+                        .member(memberDetails.getMember())
+                        .lastIndex(0)
+                        .build()
+        );
 
         todoDateRepository.save(todoDate);
 
@@ -70,12 +70,8 @@ public class TodoService {
     @Transactional
     public ResponseEntity<?> switchOrder(TodoIdOrderRequestDto todoIdOrderRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         LocalDate date = LocalDate.of(todoIdOrderRequestDto.getYear(), todoIdOrderRequestDto.getMonth(), todoIdOrderRequestDto.getDay());
-        TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+        TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_DATE)
         );
 
@@ -109,13 +105,9 @@ public class TodoService {
 
     public ResponseEntity<?> getTodayTodo(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         LocalDate date = LocalDate.of(year, month, day);
 
-        TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+        TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_MATCHED_TODO_DATE)
         );
 
@@ -123,15 +115,14 @@ public class TodoService {
         List<TodoResponseDto> todoResponseDtoList = new ArrayList<>();
 
         for (Todo todo : todoList) {
-
-            TodoResponseDto todoResponseDto = TodoResponseDto.builder()
-                    .todoId(todo.getId())
-                    .todoContent(todo.getTodoContent())
-                    .completed(todo.isCompleted())
-                    .todoMemo(todo.getTodoMemo())
-                    .build();
-
-            todoResponseDtoList.add(todoResponseDto);
+            todoResponseDtoList.add(
+                    TodoResponseDto.builder()
+                            .todoId(todo.getId())
+                            .todoContent(todo.getTodoContent())
+                            .completed(todo.isCompleted())
+                            .todoMemo(todo.getTodoMemo())
+                            .build()
+            );
         }
 
         return ResponseEntity.ok(todoResponseDtoList);
@@ -139,13 +130,13 @@ public class TodoService {
 
     public ResponseEntity<?> getTodo(Long id, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
         );
+
+        if (!todo.getMember().getId().equals(memberDetails.getMember().getId())) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
+        }
 
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
                 .todoContent(todo.getTodoContent())
@@ -158,10 +149,6 @@ public class TodoService {
 
     @Transactional
     public ResponseEntity<?> completedTodo(Long id, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
@@ -187,10 +174,6 @@ public class TodoService {
     @Transactional
     public ResponseEntity<?> editTodo(Long id, TodoRequestDto todoRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
         );
@@ -201,8 +184,13 @@ public class TodoService {
 
         LocalDate date = LocalDate.of(todoRequestDto.getYear(), todoRequestDto.getMonth(), todoRequestDto.getDay());
 
-        TodoDate todoDate = todoDateRepository.findByDate(date).orElse(TodoDate.builder()
-                .date(date).lastIndex(0).build());
+        TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElse(
+                TodoDate.builder()
+                        .date(date)
+                        .member(memberDetails.getMember())
+                        .lastIndex(0)
+                        .build()
+        );
 
         todoDateRepository.save(todoDate);
 
@@ -213,10 +201,6 @@ public class TodoService {
 
     @Transactional
     public ResponseEntity<?> deleteTodo(Long id, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO)
@@ -233,10 +217,6 @@ public class TodoService {
 
     public ResponseEntity<?> getMonthTodo(int year, int month, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = LocalDate.of(year, month, startDate.lengthOfMonth()).plusDays(1);
 
@@ -248,22 +228,21 @@ public class TodoService {
                 continue;
             }
 
-            TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+            TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElseThrow(
                     () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO_DATE)
             );
 
             List<Todo> todoList = todoRepository.findAllByMemberAndTodoDateOrderByTodoIndex(memberDetails.getMember(), todoDate);
 
             for (Todo todo : todoList) {
-
-                TodoResponseDto todoResponseDto = TodoResponseDto.builder()
-                        .todoId(todo.getId())
-                        .todoContent(todo.getTodoContent())
-                        .completed(todo.isCompleted())
-                        .day(todoDate.getDate().getDayOfMonth())
-                        .build();
-
-                todoResponseDtoList.add(todoResponseDto);
+                todoResponseDtoList.add(
+                        TodoResponseDto.builder()
+                                .todoId(todo.getId())
+                                .todoContent(todo.getTodoContent())
+                                .completed(todo.isCompleted())
+                                .day(todoDate.getDate().getDayOfMonth())
+                                .build()
+                );
             }
         }
 

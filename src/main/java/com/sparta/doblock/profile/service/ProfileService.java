@@ -49,10 +49,6 @@ public class ProfileService {
 
     public ResponseEntity<?> getProfile(Long memberId, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
@@ -87,10 +83,6 @@ public class ProfileService {
 
     @Transactional
     public ResponseEntity<?> editProfile(EditProfileRequestDto editProfileRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException, IOException {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
@@ -148,10 +140,6 @@ public class ProfileService {
 
     @Transactional
     public ResponseEntity<?> editPassword(EditPasswordRequestDto editPasswordRequestDto, MemberDetailsImpl memberDetails) throws IllegalAccessException {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)

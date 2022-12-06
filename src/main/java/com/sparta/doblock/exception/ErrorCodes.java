@@ -27,7 +27,6 @@ public enum ErrorCodes {
     EXCEED_MEMBER_TAG(HttpStatus.BAD_REQUEST, "EXCEED_MEMBER_TAG", "관심사 태그는 최대 3개까지 등록 가능합니다."),
     NOT_OBTAINED_BADGES(HttpStatus.BAD_REQUEST, "NOT_OBTAINED_BADGES", "획득된 뱃지만 조회 가능합니다."),
     UPLOAD_IMAGE_FAILED(HttpStatus.BAD_REQUEST, "UPLOAD_IMAGE_FAILED", "파일 업로드에 실패했습니다."),
-    NOT_LOGIN_MEMBER(HttpStatus.BAD_REQUEST, "NOT_LOGIN_MEMBER", "로그인이 필요합니다."),
 
     NOT_VALID_AUTHENTICATION(HttpStatus.UNAUTHORIZED, "NOT_VALID_AUTHENTICATION", "인증이 유효하지 않습니다."),
 

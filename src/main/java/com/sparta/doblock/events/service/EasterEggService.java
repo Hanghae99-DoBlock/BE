@@ -41,10 +41,6 @@ public class EasterEggService {
     @Transactional
     public ResponseEntity<?> paymentReady(MemberDetailsImpl memberDetails) throws JsonProcessingException {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Payment payment = Payment.builder()
                 .paymentId(UUID.randomUUID().toString())
                 .member(memberDetails.getMember())
@@ -88,10 +84,6 @@ public class EasterEggService {
 
     @Transactional
     public ResponseEntity<?> paymentApproval(String pgToken, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Payment payment = paymentRepository.findByMemberOrderByPostedAtDesc(memberDetails.getMember()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAYMENT)

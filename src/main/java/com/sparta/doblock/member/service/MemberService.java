@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +89,10 @@ public class MemberService {
 
     @Transactional
     public ResponseEntity<?> reissue(HttpServletRequest httpServletRequest, MemberDetailsImpl memberDetails) {
+
+        if (Objects.isNull(memberDetails)) {
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);
+        }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)

@@ -21,8 +21,8 @@ public class CommentController {
     }
 
     @GetMapping("/{feedId}/comment")
-    public ResponseEntity<?> getCommentList(@PathVariable Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return commentService.getCommentList(feedId, memberDetails);
+    public ResponseEntity<?> getCommentList(@PathVariable Long feedId) {
+        return commentService.getCommentList(feedId);
     }
 
     @PutMapping("/{feedId}/comment")
