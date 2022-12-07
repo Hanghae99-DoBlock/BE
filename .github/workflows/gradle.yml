@@ -30,7 +30,6 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         
-        ## application.properties 파일 생성
     - name: make application.properties
       run: |
         echo ">> mkdir & touch"
