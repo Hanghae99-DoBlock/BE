@@ -12,7 +12,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         corsRegistry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000",
                         "https://doblock.click",
-                        "https://www.doblock.click")
+                        "https://www.doblock.click",
+                        "https://do-block.click",
+                        "https://www.do-block.click")
                 .allowedMethods("*")
                 .exposedHeaders("Authorization", "RefreshToken")
                 .allowCredentials(true);
