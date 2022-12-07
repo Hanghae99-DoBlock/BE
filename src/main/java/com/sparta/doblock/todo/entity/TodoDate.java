@@ -24,7 +24,7 @@ public class TodoDate {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(unique = true)
+    @Column
     private LocalDate date;
 
     @Column
