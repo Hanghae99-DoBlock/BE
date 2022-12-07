@@ -224,7 +224,7 @@ public class TodoService {
 
         for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
 
-            if (!todoDateRepository.existsByDate(date)) {
+            if (!todoDateRepository.existsByDateAndMember(date, memberDetails.getMember())) {
                 continue;
             }
 

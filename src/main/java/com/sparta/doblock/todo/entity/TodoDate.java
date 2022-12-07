@@ -14,9 +14,11 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "member_id", "date" }) })
 public class TodoDate {
 
     @Id
+    @Column(name = "tododate_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
