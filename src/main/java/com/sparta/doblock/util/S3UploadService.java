@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,7 @@ import java.util.*;
 public class S3UploadService {
 
     private final AmazonS3 s3Client;
+    private static final int TARGET_HEIGHT = 200;
 
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -87,24 +89,15 @@ public class S3UploadService {
 
         String fileName = createFileName(multipartFile.getOriginalFilename());
 
-        MultipartFile croppedImage = resizeImage(multipartFile, fileName, fileFormat);
+        BufferedImage croppedImage = resizeImage(multipartFile);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(croppedImage.getSize());
-        objectMetadata.setContentType(multipartFile.getContentType());
+        ByteArrayInputStream byteArrayInputStream = convertImage(croppedImage, multipartFile.getContentType(), fileFormat, objectMetadata);
 
-        String imageUrl;
+        s3Client.putObject(new PutObjectRequest(bucket + "/post/image", fileName, byteArrayInputStream, objectMetadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        try (InputStream inputStream = croppedImage.getInputStream()){
-            s3Client.putObject(new PutObjectRequest(bucket + "/post/image", fileName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
-            imageUrl = s3Client.getUrl(bucket + "/post/image", fileName).toString();
-
-        } catch (IOException e){
-            throw new DoBlockExceptions(ErrorCodes.UPLOAD_IMAGE_FAILED);
-        }
-
-        return imageUrl;
+        return s3Client.getUrl(bucket + "/post/image", fileName).toString();
     }
 
     public void delete(String key) {
@@ -118,15 +111,15 @@ public class S3UploadService {
         }
     }
 
-    private String createFileName(String filename) {
+    public String createFileName(String filename) {
         return UUID.randomUUID().toString().concat(getFileExtension(filename));
     }
 
-    private String getFileExtension(String filename) {
+    public String getFileExtension(String filename) {
         return filename.substring(filename.lastIndexOf("."));
     }
 
-    private void validateImageFormat(String fileFormat) {
+    public void validateImageFormat(String fileFormat) {
 
         String[] fileValidate = {"jpg", "jpeg", "png"};
 
@@ -135,25 +128,29 @@ public class S3UploadService {
         }
     }
 
-    private MultipartFile resizeImage(MultipartFile multipartFile, String fileName, String fileFormat) throws IOException {
+    public BufferedImage resizeImage(MultipartFile multipartFile) throws IOException {
 
         BufferedImage sourceImage = ImageIO.read(multipartFile.getInputStream());
 
-        if (sourceImage.getHeight() <= 200){
-            return multipartFile;
+        if (sourceImage.getHeight() <= TARGET_HEIGHT) {
+            return sourceImage;
         }
 
         double sourceImageRatio = (double) sourceImage.getWidth() / sourceImage.getHeight();
 
-        int newHeight = 200;
-        int newWidth = (int) (newHeight * sourceImageRatio);
+        int newWidth = (int) (TARGET_HEIGHT * sourceImageRatio);
 
-        BufferedImage resizeImage = Scalr.resize(sourceImage, newWidth, newHeight);
+        return Scalr.resize(sourceImage, newWidth, TARGET_HEIGHT);
+    }
+
+    public ByteArrayInputStream convertImage(BufferedImage croppedImage, String contentType, String fileFormat, ObjectMetadata objectMetadata) throws IOException {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(resizeImage, fileFormat, byteArrayOutputStream);
-        byteArrayOutputStream.flush();
+        ImageIO.write(croppedImage, fileFormat, byteArrayOutputStream);
 
-        return new MockMultipartFile(fileName, byteArrayOutputStream.toByteArray());
+        objectMetadata.setContentType(contentType);
+        objectMetadata.setContentLength(byteArrayOutputStream.size());
+
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }

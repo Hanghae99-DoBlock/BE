@@ -32,7 +32,7 @@ public class SearchController {
         return searchService.getRecommendedFeeds(page, memberDetails);
     }
 
-    @GetMapping("/members/profile/{memberId}/feed")
+    @GetMapping("/profile/{memberId}/feed")
     public ResponseEntity<?> getUserFeeds(@PathVariable(name = "memberId") Long memberId, @RequestParam("page") int page){
         return searchService.getUserFeeds(memberId, page);
     }
