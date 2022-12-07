@@ -31,10 +31,6 @@ public class CommentService {
     @Transactional
     public ResponseEntity<?> addComment(Long feedId, CommentRequestDto commentRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
@@ -61,11 +57,7 @@ public class CommentService {
         return ResponseEntity.ok(commentResponseDto);
     }
 
-    public ResponseEntity<?> getCommentList(Long feedId, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
+    public ResponseEntity<?> getCommentList(Long feedId) {
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
@@ -93,10 +85,6 @@ public class CommentService {
     @Transactional
     public ResponseEntity<?> editComment(Long feedId, Long commentId, CommentRequestDto commentRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
@@ -119,11 +107,6 @@ public class CommentService {
 
     @Transactional
     public ResponseEntity<?> deleteComment(Long feedId, Long commentId, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-
-        }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)

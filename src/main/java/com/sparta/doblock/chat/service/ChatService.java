@@ -34,10 +34,6 @@ public class ChatService {
     @Transactional
     public ResponseEntity<?> createChatRoom(Long memberId, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Member guest = memberRepository.findById(memberId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
         );
@@ -64,10 +60,6 @@ public class ChatService {
     }
 
     public ResponseEntity<?> getChatRooms(MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         List<ChatRoom> chatRoomList = chatRoomRepository.findAllByHostOrGuest(memberDetails.getMember(), memberDetails.getMember());
         List<ChatRoomResponseDto> chatRoomResponseDtoList = new ArrayList<>();
@@ -96,10 +88,6 @@ public class ChatService {
     }
 
     public ResponseEntity<?> getChatMessages(Long roomId, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_CHATROOM)

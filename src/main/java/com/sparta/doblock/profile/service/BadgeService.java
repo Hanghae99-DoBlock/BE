@@ -25,11 +25,7 @@ public class BadgeService {
     private final MemberRepository memberRepository;
     private final BadgesRepository badgesRepository;
 
-    public ResponseEntity<?> getBadgeList(Long memberId, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
+    public ResponseEntity<?> getBadgeList(Long memberId) {
 
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
@@ -64,11 +60,7 @@ public class BadgeService {
         return ResponseEntity.ok(badgeListResponseDto);
     }
 
-    public ResponseEntity<?> getBadges(Long memberId, String badgetype, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
+    public ResponseEntity<?> getBadges(Long memberId, String badgetype) {
 
         if (Objects.isNull(badgetype)) {
             throw new DoBlockExceptions(ErrorCodes.NOT_INPUT_BADGES);
@@ -94,22 +86,12 @@ public class BadgeService {
     @Transactional
     public ResponseEntity<?> editBadges(BadgesRequestDto badgesRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
-        if (Objects.isNull(badgesRequestDto.getBadgeType())) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_INPUT_BADGES);
-        }
-
         Badges badges = badgesRepository.findByMemberAndBadgeType(memberDetails.getMember(), badgesRequestDto.getBadgeType()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_OBTAINED_BADGES)
         );
 
         badgesRepository.findByMemberAndSelectedBadge(memberDetails.getMember(), true).ifPresent(Badges::selectBadge);
         badges.selectBadge();
-
-        badgesRepository.save(badges);
 
         return ResponseEntity.ok("대표 뱃지가 설정 되었습니다");
     }

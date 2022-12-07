@@ -28,7 +28,7 @@ public class FeedController {
     }
 
     @PatchMapping("/{feedId}")
-    public ResponseEntity<?> updateFeed(@PathVariable Long feedId, @ModelAttribute FeedRequestDto feedRequestDto,
+    public ResponseEntity<?> updateFeed(@PathVariable Long feedId, @RequestBody FeedRequestDto feedRequestDto,
                                         @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return feedService.updateFeed(feedId, feedRequestDto, memberDetails);
     }

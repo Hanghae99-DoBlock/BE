@@ -28,10 +28,6 @@ public class ReactionService {
     @Transactional
     public ResponseEntity<?> addReaction(Long feedId, ReactionRequestDto reactionRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );

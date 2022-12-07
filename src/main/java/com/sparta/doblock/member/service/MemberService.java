@@ -91,7 +91,7 @@ public class MemberService {
     public ResponseEntity<?> reissue(HttpServletRequest httpServletRequest, MemberDetailsImpl memberDetails) {
 
         if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
+            throw new DoBlockExceptions(ErrorCodes.NOT_VALID_AUTHENTICATION);
         }
 
         Member member = memberRepository.findByEmail(memberDetails.getMember().getEmail()).orElseThrow(

@@ -49,13 +49,9 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> getTodoByDate(int year, int month, int day, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         LocalDate date = LocalDate.of(year, month, day);
 
-        TodoDate todoDate = todoDateRepository.findByDate(date).orElseThrow(
+        TodoDate todoDate = todoDateRepository.findByDateAndMember(date, memberDetails.getMember()).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_TODO_DATE)
         );
 
@@ -67,12 +63,12 @@ public class FeedService {
                 continue;
             }
 
-            TodoResponseDto todoResponseDto = TodoResponseDto.builder()
-                    .todoId(todo.getId())
-                    .todoContent(todo.getTodoContent())
-                    .build();
-
-            todoResponseDtoList.add(todoResponseDto);
+            todoResponseDtoList.add(
+                    TodoResponseDto.builder()
+                            .todoId(todo.getId())
+                            .todoContent(todo.getTodoContent())
+                            .build()
+            );
         }
 
         return ResponseEntity.ok(todoResponseDtoList);
@@ -81,15 +77,11 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> createFeed(FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         if (feedRequestDto.getFeedContent().length() >= 101) {
             throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_CONTENT);
         }
 
-        if (feedRequestDto.getFeedImageList().size() >= 5){
+        if (feedRequestDto.getFeedImageList().size() >= 5) {
             throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_IMAGE);
         }
 
@@ -133,7 +125,11 @@ public class FeedService {
         feedRepository.save(feed);
 
         for (String tagContent : feedRequestDto.getTagList()) {
-            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(
+                    Tag.builder()
+                            .tagContent(tagContent)
+                            .build()
+            );
 
             tagRepository.save(tag);
 
@@ -153,10 +149,6 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> updateFeed(Long feedId, FeedRequestDto feedRequestDto, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         if (feedRequestDto.getFeedContent().length() >= 101) {
             throw new DoBlockExceptions(ErrorCodes.EXCEED_FEED_CONTENT);
         }
@@ -174,11 +166,15 @@ public class FeedService {
         feedTagMapperRepository.deleteAllByFeed(feed);
 
         for (String tagContent : feedRequestDto.getTagList()) {
-            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(
+                    Tag.builder()
+                            .tagContent(tagContent)
+                            .build()
+            );
 
             tagRepository.save(tag);
 
-            if (! feedTagMapperRepository.existsByFeedAndTag(feed, tag)) {
+            if (!feedTagMapperRepository.existsByFeedAndTag(feed, tag)) {
                 FeedTagMapper feedTagMapper = FeedTagMapper.builder()
                         .feed(feed)
                         .tag(tag)
@@ -194,10 +190,6 @@ public class FeedService {
     @Transactional
     public ResponseEntity<?> deleteFeed(Long feedId, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
         );
@@ -206,7 +198,7 @@ public class FeedService {
             throw new DoBlockExceptions(ErrorCodes.NOT_VALID_WRITER);
         }
 
-        for (String imageUrl : feed.getFeedImageList()){
+        for (String imageUrl : feed.getFeedImageList()) {
             s3UploadService.delete(imageUrl);
         }
 
@@ -223,10 +215,6 @@ public class FeedService {
 
     @Transactional
     public ResponseEntity<?> createEventFeed(BadgesRequestDto badgesRequestDto, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         List<String> tagList = new ArrayList<>();
         tagList.add("두블럭");
@@ -249,7 +237,11 @@ public class FeedService {
         feedRepository.save(feed);
 
         for (String tagContent : tagList) {
-            Tag tag = tagRepository.findByTagContent(tagContent).orElse(Tag.builder().tagContent(tagContent).build());
+            Tag tag = tagRepository.findByTagContent(tagContent).orElse(
+                    Tag.builder()
+                            .tagContent(tagContent)
+                            .build()
+            );
 
             tagRepository.save(tag);
 

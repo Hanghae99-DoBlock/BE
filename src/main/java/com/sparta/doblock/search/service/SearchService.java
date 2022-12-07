@@ -58,7 +58,7 @@ public class SearchService {
 
             List<Tag> tagList = tagRepository.searchByTagLike(keyword);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
-            Set<Long> feedAdded = new HashSet<>();
+            Set<Long> searchedFeed = new HashSet<>();
 
             for (Tag tag : tagList) {
                 List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
@@ -66,8 +66,8 @@ public class SearchService {
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
 
-                    if (!feedAdded.contains(feed.getId())) {
-                        feedAdded.add(feed.getId());
+                    if (!searchedFeed.contains(feed.getId())) {
+                        searchedFeed.add(feed.getId());
                         addFeed(feedResponseDtoList, feed);
                     }
                 }
@@ -88,32 +88,35 @@ public class SearchService {
         } else {
             // member search
             List<FollowResponseDto> followResponseDtoList = new ArrayList<>();
-            Set<Long> searched = new HashSet<>();
+            Set<Long> searchedMember = new HashSet<>();
 
             for (Member member : memberRepository.searchByEmailLike(keyword)) {
-                followResponseDtoList.add(FollowResponseDto.builder()
-                        .memberId(member.getId())
-                        .profileImage(member.getProfileImage())
-                        .nickname(member.getNickname())
-                        .email(member.getEmail())
-                        .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
-                        .build());
-                searched.add(member.getId());
+                followResponseDtoList.add(
+                        FollowResponseDto.builder()
+                                .memberId(member.getId())
+                                .profileImage(member.getProfileImage())
+                                .nickname(member.getNickname())
+                                .email(member.getEmail())
+                                .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
+                                .build()
+                );
+                searchedMember.add(member.getId());
             }
 
             for (Member member : memberRepository.searchByNicknameLike(keyword)) {
-                if (searched.contains(member.getId())) {
+                if (searchedMember.contains(member.getId())) {
                     continue;
                 }
 
-                followResponseDtoList.add(FollowResponseDto.builder()
-
-                        .memberId(member.getId())
-                        .profileImage(member.getProfileImage())
-                        .nickname(member.getNickname())
-                        .email(member.getEmail())
-                        .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
-                        .build());
+                followResponseDtoList.add(
+                        FollowResponseDto.builder()
+                                .memberId(member.getId())
+                                .profileImage(member.getProfileImage())
+                                .nickname(member.getNickname())
+                                .email(member.getEmail())
+                                .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
+                                .build()
+                );
             }
 
             int startIdx = page * MEMBER_PER_PAGE;
@@ -129,10 +132,6 @@ public class SearchService {
 
     @Transactional
     public ResponseEntity<?> getFollowingFeeds(int page, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
@@ -165,13 +164,9 @@ public class SearchService {
     @Transactional
     public ResponseEntity<?> getRecommendedFeeds(int page, MemberDetailsImpl memberDetails) {
 
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
-
         List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
 
-        Set<Long> feedAdded = new HashSet<>();
+        Set<Long> searchedFeed = new HashSet<>();
         List<Feed> feedList = new ArrayList<>();
 
         for (MemberTagMapper memberTagMapper : memberTagMapperList) {
@@ -183,8 +178,8 @@ public class SearchService {
                 for (FeedTagMapper feedTagMapper : feedTagMapperList) {
                     Feed feed = feedTagMapper.getFeed();
 
-                    if (!feedAdded.contains(feed.getId())) {
-                        feedAdded.add(feed.getId());
+                    if (!searchedFeed.contains(feed.getId())) {
+                        searchedFeed.add(feed.getId());
                         feedList.add(feed);
                     }
                 }
@@ -214,11 +209,7 @@ public class SearchService {
         return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
     }
 
-    public ResponseEntity<?> getMyFeeds(Long memberId, int page, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
+    public ResponseEntity<?> getUserFeeds(Long memberId, int page) {
 
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
@@ -243,10 +234,6 @@ public class SearchService {
     }
 
     public ResponseEntity<?> getFeed(Long feedId, MemberDetailsImpl memberDetails) {
-
-        if (Objects.isNull(memberDetails)) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_LOGIN_MEMBER);
-        }
 
         Feed feed = feedRepository.findById(feedId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_FEED)
