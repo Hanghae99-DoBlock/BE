@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface TodoDateRepository extends JpaRepository<TodoDate, Long> {
 
     Optional<TodoDate> findByDateAndMember(LocalDate date, Member member);
-    boolean existsByDate(LocalDate date);
+    boolean existsByDateAndMember(LocalDate date, Member member);
 }
