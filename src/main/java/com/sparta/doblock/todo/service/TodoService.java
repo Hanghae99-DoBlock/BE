@@ -42,8 +42,6 @@ public class TodoService {
                         .build()
         );
 
-        todoDateRepository.save(todoDate);
-
         int todoIndex = todoDate.getTodoIndex();
 
         Todo todo = Todo.builder()
@@ -55,6 +53,7 @@ public class TodoService {
                 .todoMemo(todoRequestDto.getTodoMemo())
                 .build();
 
+        todoDateRepository.save(todoDate);
         todoRepository.save(todo);
 
         TodoResponseDto todoResponseDto = TodoResponseDto.builder()
