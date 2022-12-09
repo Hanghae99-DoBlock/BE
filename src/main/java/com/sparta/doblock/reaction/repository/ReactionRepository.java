@@ -12,8 +12,8 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
     Boolean existsByFeedAndMember(Feed feed, Member member);
     Optional<Reaction> findByFeedAndMember(Feed feed, Member member);
-    List<Reaction> findAllByFeedOrderByPostedAtDesc(Feed feed);
-    List<Reaction> findTop2ByFeedOrderByPostedAtDesc(Feed feed);
+    List<Reaction> findAllByFeedOrderByModifiedAtDesc(Feed feed);
+    List<Reaction> findTop2ByFeedOrderByModifiedAtDesc(Feed feed);
     Long countAllByMember(Member member);
     Long countAllByFeed(Feed feed);
     void deleteAllByFeed(Feed feed);

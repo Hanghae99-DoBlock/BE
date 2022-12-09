@@ -37,6 +37,7 @@ public enum ErrorCodes {
     NOT_FOUND_CHATROOM(HttpStatus.NOT_FOUND, "NOT_FOUND_CHATROOM", "찾을 수 없는 채팅방입니다."),
     NOT_FOUND_TODO(HttpStatus.NOT_FOUND, "NOT_FOUND_TODO", "찾을 수 없는 투두입니다."),
     NOT_FOUND_FEED(HttpStatus.NOT_FOUND, "NOT_FOUND_FEED", "찾을 수 없는 피드입니다."),
+    NOT_FOUND_REACTION(HttpStatus.NOT_FOUND, "NOT_FOUND_REACTION", "찾을 수 없는 리액션입니다."),
     NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "NOT_FOUND_COMMENT", "찾을 수 없는 댓글입니다."),
     NOT_FOUND_TODO_DATE(HttpStatus.NOT_FOUND, "NOT_FOUND_TODO_DATE", "해당 날짜의 투두를 찾을 수 없습니다."),
     NOT_FOUND_PAYMENT(HttpStatus.NOT_FOUND, "NOT_FOUND_PAYMENT", "결제 내역을 찾을 수 없습니다."),

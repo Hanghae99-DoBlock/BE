@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
 import java.net.URI;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
