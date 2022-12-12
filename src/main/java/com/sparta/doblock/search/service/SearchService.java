@@ -45,7 +45,7 @@ public class SearchService {
     private final MemberTagMapperRepository memberTagMapperRepository;
     private final BadgesRepository badgesRepository;
 
-    private static final int POST_PER_PAGE = 5;
+    private static final int POST_PER_PAGE = 8;
     private static final int MEMBER_PER_PAGE = 10;
 
     private static final int ALPHA = 1;
