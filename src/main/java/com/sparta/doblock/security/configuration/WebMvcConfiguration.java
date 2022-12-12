@@ -11,6 +11,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry corsRegistry){
         corsRegistry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000",
+                        "https://web-doblock-fe-13dq2flbkxo3vv.gksl2.cloudtype.app",
                         "https://doblock.click",
                         "https://www.doblock.click",
                         "https://do-block.click",
