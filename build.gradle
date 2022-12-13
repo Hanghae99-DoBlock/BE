@@ -56,7 +56,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
 
     implementation group: 'org.imgscalr', name: 'imgscalr-lib', version: '4.2'
-    compileOnly group: 'org.springframework', name: 'spring-test'
 }
 
 tasks.named('test') {

@@ -14,6 +14,7 @@ import com.sparta.doblock.member.repository.MemberRepository;
 import com.sparta.doblock.profile.dto.response.FollowResponseDto;
 import com.sparta.doblock.profile.entity.Follow;
 import com.sparta.doblock.profile.repository.FollowRepository;
+import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.reaction.entity.Reaction;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
 import com.sparta.doblock.tag.entity.Tag;
@@ -258,8 +259,23 @@ public class SearchService {
                 .countReaction(reactionRepository.countAllByFeed(feed))
                 .myReaction(reactionRepository.existsByFeedAndMember(feed, memberDetails.getMember()))
                 .myReactionType(reaction != null ? reaction.getReactionType() : null)
+                .currentReactionType(reactionRepository.findTop2ByFeedOrderByModifiedAtDesc(feed).stream()
+                        .map(r -> ReactionResponseDto.builder()
+                                .memberId(r.getMember().getId())
+                                .reactionType(r.getReactionType())
+                                .build())
+                        .collect(Collectors.toList()))
                 .tagList(feedTagMapperRepository.findAllByFeed(feed).stream()
                         .map(feedTagMapper1 -> feedTagMapper1.getTag().getTagContent())
+                        .collect(Collectors.toList()))
+                .reactionResponseDtoList(reactionRepository.findAllByFeedOrderByModifiedAtDesc(feed).stream()
+                        .map(r -> ReactionResponseDto.builder()
+                                .memberId(r.getMember().getId())
+                                .profileImage(r.getMember().getProfileImage())
+                                .nickname(r.getMember().getNickname())
+                                .email(r.getMember().getEmail())
+                                .reactionType(r.getReactionType())
+                                .build())
                         .collect(Collectors.toList()))
                 .countComment(commentRepository.countAllByFeed(feed))
                 .postedAt(feed.getPostedAt())
