@@ -17,18 +17,13 @@ import com.sparta.doblock.profile.repository.FollowRepository;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.reaction.entity.Reaction;
 import com.sparta.doblock.reaction.repository.ReactionRepository;
-import com.sparta.doblock.tag.entity.Tag;
-import com.sparta.doblock.tag.mapper.FeedTagMapper;
 import com.sparta.doblock.tag.mapper.MemberTagMapper;
 import com.sparta.doblock.tag.repository.FeedTagMapperRepository;
 import com.sparta.doblock.tag.repository.MemberTagMapperRepository;
-import com.sparta.doblock.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,73 +36,27 @@ public class SearchService {
     private final FeedRepository feedRepository;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
-    private final TagRepository tagRepository;
     private final FeedTagMapperRepository feedTagMapperRepository;
     private final MemberTagMapperRepository memberTagMapperRepository;
     private final BadgesRepository badgesRepository;
 
-    private static final int POST_PER_PAGE = 8;
-    private static final int MEMBER_PER_PAGE = 10;
-
-    private static final int ALPHA = 1;
-
-    @Transactional
-    public ResponseEntity<?> search(String keyword, String category, int page, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> search(String keyword, String category, Long lastId, MemberDetailsImpl memberDetails) {
 
         if (category.equals("feed")) {
 
-            List<Tag> tagList = tagRepository.searchByTagLike(keyword);
             List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
-            Set<Long> searchedFeed = new HashSet<>();
 
-            for (Tag tag : tagList) {
-                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
-
-                for (FeedTagMapper feedTagMapper : feedTagMapperList) {
-                    Feed feed = feedTagMapper.getFeed();
-
-                    if (!searchedFeed.contains(feed.getId())) {
-                        searchedFeed.add(feed.getId());
-                        addFeed(feedResponseDtoList, feed);
-                    }
-                }
+            for (Feed feed : feedTagMapperRepository.searchAllByFeedTagLike(lastId, keyword)){
+                addFeed(feedResponseDtoList, feed);
             }
 
-            // sort by time created
-            feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
-
-            int startIdx = page * POST_PER_PAGE;
-            int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
-
-            if (endIdx <= startIdx) {
-                throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
-            }
-
-            return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
+            return ResponseEntity.ok(feedResponseDtoList);
 
         } else {
-            // member search
+
             List<FollowResponseDto> followResponseDtoList = new ArrayList<>();
-            Set<Long> searchedMember = new HashSet<>();
 
-            for (Member member : memberRepository.searchByEmailLike(keyword)) {
-                followResponseDtoList.add(
-                        FollowResponseDto.builder()
-                                .memberId(member.getId())
-                                .profileImage(member.getProfileImage())
-                                .nickname(member.getNickname())
-                                .email(member.getEmail())
-                                .followOrNot(followRepository.existsByFromMemberAndToMember(memberDetails.getMember(), member))
-                                .build()
-                );
-                searchedMember.add(member.getId());
-            }
-
-            for (Member member : memberRepository.searchByNicknameLike(keyword)) {
-                if (searchedMember.contains(member.getId())) {
-                    continue;
-                }
-
+            for (Member member : memberRepository.searchAllByEmailOrNickname(lastId, keyword)) {
                 followResponseDtoList.add(
                         FollowResponseDto.builder()
                                 .memberId(member.getId())
@@ -119,97 +68,35 @@ public class SearchService {
                 );
             }
 
-            int startIdx = page * MEMBER_PER_PAGE;
-            int endIdx = Math.min(followResponseDtoList.size(), (page + 1) * MEMBER_PER_PAGE);
-
-            if (endIdx <= startIdx) {
-                throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
-            }
-
-            return ResponseEntity.ok(followResponseDtoList.subList(startIdx, endIdx));
+            return ResponseEntity.ok(followResponseDtoList);
         }
     }
 
-    @Transactional
-    public ResponseEntity<?> getFollowingFeeds(int page, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getFollowingFeeds(Long lastId, MemberDetailsImpl memberDetails) {
 
         List<Follow> followingList = followRepository.findAllByFromMember(memberDetails.getMember());
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (Follow following : followingList) {
-            List<Feed> feedList = feedRepository.findAllByMember(following.getToMember());
-
-            for (Feed feed : feedList) {
-                addFeed(feedResponseDtoList, feed);
-            }
-        }
-
-        for (Feed feed : feedRepository.findAllByMember(memberDetails.getMember())) {
+        for (Feed feed : feedRepository.searchAllByFollow(lastId, memberDetails.getMember(), followingList)) {
             addFeed(feedResponseDtoList, feed);
         }
 
-        // sort by time created
-        feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
-
-        int startIdx = page * POST_PER_PAGE;
-        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
-
-        if (endIdx <= startIdx) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
-        }
-
-        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
+        return ResponseEntity.ok(feedResponseDtoList);
     }
 
-    @Transactional
-    public ResponseEntity<?> getRecommendedFeeds(int page, MemberDetailsImpl memberDetails) {
+    public ResponseEntity<?> getRecommendedFeeds(Long lastId, MemberDetailsImpl memberDetails) {
 
         List<MemberTagMapper> memberTagMapperList = memberTagMapperRepository.findAllByMember(memberDetails.getMember());
-
-        Set<Long> searchedFeed = new HashSet<>();
-        List<Feed> feedList = new ArrayList<>();
-
-        for (MemberTagMapper memberTagMapper : memberTagMapperList) {
-            List<Tag> tagList = tagRepository.searchByTagLike(memberTagMapper.getTag().getTagContent());
-
-            for (Tag tag : tagList) {
-                List<FeedTagMapper> feedTagMapperList = feedTagMapperRepository.findAllByTag(tag);
-
-                for (FeedTagMapper feedTagMapper : feedTagMapperList) {
-                    Feed feed = feedTagMapper.getFeed();
-
-                    if (!searchedFeed.contains(feed.getId())) {
-                        searchedFeed.add(feed.getId());
-                        feedList.add(feed);
-                    }
-                }
-            }
-        }
-
-        feedList.sort((f1, f2) -> {
-            LocalDateTime t1 = f1.getPostedAt().plusHours(ALPHA * reactionRepository.countAllByFeed(f1));
-            LocalDateTime t2 = f2.getPostedAt().plusHours(ALPHA * reactionRepository.countAllByFeed(f2));
-
-            return t2.compareTo(t1);
-        });
-
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (Feed feed : feedList) {
+        for (Feed feed : feedTagMapperRepository.searchAllByMemberTagLike(lastId, memberTagMapperList)) {
             addFeed(feedResponseDtoList, feed);
         }
 
-        int startIdx = page * POST_PER_PAGE;
-        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
-
-        if (endIdx <= startIdx) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
-        }
-
-        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
+        return ResponseEntity.ok(feedResponseDtoList);
     }
 
-    public ResponseEntity<?> getUserFeeds(Long memberId, int page) {
+    public ResponseEntity<?> getUserFeeds(Long memberId, Long lastId) {
 
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new DoBlockExceptions(ErrorCodes.NOT_FOUND_MEMBER)
@@ -217,20 +104,11 @@ public class SearchService {
 
         List<FeedResponseDto> feedResponseDtoList = new ArrayList<>();
 
-        for (Feed feed : feedRepository.findAllByMember(member)) {
+        for (Feed feed : feedRepository.searchAllByMember(lastId, member)) {
             addFeed(feedResponseDtoList, feed);
         }
 
-        feedResponseDtoList.sort((o1, o2) -> o2.getPostedAt().compareTo(o1.getPostedAt()));
-
-        int startIdx = page * POST_PER_PAGE;
-        int endIdx = Math.min(feedResponseDtoList.size(), (page + 1) * POST_PER_PAGE);
-
-        if (endIdx <= startIdx) {
-            throw new DoBlockExceptions(ErrorCodes.NOT_FOUND_PAGE);
-        }
-
-        return ResponseEntity.ok(feedResponseDtoList.subList(startIdx, endIdx));
+        return ResponseEntity.ok(feedResponseDtoList);
     }
 
     public ResponseEntity<?> getFeed(Long feedId, MemberDetailsImpl memberDetails) {
