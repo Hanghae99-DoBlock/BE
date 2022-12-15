@@ -2,9 +2,9 @@ name: Deploy to Amazon EC2
 
 on:
   push:
-    branches: [ "refactor-release" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "refactor-release" ]
+    branches: [ "main" ]
 
 env:
   AWS_REGION: ap-northeast-2
