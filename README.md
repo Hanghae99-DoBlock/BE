@@ -19,22 +19,22 @@
   <br>
 
 ## 🔭목차 | Contents
-1. [📆 프로젝트기간 | Project Period <br>](#------------project-period--br-)
-2. [🏗 서비스 아키텍쳐 | Service Architecture<br>](#--------------service-architecture-br-)
-3. [📖 아키텍쳐 도입 배경 | Architecture Introduction Background<br>](#----------------architecture-introduction-background-br-)
-4. [🎯 기술적 의사결정 | Technical Decision Making](#--------------technical-decision-making)
-5. [💎 주요 기능 | Main Function](#-----------main-function)
-6. [👨‍👩‍👧‍👦 팀 소개 | Team Introduction](#-------------------team-introduction)
-7. [📚 기술 스택 | Technology Stack](#-----------technology-stack)
-8. [🔧 사용 툴 | Tool Used](#----------tool-used)
-9. [📜 API](#---api)
-10. [🔐 ERD](#---erd)
-11. [🚀 트러블 슈팅| Trouble Shooting](#-----------trouble-shooting)
+1. [프로젝트 기간 | Project Period](#프로젝트-기간---Project-Period)
+2. [서비스 아키텍쳐 | Service Architecture](#서비스-아키텍쳐---Service-Architecture)
+3. [아키텍쳐 도입 배경 | Architecture Introduction Background](#아키텍쳐-도입-배경---Architecture-Introduction-Background)
+4. [기술적 의사결정 | Technical Decision Making](#기술적-의사결정---Technical-Decision-Making)
+5. [주요 기능 | Main Function](#주요-기능---Main-Function)
+6. [팀 소개 | Team Introduction](#팀-소개---Team-Introduction)
+7. [기술 스택 | Technology Stack](#기술-스택---Technology-Stack)
+8. [사용 툴 | Tool Used](#사용-툴---Tool-Used)
+9. [API](#API)
+10. [ERD](#ERD)
+11. [트러블 슈팅 | Trouble Shooting](#트러블-슈팅---Trouble-Shooting)
 
 <br>
 <br>
 
-## 📆 프로젝트기간 | Project Period <br>
+## 📆 프로젝트 기간 | Project Period <br>
 
 <ul>
   <li>개발 기간: 2022/11/04 ~ 2022/12/15(6주)</li>
@@ -73,17 +73,10 @@
 </details>
 <details> 
   <summary><strong>Nginx</strong></summary><br>
-  <li> DB를 저장하기 위한 RDBMS로는 RDBS와 NOSQL이 존재한다.</li>
-  <li> NOSQL은 검색속도가 월등하나 테이블간 연관관계를 설정할 수 없고 데이터의 형태가 정확하게 유지되지 않으며 데이터의 무결성이 지켜지지 않는다.</li>
-  <li> RDBMS는 데이터의 무결성이 지켜지며 일정한 스키마로 데이터를 관리할 수 있어 테이블 내 데이터를 각각 관리할 스트레스가 줄어들며 연관관계로 테이블들을 관리할 수 있다.</li>
-  <li> 상기 이유들로 RDBMS를 선택했으며 aws의 RDS인 MySql을 사용하기로 결정했다.</li>
-</details>
-<details> 
-  <summary><strong>AWS RDS MySQL</strong></summary><br>
-  <li> DB를 저장하기 위한 RDBMS로는 RDBS와 NOSQL이 존재한다.</li>
-  <li> NOSQL은 검색속도가 월등하나 테이블간 연관관계를 설정할 수 없고 데이터의 형태가 정확하게 유지되지 않으며 데이터의 무결성이 지켜지지 않는다.</li>
-  <li> RDBMS는 데이터의 무결성이 지켜지며 일정한 스키마로 데이터를 관리할 수 있어 테이블 내 데이터를 각각 관리할 스트레스가 줄어들며 연관관계로 테이블들을 관리할 수 있다.</li>
-  <li> 상기 이유들로 RDBMS를 선택했으며 aws의 RDS인 MySql을 사용하기로 결정했다.</li>
+  <li> 웹서버를 운영할 수 있는 오픈 소스 서버 기술로는 Apache와 Nginx가 있다.</li>
+  <li> Apache는 모든 OS에서 실행되어 호환성이 좋고 타 소프트웨어와의 문서화 및 통합 지원에 이점이 있지만, 웹 트래픽이 많아질 경우 여러 요청을 동시에 처리하기 어려운 단점이 있다.</li>
+  <li> Nginx는 Apache의 웹서버 성능 제한을 해결할 수 있고, 확장성이 좋다. 또한 Ram/CPU 사용량 및 대기 시간 측면에서 높고 변동하는 데이터 로드를 더 쉽게 예측이 가능하다.</li>
+  <li> 그래서 프로젝트의 규모를 고려하여 가벼우면서도 서비스의 확장이 가능하고 성능이 뛰어난 Nginx를 사용하였다.</li>
 </details>
 
 <br>
@@ -387,7 +380,7 @@
 
 
 
-<summary><strong><a href="https://legendary-scaffold-c21.notion.site/a7f31d0b36c344ed9cb4b9d89ce5a18c?v=56734b61f9264de9ab271b251c76eaa0">📃 API 명세서<a/></strong></summary>
+<summary><strong><a href="https://legendary-scaffold-c21.notion.site/a7f31d0b36c344ed9cb4b9d89ce5a18c?v=56734b61f9264de9ab271b251c76eaa0">📃 API 명세서 바로가기<a/></strong></summary>
 
 
 <br>
@@ -397,7 +390,7 @@
 
 <details>
 
-  <summary><strong> ERD</strong></summary>
+  <summary><strong> ERD 바로보기</strong></summary>
   <img src="https://user-images.githubusercontent.com/108126419/207908436-40ecc746-c423-49ad-b33f-dfef34737359.png">
 
 </details>
@@ -405,7 +398,7 @@
 <br>
 <br>
 
-## 🚀 트러블 슈팅| Trouble Shooting
+## 🚀 트러블 슈팅 | Trouble Shooting
 
 - **[TransactionalEventListner 에서 Transaction 이 실행되지 않음](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner-%EC%97%90%EC%84%9C-Transaction-%EC%9D%B4-%EC%8B%A4%ED%96%89%EB%90%98%EC%A7%80-%EC%95%8A%EC%9D%8C)<br>**
 - **[소셜 로그인 시 닉네임 중복 문제](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%8B%9C-%EB%8B%89%EB%84%A4%EC%9E%84-%EC%A4%91%EB%B3%B5-%EB%AC%B8%EC%A0%9C)<br>**
