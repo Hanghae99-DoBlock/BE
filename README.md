@@ -13,21 +13,23 @@
 
 - **[Do!Block 바로가기](https://www.doblock.shop/)<br>**
 - **[발표 자료](https://www.miricanvas.com/v/11mzz4j)<br>**
-- **[팀 노션 주소](https://legendary-scaffold-c21.notion.site/Do-Block-03bf205c16b44de293a37f1a738eadac)**
-- **[시연 영상](https://youtu.be/P7UCIujReOk)<br>**
+- **[시연 영상](https://youtu.be/ndHV3PM1TOA)<br>**
+
   <br>
   <br>
 
 ## 🔭목차 | Contents
-1. [ 프로젝트기간 | Project Period ](#------------project-period--br-)
-2. [ 서비스 아키텍쳐 | Service Architecture ](#------------br-)
-3. [ 아키텍쳐 도입 배경 | Architecture Introduction Background ](#--------------br-)
-4. [ 기술적 의사결정 | Technical Decision Making ](#-----------)
-5. [ 주요 기능 | Main Function ](#--------)
-6. [ 팀 소개 | Team Introduction ](#----------------)
-7. [ 기술 스택 | Technology Stack](#--------)
-8. [ 사용 툴 | Tool Used](#-------)
-9. [ 트러블슈팅| Trouble Shooting](#--------)
+1. [📆 프로젝트기간 | Project Period <br>](#------------project-period--br-)
+2. [🏗 서비스 아키텍쳐 | Service Architecture<br>](#--------------service-architecture-br-)
+3. [📖 아키텍쳐 도입 배경 | Architecture Introduction Background<br>](#----------------architecture-introduction-background-br-)
+4. [🎯 기술적 의사결정 | Technical Decision Making](#--------------technical-decision-making)
+5. [💎 주요 기능 | Main Function](#-----------main-function)
+6. [👨‍👩‍👧‍👦 팀 소개 | Team Introduction](#-------------------team-introduction)
+7. [📚 기술 스택 | Technology Stack](#-----------technology-stack)
+8. [🔧 사용 툴 | Tool Used](#----------tool-used)
+9. [📜 API](#---api)
+10. [🔐 ERD](#---erd)
+11. [🚀 트러블 슈팅| Trouble Shooting](#-----------trouble-shooting)
 
 <br>
 <br>
@@ -45,41 +47,49 @@
 <br>
 <br>
 
-## 🏗 서비스 아키텍쳐<br>
+## 🏗 서비스 아키텍쳐 | Service Architecture<br>
 
 ![image](https://user-images.githubusercontent.com/108126419/207886272-d38c3b62-2427-4e38-9813-d57b04ded842.png)
 
 <br>
 <br>
 
-## 📖 아키텍쳐 도입 배경<br>
+## 📖 아키텍쳐 도입 배경 | Architecture Introduction Background<br>
 <details> 
-  <summary><strong>Git Action</strong></summary><br>
-  <li> CI & CD 구축 당시 구축된 환경에서 팀원들이 개발에만 집중할 수 있게 만드려는 것이 우리의 중점 과제였다.</li>
-  <li> 대안으로는 Genkins Travis가 존재했으나 둘다 EC2서버를 두대로 CI & CD 구축해야 한다는 차이점이 존재했다.</li>
-  <li> Git Action은 하나의 서버로 CI & CD구축이 가능하여 서버 비용의 문제 감당 시 비용 최소화를 할 수 있다고 <br>생각했다.</li>
-  <li> 레퍼런스도 많고 러닝커브가 적으며 원격 저장소로 Git Hub를 사용하는 우리에겐 git action은 난이도도 <br>적용하기도 제일 쉽다고 생각했다.</li>
-  <li> 상기 이유들로 비용 최소화 , 최소한의 시간으로 구축된 환경을 만족한다고 생각하여 Git Action으로 자동 <br>배포환경을 구축했다.</li>
+  <summary><strong>Github Action</strong></summary><br>
+  <li> 배포는 반복작업이기 때문에 CI/CD 구축 당시 구축된 환경에서 팀원들이 개발에만 집중할 수 있게 만드려는 것이 우리의 중점 과제이다.</li>
+  <li> 선택지로는 Genkins Travis, Github Action이 있다. 그런데 Genkins와 Travis는 EC2서버 2대로 CI & CD를 구축해야한다.</li>
+  <li> Git Action은 하나의 EC2 서버로 CI/CD구축이 가능하여 비용면에서 경제적이다.</li>
+  <li> 어플리케이션의 규모가 커질수록 빌드, 배포 시간이 길어지는데 Github를 사용하여 프로젝트를 진행하는 과정에서 Github Action으로 자동화시키는 방법은 구축하기 쉬우면서도 추후에 시간낭비를 막을 수 있다고 판단했다..</li>
+  <li> 비용, 시간, 난이도를 고려하여 현재 프로젝트에 가장 적합하다고 생각해 Github Action을 사용하여 배포환경을 구축했다.</li>
 </details>
 <details> 
-  <summary><strong>google, kakao, naver 소셜로그인 </strong></summary><br>
-  <li> 로그인을 구현하게 되었을 때 사용자들의 편의성을 고려하는 단계에서 일반 로그인은 편의성을 떨어뜨린다고 <br>판단했다.</li>
-  <li> 소셜 로그인으로 인증 , 인가를 보증된 소셜(kakao등)에 맡겨 간편한 로그인 처리 방식으로 편의성을 향상시키고자 하였다.</li>
-  <li> 소셜 로그인 중 애플의 경우 (1년간 9~12만원의 비용) 결제금액의 이슈로 카카오 , 네이버 , 구글 3개의 <br>소셜로그인을 선택하게 되었다.</li>
-  <li> git hub는 일반 사용자들에겐 접근성이 떨어진다고 판단했고 facebook은 naver, goolge로 대체 가능하다 판단했다.</li>
-  <li> 상기 이유들로 3개의 소셜 로그인을 선택하게 되었고 그에따라 편의성을 향상시킬 수 있었다.</li>
+  <summary><strong>소셜로그인</strong></summary><br>
+  <li> 사용자의 관점에서 소셜 로그인은 번거로운 회원 가입 절차 없이 서비스를 이용할 수 있는 방법이다.</li>
+  <li> 개발자의 입장에서 소셜 로그인은 사용자 확인을 간소화함과 동시에 보증된 소셜서비스에 인증/인가를 맡겨 사용자의 데이터에 안정적으로 접근할 수 있는 방법이다.</li>
+  <li> 소셜 로그인 중 가장 접근성이 좋다고 판단하는 3사인 카카오, 네이버, 구글을 선택하여 진행하였다.</li>
+  <li> Apple은 비용(1년간 약 12만원)이 발생하고, Github는 일반 사용자의 접근성이 떨어진다는 판단을 하였다.</li>
+  <li> 결론적으로 사용자가 일반 로그인뿐만 아니라 카카오, 네이버, 구글로 소셜로그인을 할 수 있도록 유도하여 서비스에 접근성을 편리하게 하였다.</li>
 </details>
 <details> 
-  <summary><strong>aws RDS MySql</strong></summary><br>
+  <summary><strong>Nginx</strong></summary><br>
   <li> DB를 저장하기 위한 RDBMS로는 RDBS와 NOSQL이 존재한다.</li>
   <li> NOSQL은 검색속도가 월등하나 테이블간 연관관계를 설정할 수 없고 데이터의 형태가 정확하게 유지되지 않으며 데이터의 무결성이 지켜지지 않는다.</li>
   <li> RDBMS는 데이터의 무결성이 지켜지며 일정한 스키마로 데이터를 관리할 수 있어 테이블 내 데이터를 각각 관리할 스트레스가 줄어들며 연관관계로 테이블들을 관리할 수 있다.</li>
   <li> 상기 이유들로 RDBMS를 선택했으며 aws의 RDS인 MySql을 사용하기로 결정했다.</li>
 </details>
+<details> 
+  <summary><strong>AWS RDS MySQL</strong></summary><br>
+  <li> DB를 저장하기 위한 RDBMS로는 RDBS와 NOSQL이 존재한다.</li>
+  <li> NOSQL은 검색속도가 월등하나 테이블간 연관관계를 설정할 수 없고 데이터의 형태가 정확하게 유지되지 않으며 데이터의 무결성이 지켜지지 않는다.</li>
+  <li> RDBMS는 데이터의 무결성이 지켜지며 일정한 스키마로 데이터를 관리할 수 있어 테이블 내 데이터를 각각 관리할 스트레스가 줄어들며 연관관계로 테이블들을 관리할 수 있다.</li>
+  <li> 상기 이유들로 RDBMS를 선택했으며 aws의 RDS인 MySql을 사용하기로 결정했다.</li>
+</details>
+
 <br>
 <br>
 
-## 🎯 기술적 의사결정
+## 🎯 기술적 의사결정 | Technical Decision Making
 
 - **[TransactionalEventListner](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner)<br>**
 - **[HandlerExceptionResolver](https://github.com/Hanghae99-DoBlock/BE/wiki/HandlerExceptionResolver)<br>**
@@ -92,7 +102,7 @@
 <br>
 <br>
 
-## 💖 주요 기능
+## 💎 주요 기능 | Main Function
 
 <details>
 
@@ -108,8 +118,10 @@
 
   <img src="https://user-images.githubusercontent.com/108126419/207830787-d9e4711e-5cd4-4a8b-b526-0db0decb52bd.png" width="300">
   <img src="https://user-images.githubusercontent.com/108126419/207831025-333c96f3-f90c-4aac-b465-3677ac9e4711.png" width="302">
+<br>
+<br>
   <img src="https://user-images.githubusercontent.com/108126419/207831237-fd0b7099-2a1c-4db4-854b-aa80c8866350.png" width="300">
-  <img src="https://user-images.githubusercontent.com/108126419/207832697-66c401a0-b5a7-4bbc-a104-05db3e2b4a47.png" width="302">
+  <img src="https://user-images.githubusercontent.com/108126419/207832697-66c401a0-b5a7-4bbc-a104-05db3e2b4a47.png" width="301.5">
 
 <br>
 
@@ -158,8 +170,10 @@
 
 <img src="https://user-images.githubusercontent.com/108126419/207832626-c19d5b99-fda0-4842-8d10-f417acf9fdd5.png" width="300">
 <img src="https://user-images.githubusercontent.com/108126419/207833056-bb358093-6891-4ef0-a14f-7bedfa93596b.png" width="300">
+<br>
+<br>
 <img src="https://user-images.githubusercontent.com/108126419/207833122-9c678013-113e-4d32-a14d-7b3382f6e9f1.png" width="300">
-<img src="https://user-images.githubusercontent.com/108126419/207835078-a7f1d80c-4d19-4911-a55f-d535237a7324.PNG" width="301">
+<img src="https://user-images.githubusercontent.com/108126419/207835078-a7f1d80c-4d19-4911-a55f-d535237a7324.PNG" width="300.5">
 
   </ul>
 
@@ -167,7 +181,7 @@
 
 <details>
 
-  <summary><strong> 피드 단건 조회</strong></summary>
+  <summary><strong>👓 피드 단건 조회</strong></summary>
 
 <br/>
 
@@ -181,6 +195,8 @@
 
 <img src="https://user-images.githubusercontent.com/108126419/207833299-2b9b3b94-1961-4ab0-b6e1-309520093e2d.png" width="300">
 <img src="https://user-images.githubusercontent.com/108126419/207833360-ec6fb20b-b646-486f-b98b-734fd25db5a1.png" width="300">
+<br>
+<br>
 <img src="https://user-images.githubusercontent.com/108126419/207833419-6c9c8b26-683f-4ef1-bf30-ad4149c16003.png" width="300">
 <img src="https://user-images.githubusercontent.com/108126419/207834561-77cdb0dd-3f3a-4f7c-a504-aa8d3d971e3d.PNG" width="301">
 
@@ -198,11 +214,11 @@
 
 <li>태그 검색/ 유저찾기 검색 구분하여 검색가능</li>
 <li>항목 조회시 태그는 5개, 유저 찾기는 10개 단위로 무한스크롤 조회</li>
-    <br/>    
+  <br/>    
 
 <img src="https://user-images.githubusercontent.com/108126419/207835347-7e9e041b-111b-46fd-be8e-9a6083654bb4.png" width="300">
 <img src="https://user-images.githubusercontent.com/108126419/207835462-e49fd69f-8154-413d-ae97-1a46653faddb.png" width="300">
-    <br>
+  <br>
 
   </ul>
 
@@ -240,12 +256,16 @@
   <li>팔로우/언팔로우 기능</li>
   <li>로그아웃</li>
   <li>내가 쌓은 블럭(내가 작성한 피드 모아보기)</li>
-    <br/>
+  <br/>
 
 <img src="https://user-images.githubusercontent.com/108126419/207835912-86a3aaef-62ed-466c-a650-089ba04f3450.png" width="300">
 <img src="https://user-images.githubusercontent.com/108126419/207835973-e66a78df-6992-4cd2-8c3a-b1be80eec52c.png" width="300">
-<img src="https://user-images.githubusercontent.com/108126419/207836062-78e849ae-2a80-4775-a78d-08089bea2bf0.png" width="300">
+<br>
+<br>
+<img src="https://user-images.githubusercontent.com/108126419/207836062-78e849ae-2a80-4775-a78d-08089bea2bf0.png" width="301">
 <img src="https://user-images.githubusercontent.com/108126419/207836115-5052586b-69f7-4b95-87cd-30b612aabf2b.png" width="300">
+<br>
+<br>
 <img src="https://user-images.githubusercontent.com/108126419/207836729-2da0100d-aad4-4e98-9847-412017d1bc6f.PNG" width="303">
 <img src="https://user-images.githubusercontent.com/108126419/207836168-061dfd5f-7bc4-4c13-bc3b-dba1e18c9541.png" width="300">
 
@@ -256,7 +276,7 @@
 <br>
 <br>
 
-## 👨‍👩‍👧‍👦 팀 소개
+## 👨‍👩‍👧‍👦 팀 소개 | Team Introduction
 
 <table>
    <tr>
@@ -289,9 +309,9 @@
 <br>
 <br>
 
-## 📚 기술 스택
+## 📚 기술 스택 | Technology Stack
 
-### 💻 백엔드
+### 💻 백엔드 | BackEnd
 
 <br>
 
@@ -322,25 +342,32 @@
 
  </p>
 
-### 💻 프론트엔드
+### 💻 프론트엔드 | FrontEnd
 
 <br>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=HTML5&logoColor=white">
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=CSS3&logoColor=white">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white">
   <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
-  <img src="https://img.shields.io/badge/React Query-FF4154?style=for-the-badge&logo=React Query&logoColor=white">
-  <img src="https://img.shields.io/badge/Recoil-2088FF?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/Yarn-2C8EBB?style=for-the-badge&logo=Yarn&logoColor=white">
   <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=Axios&logoColor=white">
   <img src="https://img.shields.io/badge/styled components-DB7093?style=for-the-badge&logo=styled components&logoColor=white">
   <img src="https://img.shields.io/badge/cloudtype-000000?style=for-the-badge&logoColor=white"/>
+  <img src="https://img.shields.io/badge/.ENV-ECD53F?style=for-the-badge&logo=.ENV&logoColor=white">
+  <img src="https://img.shields.io/badge/ReduxToolkit-764ABC?style=for-the-badge&logo=ReduxToolkit&logoColor=white">
+  <img src="https://img.shields.io/badge/kakao login-FFCD00?style=for-the-badge&logo=kakao&logoColor=black">   
+  <img src="https://img.shields.io/badge/google login-4285F4?style=for-the-badge&logo=google&logoColor=white">
+  <img src="https://img.shields.io/badge/naver login-03C75A?style=for-the-badge&logo=naver&logoColor=white">
+
+</p>
 
 <br>
 <br>
 
-## 🔧 사용 툴
+## 🔧 사용 툴 | Tool Used
 
-<br>
 <br>
 
 <p align="center">
@@ -356,7 +383,29 @@
 <br>
 <br>
 
-## 🚀 트러블슈팅
+## 📜 API
+
+
+
+<summary><strong><a href="https://legendary-scaffold-c21.notion.site/a7f31d0b36c344ed9cb4b9d89ce5a18c?v=56734b61f9264de9ab271b251c76eaa0">📃 API 명세서<a/></strong></summary>
+
+
+<br>
+<br>
+
+## 🔐 ERD
+
+<details>
+
+  <summary><strong> ERD</strong></summary>
+  <img src="https://user-images.githubusercontent.com/108126419/207908436-40ecc746-c423-49ad-b33f-dfef34737359.png">
+
+</details>
+
+<br>
+<br>
+
+## 🚀 트러블 슈팅| Trouble Shooting
 
 - **[TransactionalEventListner 에서 Transaction 이 실행되지 않음](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner-%EC%97%90%EC%84%9C-Transaction-%EC%9D%B4-%EC%8B%A4%ED%96%89%EB%90%98%EC%A7%80-%EC%95%8A%EC%9D%8C)<br>**
 - **[소셜 로그인 시 닉네임 중복 문제](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%8B%9C-%EB%8B%89%EB%84%A4%EC%9E%84-%EC%A4%91%EB%B3%B5-%EB%AC%B8%EC%A0%9C)<br>**
