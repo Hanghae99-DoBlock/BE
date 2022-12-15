@@ -13,9 +13,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  S3_BUCKET_NAME: doblock-github-actions-s3-bucket
-
 permissions:
   contents: read
 
@@ -26,12 +23,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
         java-version: '11'
         distribution: 'temurin'
-        
+
         ## application.properties 파일 생성
     - name: make application.properties
       run: |
@@ -49,31 +47,3 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
       shell: bash
-
-    - name: Make zip file
-      run: zip -r ./wef.zip .
-      shell: bash
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-2
-
-    - name: Upload to S3
-      run: aws s3 cp --region ap-northeast-2 ./wef.zip s3://$S3_BUCKET_NAME/
-
-
-    # Deploy
-    - name: Deploy
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run:
-        aws deploy create-deployment
-        --application-name doblock-codedeploy-app
-        --deployment-group-name doblock-codedeploy-deployment-group
-        --file-exists-behavior OVERWRITE
-        --s3-location bucket=doblock-github-actions-s3-bucket,bundleType=zip,key=wef.zip
-        --region ap-northeast-2

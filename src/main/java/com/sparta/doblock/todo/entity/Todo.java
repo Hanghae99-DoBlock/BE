@@ -42,7 +42,7 @@ public class Todo extends TimeStamp {
     @Column
     private int todoIndex;
 
-    public void setTodoIndex(int index) {
+    public void editTodoIndex(int index) {
         this.todoIndex = index;
     }
 

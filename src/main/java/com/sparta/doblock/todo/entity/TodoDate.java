@@ -1,5 +1,6 @@
 package com.sparta.doblock.todo.entity;
 
+import com.sparta.doblock.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,13 +14,19 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "member_id", "date" }) })
 public class TodoDate {
 
     @Id
+    @Column(name = "tododate_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @Column
     private LocalDate date;
 
     @Column
@@ -29,7 +36,7 @@ public class TodoDate {
         return ++ this.lastIndex;
     }
 
-    public void setLastIndex(int lastIndex) {
+    public void editLastIndex(int lastIndex) {
         this.lastIndex = lastIndex;
     }
 }

@@ -20,5 +20,8 @@ public class ProfileResponseDto {
     private Long countFeed;
     private Long countFollower;
     private Long countFollowing;
+    private Long countBadge;
+    private List<String> tagList;
+    private List<String> badgeImageList;
     private List<FeedResponseDto> feedResponseDtoList;
 }

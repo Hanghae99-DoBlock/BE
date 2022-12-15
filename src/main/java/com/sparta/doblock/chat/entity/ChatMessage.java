@@ -15,19 +15,19 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessage extends TimeStamp {
+
     @Id
-    @Column(name = "chat_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private Member sender;
+    @JoinColumn(name = "chatroom_id")
+    private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
-    private Member receiver;
+    @JoinColumn(name = "sender_member_id")
+    private Member sender;
 
-    @Column(name = "message")
-    private String message;
+    @Column
+    private String messageContent;
 }

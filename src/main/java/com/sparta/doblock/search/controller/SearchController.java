@@ -4,6 +4,7 @@ import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,24 +12,30 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class SearchController {
+
     private final SearchService searchService;
 
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("keyword") String keyword, @RequestParam("category") String category,
-                                    @RequestParam("page") int page, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        // Search by tag
-        return searchService.search(keyword, category, page, memberDetails);
+                                    @RequestParam("id") @Nullable Long lastId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.search(keyword, category, lastId, memberDetails);
     }
 
     @GetMapping("/feed/following")
-    public ResponseEntity<?> getFollowingFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails,
-                                               @RequestParam("page") int page) {
-        return searchService.getFollowingFeeds(memberDetails, page);
+    public ResponseEntity<?> getFollowingFeeds(@RequestParam("id") @Nullable Long lastId,
+                                               @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getFollowingFeeds(lastId, memberDetails);
     }
 
     @GetMapping("/feed/recommended")
-    public ResponseEntity<?> getRecommendedFeeds(@AuthenticationPrincipal MemberDetailsImpl memberDetails) {
-        return searchService.getRecommendedFeeds(memberDetails);
+    public ResponseEntity<?> getRecommendedFeeds(@RequestParam("id") @Nullable Long lastId,
+                                                 @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return searchService.getRecommendedFeeds(lastId, memberDetails);
+    }
+
+    @GetMapping("/profile/{memberId}/feed")
+    public ResponseEntity<?> getUserFeeds(@PathVariable(name = "memberId") Long memberId, @RequestParam("id") @Nullable Long lastId){
+        return searchService.getUserFeeds(memberId, lastId);
     }
 
     @GetMapping("/feed/{feed_id}")

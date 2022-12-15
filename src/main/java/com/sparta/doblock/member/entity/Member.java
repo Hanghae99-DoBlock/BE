@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "nickname", "authority" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "nickname", "socialCode" }) })
 public class Member {
 
     @Id
@@ -43,11 +43,6 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column(name = "authority")
     private Authority authority;
-    
-    // compares two member entity
-    public boolean isEqual(Member other) {
-        return this.id.equals(other.getId());
-    }
 
     public void editProfileImage(String profileImage){
         this.profileImage = profileImage;

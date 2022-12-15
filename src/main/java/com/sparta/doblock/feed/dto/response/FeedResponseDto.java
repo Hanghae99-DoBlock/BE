@@ -1,6 +1,5 @@
 package com.sparta.doblock.feed.dto.response;
 
-import com.sparta.doblock.comment.dto.response.CommentResponseDto;
 import com.sparta.doblock.reaction.dto.response.ReactionResponseDto;
 import com.sparta.doblock.reaction.entity.ReactionType;
 import lombok.AllArgsConstructor;
@@ -19,6 +18,7 @@ public class FeedResponseDto {
     private Long memberId;
     private String profileImageUrl;
     private String nickname;
+    private String badgeName;
     private boolean followOrNot;
     private List<String> todoList;
     private String feedTitle;
@@ -28,9 +28,10 @@ public class FeedResponseDto {
     private String feedColor;
     private boolean eventFeed;
     private Long countReaction;
+    private boolean myReaction;
+    private ReactionType myReactionType;
     private List<ReactionResponseDto> currentReactionType;
     private List<ReactionResponseDto> reactionResponseDtoList;
     private Long countComment;
-    private List<CommentResponseDto> commentResponseDtoList;
     private LocalDateTime postedAt;
 }

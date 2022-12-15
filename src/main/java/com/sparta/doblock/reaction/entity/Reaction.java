@@ -24,7 +24,7 @@ public class Reaction extends TimeStamp {
     private Long id;
 
     @Column(nullable = false)
-    ReactionType reactionType;
+    private ReactionType reactionType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

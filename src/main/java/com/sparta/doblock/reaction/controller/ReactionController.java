@@ -19,4 +19,25 @@ public class ReactionController {
                                          @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
         return reactionService.addReaction(feedId, reactionRequestDto, memberDetails);
     }
+
+    @PatchMapping("/{feedId}/reaction")
+    public ResponseEntity<?> editReaction(@PathVariable Long feedId, @RequestBody ReactionRequestDto reactionRequestDto,
+                                         @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return reactionService.editReaction(feedId, reactionRequestDto, memberDetails);
+    }
+
+    @DeleteMapping("/{feedId}/reaction")
+    public ResponseEntity<?> deleteReaction(@PathVariable Long feedId, @AuthenticationPrincipal MemberDetailsImpl memberDetails) {
+        return reactionService.deleteReaction(feedId, memberDetails);
+    }
+
+    @GetMapping("/{feedId}/recent-reaction")
+    public ResponseEntity<?> getRecentReaction(@PathVariable Long feedId) {
+        return reactionService.getRecentReaction(feedId);
+    }
+
+    @GetMapping("/{feedId}/reaction-list")
+    public ResponseEntity<?> getReactionList(@PathVariable Long feedId) {
+        return reactionService.getReactionList(feedId);
+    }
 }

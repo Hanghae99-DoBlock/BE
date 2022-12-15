@@ -20,7 +20,7 @@ public class NotificationController {
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal MemberDetailsImpl memberDetails,
-                                @RequestHeader(value = "Last-Event-Id", required = false, defaultValue = "") String lastEventId){
+                                @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId){
         return notificationService.subscribe(memberDetails, lastEventId);
     }
 }

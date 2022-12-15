@@ -1,4 +1,4 @@
-package com.sparta.doblock.security.token;
+package com.sparta.doblock.security.dto;
 
 import lombok.Builder;
 import lombok.Getter;

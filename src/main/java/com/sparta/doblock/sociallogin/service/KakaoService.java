@@ -1,13 +1,15 @@
-package com.sparta.doblock.auth.service;
+package com.sparta.doblock.sociallogin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.auth.dto.GoogleProfileDto;
+import com.sparta.doblock.exception.DoBlockExceptions;
+import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Authority;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.security.dto.TokenDto;
+import com.sparta.doblock.sociallogin.dto.SocialProfileDto;
 import com.sparta.doblock.util.LoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,36 +18,33 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleService {
+public class KakaoService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final LoginUtil loginUtil;
 
-    @Value("${google.tokenUri}")
-    private String googleTokenUrl;
+    @Value("${kakao.tokenUri}")
+    private String kakaoTokenUrl;
 
-    @Value("${google.clientId}")
-    private String googleClientId;
+    @Value("${kakao.clientId}")
+    private String kakaoClientId;
 
-    @Value("${google.redirectUri}")
-    private String googleCallbackUrl;
+    @Value("${kakao.redirectUri}")
+    private String kakaoCallbackUrl;
 
-    @Value("${google.clientSecret}")
-    private String googleClientSecret;
-
-    @Value("${google.userInfoUri}")
-    private String googleProfileUrl;
+    @Value("${kakao.userInfoUri}")
+    private String kakaoProfileUrl;
 
     public ResponseEntity<?> login(String code) throws JsonProcessingException {
 
@@ -62,46 +61,44 @@ public class GoogleService {
         return ResponseEntity.ok().headers(httpHeaders).body("로그인 완료!");
     }
 
-    public String getAccessToken(String code) throws JsonProcessingException{
+    public String getAccessToken(String code) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", googleClientId);
-        params.add("client_secret", googleClientSecret);
-        params.add("code", code);
-        params.add("redirect_uri", googleCallbackUrl);
         params.add("grant_type", "authorization_code");
+        params.add("client_id", kakaoClientId);
+        params.add("redirect_uri", kakaoCallbackUrl);
+        params.add("code", code);
 
-        HttpEntity<MultiValueMap<String, String>> googleTokenRequest = new HttpEntity<>(params, headers);
+        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(googleTokenUrl,googleTokenRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(kakaoTokenUrl,kakaoTokenRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
-
         return jsonNode.get("access_token").asText();
     }
 
     @Transactional
     public Member saveUser(String oauthToken) throws JsonProcessingException {
 
-        GoogleProfileDto profile = findProfile(oauthToken);
+        SocialProfileDto profile = findProfile(oauthToken);
 
-        Optional<Member> googleMember = memberRepository.findBySocialId(profile.getGoogleMemberId());
+        Optional<Member> kakaoMember = memberRepository.findBySocialId(profile.getSocialMemberId());
 
-        if(googleMember.isEmpty()) {
+        if(kakaoMember.isEmpty()) {
 
             if (memberRepository.existsByEmail(profile.getEmail())){
-                throw new RuntimeException("이미 사용 중인 이메일입니다.");
+                throw new DoBlockExceptions(ErrorCodes.DUPLICATED_EMAIL);
             }
 
             Member member = Member.builder()
                     .email(profile.getEmail())
                     .nickname(profile.getNickname())
-                    .socialId(profile.getGoogleMemberId())
-                    .socialCode("GOOGLE")
+                    .socialId(profile.getSocialMemberId())
+                    .socialCode("KAKAO")
                     .profileImage(profile.getProfileImage())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .authority(Authority.ROLE_SOCIAL)
@@ -111,30 +108,30 @@ public class GoogleService {
 
             return member;
 
-        } else return googleMember.get();
+        } else return kakaoMember.get();
     }
 
-    public GoogleProfileDto findProfile(String oauthToken) throws JsonProcessingException {
+    public SocialProfileDto findProfile(String oauthToken) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + oauthToken);
+        headers.add("Authorization", "Bearer " + oauthToken); //(1-4)
 
-        HttpEntity<MultiValueMap<String, String>> googleProfileRequest = new HttpEntity<>(headers);
+        HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(googleProfileUrl,googleProfileRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(kakaoProfileUrl,kakaoProfileRequest,String.class);
 
         String responseBody = responseEntity.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
 
-        String googleMemberId = jsonNode.get("sub").asText();
-        String email = jsonNode.get("email").asText();
-        String nickname = jsonNode.get("name").asText();
-        String profileImage = jsonNode.get("picture").asText();
+        Long kakaoMemberId = jsonNode.get("id").asLong();
+        String email = jsonNode.get("kakao_account").get("email").asText();
+        String nickname = jsonNode.get("kakao_account").get("profile").get("nickname").asText();
+        String profileImage = jsonNode.get("kakao_account").get("profile").get("profile_image_url").asText();
 
-        return GoogleProfileDto.builder()
-                .googleMemberId(googleMemberId)
+        return SocialProfileDto.builder()
+                .socialMemberId(kakaoMemberId.toString())
                 .email(email)
                 .nickname(nickname)
                 .profileImage(profileImage)

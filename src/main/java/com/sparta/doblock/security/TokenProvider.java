@@ -1,11 +1,9 @@
 package com.sparta.doblock.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.doblock.exception.ErrorCodes;
 import com.sparta.doblock.member.entity.Member;
 import com.sparta.doblock.member.entity.MemberDetailsImpl;
 import com.sparta.doblock.member.repository.MemberRepository;
-import com.sparta.doblock.security.token.TokenDto;
+import com.sparta.doblock.security.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -18,10 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.security.Key;
-import java.time.Instant;
 import java.util.Date;
 
 @Slf4j
@@ -31,7 +26,7 @@ public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "bearer";
     private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24;
-    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7;
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 3;
 
     private final MemberRepository memberRepository;
     private final Key key;
@@ -52,8 +47,6 @@ public class TokenProvider {
                 .setSubject(member.getEmail())
                 .claim(AUTHORITIES_KEY, member.getAuthority())
                 .claim("memberId", member.getId())
-                .claim("nickname", member.getNickname())
-                .claim("profileImage", member.getProfileImage())
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -71,21 +64,11 @@ public class TokenProvider {
                 .build();
     }
 
-    public Authentication getAuthentication(String accessToken, HttpServletResponse response) throws IOException {
+    public Authentication getAuthentication(String accessToken) {
 
         Claims claims = parseClaims(accessToken);
 
         Assert.notNull(claims.get(AUTHORITIES_KEY), "권한 정보가 없는 서명입니다.");
-
-        if (claims.getExpiration().toInstant().toEpochMilli() < Instant.now().toEpochMilli()) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().println(
-                    new ObjectMapper().writeValueAsString(
-                            ErrorCodes.NOT_VALID_TOKEN
-                    )
-            );
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
 
         String email = claims.getSubject();
         Member member = memberRepository.findByEmail(email).orElseThrow(
@@ -105,7 +88,7 @@ public class TokenProvider {
         }
     }
 
-    public boolean validateToken(String token){
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;

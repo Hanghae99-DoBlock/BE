@@ -1,13 +1,13 @@
-package com.sparta.doblock.auth.dto;
+package com.sparta.doblock.sociallogin.dto;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class NaverProfileDto {
+public class SocialProfileDto {
 
-    private String naverMemberId;
+    private String socialMemberId;
     private String email;
     private String profileImage;
     private String nickname;

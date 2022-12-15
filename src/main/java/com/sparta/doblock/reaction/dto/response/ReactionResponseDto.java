@@ -13,5 +13,6 @@ public class ReactionResponseDto {
     private Long memberId;
     private String profileImage;
     private String nickname;
+    private String email;
     private ReactionType reactionType;
 }
