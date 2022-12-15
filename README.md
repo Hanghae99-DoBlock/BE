@@ -15,22 +15,6 @@
 - **[발표 자료](https://www.miricanvas.com/v/11mzz4j)<br>**
 - **[시연 영상](https://youtu.be/ndHV3PM1TOA)<br>**
 
-  <br>
-  <br>
-
-## 🔭목차 | Contents
-1. [프로젝트 기간 | Project Period](#프로젝트-기간---Project-Period)
-2. [서비스 아키텍쳐 | Service Architecture](#서비스-아키텍쳐---Service-Architecture)
-3. [아키텍쳐 도입 배경 | Architecture Introduction Background](#아키텍쳐-도입-배경---Architecture-Introduction-Background)
-4. [기술적 의사결정 | Technical Decision Making](#기술적-의사결정---Technical-Decision-Making)
-5. [주요 기능 | Main Function](#주요-기능---Main-Function)
-6. [팀 소개 | Team Introduction](#팀-소개---Team-Introduction)
-7. [기술 스택 | Technology Stack](#기술-스택---Technology-Stack)
-8. [사용 툴 | Tool Used](#사용-툴---Tool-Used)
-9. [API](#API)
-10. [ERD](#ERD)
-11. [트러블 슈팅 | Trouble Shooting](#트러블-슈팅---Trouble-Shooting)
-
 <br>
 <br>
 
