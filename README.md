@@ -12,27 +12,27 @@
 <br>
 
 - **[Do!Block 바로가기](https://www.doblock.shop/)<br>**
-- **[발표 자료](https://docs.google.com/presentation/d/1u2x1SL4Bt863htJeiWeb8mTztDs20Rne1hU_DN310EU/edit?usp=sharing)<br>**
+- **[발표 자료](https://www.miricanvas.com/v/11mzz4j)<br>**
 - **[팀 노션 주소](https://legendary-scaffold-c21.notion.site/Do-Block-03bf205c16b44de293a37f1a738eadac)**
 - **[시연 영상](https://youtu.be/P7UCIujReOk)<br>**
   <br>
   <br>
 
 ## 🔭목차 | Contents
-1. [프로젝트기간 | Project Period](#-프로젝트기간--project-period)
-2. [서비스 아키텍쳐 | Service Architecture](#-서비스-아키텍쳐--Service-Architecture)
-3. [아키텍쳐 도입 배경 | Architecture Introduction Background](#-아키텍쳐-도입-배경--Architecture-Introduction-Background)
-4. [기술적 의사결정| Technical Decision Making](#-기술적-의사결정--Technical-Decision-Making)
-5. [주요 기능 | Main Function](#-주요-기능--Main-Function)
-6. [팀 소개 | Team Introduction](#-팀-소개--team-introduction)
-7. [기술스택 | Technology Stack](#-기술스택--Technology-Stack)
-8. [사용툴 | Tool Used](#-사용툴--Tool-Used)
-9. [트러블 슈팅| Trouble Shooting](#-트러블-슈팅--trouble-shooting)
+1. [ 프로젝트기간 | Project Period ](#------------project-period--br-)
+2. [ 서비스 아키텍쳐 | Service Architecture ](#------------br-)
+3. [ 아키텍쳐 도입 배경 | Architecture Introduction Background ](#--------------br-)
+4. [ 기술적 의사결정 | Technical Decision Making ](#-----------)
+5. [ 주요 기능 | Main Function ](#--------)
+6. [ 팀 소개 | Team Introduction ](#----------------)
+7. [ 기술 스택 | Technology Stack](#--------)
+8. [ 사용 툴 | Tool Used](#-------)
+9. [ 트러블슈팅| Trouble Shooting](#--------)
 
 <br>
 <br>
 
-## 📆 프로젝트 기간 <br>
+## 📆 프로젝트기간 | Project Period <br>
 
 <ul>
   <li>개발 기간: 2022/11/04 ~ 2022/12/15(6주)</li>
@@ -47,7 +47,7 @@
 
 ## 🏗 서비스 아키텍쳐<br>
 
-![image](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fbg3Vqy%2FbtrNjyBAtmG%2Fz58lk6MglF7kHzwkWhkgBK%2Fimg.png)
+![image](https://user-images.githubusercontent.com/108126419/207886272-d38c3b62-2427-4e38-9813-d57b04ded842.png)
 
 <br>
 <br>
@@ -167,7 +167,7 @@
 
 <details>
 
-  <summary><strong>👓 피드 단건 조회</strong></summary>
+  <summary><strong> 피드 단건 조회</strong></summary>
 
 <br/>
 
@@ -234,7 +234,7 @@
 
   <ul>
 
-  <li>내가 획득한 뱃지 보기 (swiper)</li>
+  <li>내가 획득한 뱃지 보기(swiper)</li>
   <li>회원 정보 수정(닉네임/프로필 사진/비밀번호)</li>
   <li>관심사 설정</li>
   <li>팔로우/언팔로우 기능</li>
@@ -299,19 +299,23 @@
  <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"> 
  <img src="https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=Spring&logoColor=white">
  <img src="https://img.shields.io/badge/-Springboot-6DB33F?style=for-the-badge&logo=Springboot&logoColor=white">
- <img src="https://img.shields.io/badge/Spring Data JPA-6DB33F?style=for-the-badge&logo=S&logoColor=white">
+ <img src="https://img.shields.io/badge/Spring Data JPA-6DB33F?style=for-the-badge&logoColor=white">
+ <img src="https://img.shields.io/badge/Spring Security-6DB33F?style=for-the-badge&logo=Spring Security&logoColor=white">
  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white">
  <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=NGINX&logoColor=white">
  <img src="https://img.shields.io/badge/GitHub Actions-2088FF?style=for-the-badge&logo=GitHub Actions&logoColor=white">
  <img src="https://img.shields.io/badge/QueryDsl-2088FF?style=for-the-badge&logo=&logoColor=white">
  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white">
+ <img src="https://img.shields.io/badge/sse-000000?style=for-the-badge&logoColor=white">
+ <img src="https://img.shields.io/badge/Sock.js-000000?style=for-the-badge&logo=Sock.js&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Stomp-000000?style=for-the-badge&logo=Stomp&logoColor=white"/>
  <img src="https://img.shields.io/badge/Amazon S3-569A31?style=for-the-badge&logo=Amazon S3&logoColor=white">
  <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white">
  <img src="https://img.shields.io/badge/Amazon RDS-527FFF?style=for-the-badge&logo=Amazon RDS&logoColor=white">
  <img src="https://img.shields.io/badge/Amazon CodeDeploy-8A2BE2?style=for-the-badge&logoColor=white">
  <img src="https://img.shields.io/badge/Gabia-00498c?style=for-the-badge&&logoColor=white">
  <img src="https://img.shields.io/badge/SSL-721412?style=for-the-badge&logo=SSL&logoColor=white">
- <img src="https://img.shields.io/badge/Cerbot-000000?style=for-the-badge&logoColor=white">
+ <img src="https://img.shields.io/badge/Certbot-D30000?style=for-the-badge&logoColor=white">
  <img src="https://img.shields.io/badge/kakao login-FFCD00?style=for-the-badge&logo=kakao&logoColor=black">   
  <img src="https://img.shields.io/badge/google login-4285F4?style=for-the-badge&logo=google&logoColor=white">
  <img src="https://img.shields.io/badge/naver login-03C75A?style=for-the-badge&logo=naver&logoColor=white">
@@ -356,7 +360,7 @@
 
 - **[TransactionalEventListner 에서 Transaction 이 실행되지 않음](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner-%EC%97%90%EC%84%9C-Transaction-%EC%9D%B4-%EC%8B%A4%ED%96%89%EB%90%98%EC%A7%80-%EC%95%8A%EC%9D%8C)<br>**
 - **[소셜 로그인 시 닉네임 중복 문제](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%8B%9C-%EB%8B%89%EB%84%A4%EC%9E%84-%EC%A4%91%EB%B3%B5-%EB%AC%B8%EC%A0%9C)<br>**
-- **[ImageScalr 사용 후 프로젝트 패키지에 사진이 저장됨](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/QueryDsl-Fetchjoin(%EC%B9%B4%ED%85%8C%EC%8B%9C%EC%95%88-%EA%B3%B1(Cartesian-Product),-Multiplebag-%EB%AC%B8%EC%A0%9C)<br>**
+- **[ImageScalr 사용 후 프로젝트 패키지에 사진이 저장됨](https://github.com/Hanghae99-DoBlock/BE/wiki/ImageScalr-%EC%82%AC%EC%9A%A9-%ED%9B%84-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%ED%8C%A8%ED%82%A4%EC%A7%80%EC%97%90-%EC%82%AC%EC%A7%84%EC%9D%B4-%EC%A0%80%EC%9E%A5%EB%90%A8)<br>**
 - **[무한스크롤 시 페이지 당 피드가 무한으로 늘어남](https://github.com/Hanghae99-DoBlock/BE/wiki/%EB%AC%B4%ED%95%9C%EC%8A%A4%ED%81%AC%EB%A1%A4-%EC%8B%9C-%ED%8E%98%EC%9D%B4%EC%A7%80-%EB%8B%B9-%ED%94%BC%EB%93%9C%EA%B0%80-%EB%AC%B4%ED%95%9C%EC%9C%BC%EB%A1%9C-%EB%8A%98%EC%96%B4%EB%82%A8)<br>**
 - **[추천 피드, 피드 태그 검색 시 검색 결과에 따라 중복된 피드가 생김](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%B6%94%EC%B2%9C-%ED%94%BC%EB%93%9C,-%ED%94%BC%EB%93%9C-%ED%83%9C%EA%B7%B8-%EA%B2%80%EC%83%89-%EC%8B%9C-%EA%B2%80%EC%83%89-%EA%B2%B0%EA%B3%BC%EC%97%90-%EB%94%B0%EB%9D%BC-%EC%A4%91%EB%B3%B5%EB%90%9C-%ED%94%BC%EB%93%9C%EA%B0%80-%EC%83%9D%EA%B9%80)<br>**
 - **[피드 300 개 이상 시 피드 목록 조회 속도가 느림](https://github.com/Hanghae99-DoBlock/BE/wiki/%ED%94%BC%EB%93%9C-300-%EA%B0%9C-%EC%9D%B4%EC%83%81-%EC%8B%9C-%ED%94%BC%EB%93%9C-%EB%AA%A9%EB%A1%9D-%EC%A1%B0%ED%9A%8C-%EC%86%8D%EB%8F%84%EA%B0%80-%EB%8A%90%EB%A6%BC)<br>**
