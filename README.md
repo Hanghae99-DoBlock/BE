@@ -1,14 +1,14 @@
-# <img src="https://user-images.githubusercontent.com/108126419/207803210-3720fca9-3c05-43fe-a662-bd619bf1ce14.jpg" width="40">&nbsp;[Do!Block] 피드형 Todolist SNS
+# <img src="https://user-images.githubusercontent.com/108126419/207803210-3720fca9-3c05-43fe-a662-bd619bf1ce14.jpg" width="40">&nbsp;[Do!Block] 나를 쌓는 아주 작은 습관
 
 ## Do!Block 소개 | About Us
 
-### 할 일을 기록하고 공유하는 피드형 SNS! <br>
+>###  할 일을 기록하고 공유하는 피드형 SNS! <br>
 
 <img src="https://user-images.githubusercontent.com/108126419/207803730-a2a90832-b6d3-4948-8895-7385382cb9ec.png" width="800">
 
-> 하루 한 줌은 체득하고 싶은 습관들을 기록하여 꾸준히 이뤄나갈 수 있도록 도와주는 서비스입니다.<br>
-> 사용자들이 단순히 자신의 습관을 만드는 것보다 좀 더 재미있게 습관을 형성할 수 있도록 하자는 취지에서 시작된 프로젝트입니다. <br>
-> 따라서 내 습관뿐만 아니라 친구의 습관까지 확인하고 독려할 수 있습니다.
+> - Do!Block은 사용자의 입장에서 "내가 한 일, 해야할 일을 TodoList로 관리하면서 동시에 공유할 수 있는 서비스가 없을까?" 하는 질문에서 시작한 프로젝트입니다.<br>
+> - 매일 할 일을 Todo로 작성하여 기록하고, 완료한 Todo 중에 자랑/공유하고 싶은 Todo를 블록(피드)의 형태로 쌓아가며 사용자들과 소통하는 피드형 SNS입니다.<br>
+> - 기존의 TodoList와 SNS 서비스에서 각각 분리되어있던 기능이 Do!Block에서는 Todo를 완료함과 동시에 블럭을 쌓아갈 수 있어 색다른 재미를 느낄 수 있습니다. 
 <br>
 
 - **[Do!Block 바로가기](https://www.doblock.shop/)<br>**
@@ -17,6 +17,20 @@
 - **[시연 영상](https://youtu.be/P7UCIujReOk)<br>**
   <br>
   <br>
+
+## 🔭목차 | Contents
+1. [프로젝트기간 | Project Period](#-프로젝트기간--project-period)
+2. [서비스 아키텍쳐 | Service Architecture](#-서비스-아키텍쳐--Service-Architecture)
+3. [아키텍쳐 도입 배경 | Architecture Introduction Background](#-아키텍쳐-도입-배경--Architecture-Introduction-Background)
+4. [기술적 의사결정| Technical Decision Making](#-기술적-의사결정--Technical-Decision-Making)
+5. [주요 기능 | Main Function](#-주요-기능--Main-Function)
+6. [팀 소개 | Team Introduction](#-팀-소개--team-introduction)
+7. [기술스택 | Technology Stack](#-기술스택--Technology-Stack)
+8. [사용툴 | Tool Used](#-사용툴--Tool-Used)
+9. [트러블 슈팅| Trouble Shooting](#-트러블-슈팅--trouble-shooting)
+
+<br>
+<br>
 
 ## 📆 프로젝트 기간 <br>
 
@@ -56,34 +70,25 @@
   <li> 상기 이유들로 3개의 소셜 로그인을 선택하게 되었고 그에따라 편의성을 향상시킬 수 있었다.</li>
 </details>
 <details> 
-  <summary><strong>Redis</strong></summary><br>
-  <li> 데이터의 I/O가 잦은 경우 변동성이 적은 데이터일때 매번 DB를 조회하는 것은 트래픽 부하와 성능 저하를 해결할 수 없었다.</li>
-  <li> 데이터를 캐싱 처리하는 경우 트래픽을 줄이고 성능을 향상시킬 수 있는데 이때 로컬캐시 , Redis를 고려하게 <br>되었다.</li>
-  <li> 로컬캐시(caffeine cache)를 고려하게 되었으나 무중단 배포 환경에서 휘발성 캐시가 사라질 위험이 존재한다고 <br>판단했고 scale-out시 데이터 정합성 문제가 생긴다고 판단했다.</li>
-  <li> Redis의 경우 여러 자료구를 지원하여 캐싱 처리, 데이터를 처리하기 편리하다고 생각했고 무중단 배포환경에서 <br>서버의 자원을 사용하기에 데이터가 사라질 위험이 존재하지 않았다.</li>
-  <li> Redis는 여러 서버간 데이터 정합성 문제도 해결할 수 있다고 생각했다.</li>
-  <li> 상기 이유들로 Redis를 캐싱처리를 위해 사용하기로 결정했다.</li>
-</details>
-<details> 
   <summary><strong>aws RDS MySql</strong></summary><br>
   <li> DB를 저장하기 위한 RDBMS로는 RDBS와 NOSQL이 존재한다.</li>
   <li> NOSQL은 검색속도가 월등하나 테이블간 연관관계를 설정할 수 없고 데이터의 형태가 정확하게 유지되지 않으며 데이터의 무결성이 지켜지지 않는다.</li>
   <li> RDBMS는 데이터의 무결성이 지켜지며 일정한 스키마로 데이터를 관리할 수 있어 테이블 내 데이터를 각각 관리할 스트레스가 줄어들며 연관관계로 테이블들을 관리할 수 있다.</li>
   <li> 상기 이유들로 RDBMS를 선택했으며 aws의 RDS인 MySql을 사용하기로 결정했다.</li>
 </details>
-<details> 
-  <summary><strong>router53 , Amazon ELB</strong></summary><br>
-  <li> Front-End와 통신시 HTTP프로토콜로만 통신하는 것은 보안상의 위험성을 야기한다고 생각한다.</li>
-  <li> Back-End 배포시 HTTPS 프로토콜을 사용하여 보안을 높히고자 하였고 이때 aws의 router53, Amazon ELB를 <br>도입하는 것이 EC2를 사용하는 우리가 바로 적용할 수 있는 부분이라고 생각했다.</li>
-  <li> 상기 이유들로 HTTP,HTTPS프로토콜을 통신할 수 있는 배포 환경을 구축하는 것에 aws의 router53과 Amazon <br>ELB를 이용하기로 결정했다. </li>
-</details>
-<details> 
-  <summary><strong>SSE</strong></summary><br>
-  <li> 실시간 알림을 구현하기 위해선 기존의 HTTP 통신 방식(폴링 , 긴폴링)을 사용하기엔 자원의 낭비가 발생하여 <br>새로운 방식을 도입해야 했다.</li>
-  <li> 기존의 HTTP프로토콜을 사용하는 streaming방식의 SSE와 WebSocket을 사용하는 웹소켓 두가지가 존재했으나 <br>우리가 구현하려는 알림은 양방향의 알림이 아니었다.</li>
-  <li> 배터리 소모량이 적고 연결이 끊어지면 재연결을 시도하며 pollyfill로 모든 브라우저 지원이 가능하게할 수 있는 SSE가 우리의 알림과 맞는다고 판단했다.</li>
-  <li> SSE는 첫 연결 이후 매번 재요청을 하지않고 서버의 응답을 줄 수 있어 비용을 아낄 수 있는 측면과 웹소켓의 차이 , 프로젝트의 방향성을 고려하여 사용하기로 결정했다.</li>
-</details>
+<br>
+<br>
+
+## 🎯 기술적 의사결정
+
+- **[TransactionalEventListner](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner)<br>**
+- **[HandlerExceptionResolver](https://github.com/Hanghae99-DoBlock/BE/wiki/HandlerExceptionResolver)<br>**
+- **[SSE](https://github.com/Hanghae99-DoBlock/BE/wiki/SSE)<br>**
+- **[SockJS + Stomp](https://github.com/Hanghae99-DoBlock/BE/wiki/SockJS---Stomp)<br>**
+- **[QueryDSL](https://github.com/Hanghae99-DoBlock/BE/wiki/QueryDSL)<br>**
+- **[ImgScalr](https://github.com/Hanghae99-DoBlock/BE/wiki/ImgScalr)<br>**
+- **[RedisRepository](https://github.com/Hanghae99-DoBlock/BE/wiki/RedisRepository)<br>**
+
 <br>
 <br>
 
@@ -101,8 +106,10 @@
 
 <br>
 
-  <img src="https://user-images.githubusercontent.com/108126419/207796871-982de0b8-120a-4aab-9d39-cd072e31e355.png" width="600">
-  <img src="https://user-images.githubusercontent.com/108126419/207797028-0b0a9e7f-0d52-4943-996d-05e3c5580e1d.png" width="600">
+  <img src="https://user-images.githubusercontent.com/108126419/207830787-d9e4711e-5cd4-4a8b-b526-0db0decb52bd.png" width="300">
+  <img src="https://user-images.githubusercontent.com/108126419/207831025-333c96f3-f90c-4aac-b465-3677ac9e4711.png" width="302">
+  <img src="https://user-images.githubusercontent.com/108126419/207831237-fd0b7099-2a1c-4db4-854b-aa80c8866350.png" width="300">
+  <img src="https://user-images.githubusercontent.com/108126419/207832697-66c401a0-b5a7-4bbc-a104-05db3e2b4a47.png" width="302">
 
 <br>
 
@@ -124,7 +131,8 @@
 <li>피드에 적용될 컬러 선택 가능</li>
   <br/>
 
-<img src="https://user-images.githubusercontent.com/108126419/207797718-613acb38-8165-475b-ba65-bd1fc3f113fe.png" width="600">
+  <img src="https://user-images.githubusercontent.com/108126419/207832276-2dfc3ba6-a396-48b8-a891-e1f795cb222e.png" width="301">
+  <img src="https://user-images.githubusercontent.com/108126419/207832354-ed0c11ed-7ebe-4aac-ae90-ad09d6d59d3c.png" width="300">
 
   </ul>
 
@@ -148,7 +156,10 @@
     - 게시글을 5개씩 불러옴 <br>
     <br/>
 
-<img src="https://user-images.githubusercontent.com/108126419/207798786-93eadccf-0554-46e4-b7ef-92698f1ee20b.png" width="900">
+<img src="https://user-images.githubusercontent.com/108126419/207832626-c19d5b99-fda0-4842-8d10-f417acf9fdd5.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207833056-bb358093-6891-4ef0-a14f-7bedfa93596b.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207833122-9c678013-113e-4d32-a14d-7b3382f6e9f1.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207835078-a7f1d80c-4d19-4911-a55f-d535237a7324.PNG" width="301">
 
   </ul>
 
@@ -168,7 +179,10 @@
   <li>리액션</li>
   <br />
 
-<img src="https://user-images.githubusercontent.com/108126419/207799750-efa10128-b719-4074-861e-d9322bf222a9.png" width="900">
+<img src="https://user-images.githubusercontent.com/108126419/207833299-2b9b3b94-1961-4ab0-b6e1-309520093e2d.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207833360-ec6fb20b-b646-486f-b98b-734fd25db5a1.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207833419-6c9c8b26-683f-4ef1-bf30-ad4149c16003.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207834561-77cdb0dd-3f3a-4f7c-a504-aa8d3d971e3d.PNG" width="301">
 
 </ul>
 
@@ -186,7 +200,8 @@
 <li>항목 조회시 태그는 5개, 유저 찾기는 10개 단위로 무한스크롤 조회</li>
     <br/>    
 
-<img src="https://user-images.githubusercontent.com/108126419/207800208-560486ec-bdcb-4f82-b5e4-bf3a414a70bf.png" width="600">
+<img src="https://user-images.githubusercontent.com/108126419/207835347-7e9e041b-111b-46fd-be8e-9a6083654bb4.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207835462-e49fd69f-8154-413d-ae97-1a46653faddb.png" width="300">
     <br>
 
   </ul>
@@ -204,7 +219,8 @@
   <li>대표 뱃지 설정</li>
     <br/>
 
-<img src="https://user-images.githubusercontent.com/108126419/207800757-56bb0e27-9d46-4595-b86f-e21b351de6a6.png" width="600">
+<img src="https://user-images.githubusercontent.com/108126419/207835720-bfaf48d6-fdc3-4269-b263-00a5c30e50b4.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207835773-e8b82b84-5991-4627-adf0-5e5c7dd2fffe.png" width="300.5">
 
   </ul>
 
@@ -226,8 +242,12 @@
   <li>내가 쌓은 블럭(내가 작성한 피드 모아보기)</li>
     <br/>
 
-<img src="https://user-images.githubusercontent.com/108126419/207801404-eb4a2ff9-acdb-4518-8cf6-39d4469c804d.png" width="600">
-<img src="https://user-images.githubusercontent.com/108126419/207801442-fffdf321-17d8-4366-a464-c1cf1f00d93b.png" width="600">
+<img src="https://user-images.githubusercontent.com/108126419/207835912-86a3aaef-62ed-466c-a650-089ba04f3450.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207835973-e66a78df-6992-4cd2-8c3a-b1be80eec52c.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207836062-78e849ae-2a80-4775-a78d-08089bea2bf0.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207836115-5052586b-69f7-4b95-87cd-30b612aabf2b.png" width="300">
+<img src="https://user-images.githubusercontent.com/108126419/207836729-2da0100d-aad4-4e98-9847-412017d1bc6f.PNG" width="303">
+<img src="https://user-images.githubusercontent.com/108126419/207836168-061dfd5f-7bc4-4c13-bc3b-dba1e18c9541.png" width="300">
 
   </ul>
 
@@ -236,13 +256,37 @@
 <br>
 <br>
 
-## 👨‍👩‍👧‍👦 TEAM 소개
+## 👨‍👩‍👧‍👦 팀 소개
 
-|                                         [이민규](https://github.com/Ming-gry) 리더                                                                                |                                                                               [박영성](https://github.com/youngsungpark)                                                                            |                                                       [심민기](https://github.com/shiminki)                                                   |                                                 [오성은](https://github.com/ose1012) 부리더                                              |                                                                                 [김민영](https://github.com/NyeongDev)                                                                               |                                                                                 [가연우](https://github.com/Yeonwoo-Ga)                                                                               |
-|:----------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|                                <img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white">                                |                                                 <img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white">                                                  |                      <img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white">                       |                   <img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white">                   |                                                 <img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white">                                                  |                                                 <img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white">                                                  |
-| ![](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FDO9Ma%2FbtrNhOrVyfo%2F0tAlwnBSxOvKYDMD682Zik%2Fimg.png) | ![KakaoTalk_Photo_2022-03-30-14-34-07](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FzR6lR%2FbtrNjzHoynR%2FI4iKHEHRzPhXzKSm8xWxL0%2Fimg.png) | ![KakaoTalk_Photo_2022-03-30-14-41-33](https://user-images.githubusercontent.com/79740505/161509182-6a56457f-b0e6-45f0-b40e-d95cbf48619c.png) | ![KakaoTalk_Photo_2022-03-30-14-41-33](https://perday-onespoon.s3.ap-northeast-2.amazonaws.com/KakaoTalk_Photo_2022-09-29-22-08-14.png) | ![KakaoTalk_Photo_2022-03-30-14-41-33](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fcb1y70%2FbtrNjz1HUuc%2FeMbRbc12c8KQWzWLGTWKsK%2Fimg.png) | ![KakaoTalk_Photo_2022-03-30-14-41-33](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fcb1y70%2FbtrNjz1HUuc%2FeMbRbc12c8KQWzWLGTWKsK%2Fimg.png) |
+<table>
+   <tr>
+    <td align="center"><b><a href="https://github.com/Ming-gry">이민규</a> 리더</b></td>
+    <td align="center"><b><a href="https://github.com/youngsungpark">박영성</a></b></td>
+    <td align="center"><b><a href="https://github.com/shiminki">심민기</a></b></td>
+    <td align="center"><b><a href="https://github.com/ose1012">오성은</a> 부리더</b></td>
+    <td align="center"><b><a href="https://github.com/NyeongDev">김민영</a></b></td>
+    <td align="center"><b><a href="https://github.com/Yeonwoo-Ga">가연우</a></b></td>
+  </tr>
+  <tr>
+     <td align="center"><a href="https://github.com/Ming-gry"><img src="https://avatars.githubusercontent.com/u/113870305?v=4" width="100px" /></a></td>
+     <td align="center"><a href="https://github.com/youngsungpark"><img src="https://avatars.githubusercontent.com/u/108126419?v=4" width="100px" /></a></td>
+     <td align="center"><a href="https://github.com/shiminki"><img src="https://user-images.githubusercontent.com/79740505/161509182-6a56457f-b0e6-45f0-b40e-d95cbf48619c.png" width="100px" /></a></td>
+     <td align="center"><a href="https://github.com/ose1012"><img src="https://avatars.githubusercontent.com/u/67879917?v=4" width="100px" /></a></td>
+    <td align="center"><a href="https://github.com/NyeongDev"><img src="https://avatars.githubusercontent.com/u/110284486?v=4" width="100px" /></a></td>
+    <td align="center"><a href="https://github.com/Yeonwoo-Ga"><img src="https://avatars.githubusercontent.com/u/100272045?v=4" width="100px" /></a></td>
 
+  </tr>
+  <tr>
+     <td align="center"><b><img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+    <td align="center"><b><img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+    <td align="center"><b><img src="https://img.shields.io/badge/Back end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+    <td align="center"><b><img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+    <td align="center"><b><img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+    <td align="center"><b><img src="https://img.shields.io/badge/front end-fcfd82?style=for-the-badge&logo=&logoColor=white"></b></td>
+  </tr>
+</table>
+
+<br>
 <br>
 
 ## 📚 기술 스택
@@ -264,12 +308,14 @@
  <img src="https://img.shields.io/badge/Amazon S3-569A31?style=for-the-badge&logo=Amazon S3&logoColor=white">
  <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white">
  <img src="https://img.shields.io/badge/Amazon RDS-527FFF?style=for-the-badge&logo=Amazon RDS&logoColor=white">
- <img src="https://img.shields.io/badge/Amazon CodeDeploy-8A2BE2?style=for-the-badge&logo=Amazon RDS&logoColor=white">
- <img src="https://img.shields.io/badge/Amazon Route 53-00498c?style=for-the-badge&logo=Amazon RDS&logoColor=white">
+ <img src="https://img.shields.io/badge/Amazon CodeDeploy-8A2BE2?style=for-the-badge&logoColor=white">
+ <img src="https://img.shields.io/badge/Gabia-00498c?style=for-the-badge&&logoColor=white">
  <img src="https://img.shields.io/badge/SSL-721412?style=for-the-badge&logo=SSL&logoColor=white">
  <img src="https://img.shields.io/badge/Cerbot-000000?style=for-the-badge&logoColor=white">
  <img src="https://img.shields.io/badge/kakao login-FFCD00?style=for-the-badge&logo=kakao&logoColor=black">   
- <img src="https://img.shields.io/badge/google login-4285F4?style=for-the-badge&logo=google&logoColor=white">  
+ <img src="https://img.shields.io/badge/google login-4285F4?style=for-the-badge&logo=google&logoColor=white">
+ <img src="https://img.shields.io/badge/naver login-03C75A?style=for-the-badge&logo=naver&logoColor=white">
+
  </p>
 
 ### 💻 프론트엔드
@@ -285,10 +331,12 @@
   <img src="https://img.shields.io/badge/styled components-DB7093?style=for-the-badge&logo=styled components&logoColor=white">
   <img src="https://img.shields.io/badge/cloudtype-000000?style=for-the-badge&logoColor=white"/>
 
-  <br>
+<br>
+<br>
 
 ## 🔧 사용 툴
 
+<br>
 <br>
 
 <p align="center">
@@ -301,26 +349,14 @@
   <img src="https://img.shields.io/badge/IntelliJ IDEA-000000?style=for-the-badge&logo=IntelliJ IDEA&logoColor=white"/>
   <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white"/>
 
-
-
-
-## 🎯 개발 포인트
-
-- **[TransactionalEventListner](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/ERD)<br>**
-- **[HandlerExceptionResolver]()<br>**
-- **[SSE](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%A6%AC%EC%82%AC%EC%9D%B4%EC%A7%95)<br>**
-- **[SockJS + Stomp](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/Jasypt-%EC%95%94%ED%98%B8%ED%99%94-,-%EB%B3%B5%ED%98%B8%ED%99%94-application-yaml%ED%8C%8C%EC%9D%BC-%EC%A0%81%EC%9A%A9)<br>**
-- **[QueryDSL](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/SSE-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%B0%9C%ED%96%89-,-%EA%B5%AC%EB%8F%85-%EC%A0%81%EC%9A%A9-%EB%B0%8F-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%EC%88%9C%EC%84%9C%EC%97%90-%EB%94%B0%EB%A5%B8-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%B0%9C%EC%83%9D-%EC%A0%81%EC%9A%A9(@TransactionalEventListner-,-@Transactional))<br>**
-- **[ImgScalr](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/swagger-%EC%A0%81%EC%9A%A9)<br>**
-- **[RedisRepository](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/QueryDsl-%EB%8F%99%EC%A0%81-%EC%BF%BC%EB%A6%AC)<br>**
-
 <br>
 <br>
 
 ## 🚀 트러블슈팅
 
-- **[TransactionalEventListner 에서 Transaction 이 실행되지 않음](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%A0%81%EC%9A%A9(%EC%9D%B8%EA%B0%80-%EC%BD%94%EB%93%9C-%EB%B3%80%EC%A1%B0))<br>**
-- **[소셜 로그인 시 닉네임 중복 문제](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/Linux-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%97%85%EB%A1%9C%EB%93%9C-%EC%8B%A4%ED%8C%A8-%ED%98%84%EC%83%81)<br>**
+- **[TransactionalEventListner 에서 Transaction 이 실행되지 않음](https://github.com/Hanghae99-DoBlock/BE/wiki/TransactionalEventListner-%EC%97%90%EC%84%9C-Transaction-%EC%9D%B4-%EC%8B%A4%ED%96%89%EB%90%98%EC%A7%80-%EC%95%8A%EC%9D%8C)<br>**
+- **[소셜 로그인 시 닉네임 중복 문제](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%8B%9C-%EB%8B%89%EB%84%A4%EC%9E%84-%EC%A4%91%EB%B3%B5-%EB%AC%B8%EC%A0%9C)<br>**
 - **[ImageScalr 사용 후 프로젝트 패키지에 사진이 저장됨](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/QueryDsl-Fetchjoin(%EC%B9%B4%ED%85%8C%EC%8B%9C%EC%95%88-%EA%B3%B1(Cartesian-Product),-Multiplebag-%EB%AC%B8%EC%A0%9C)<br>**
-- **[무한스크롤 시 페이지 당 피드가 무한으로 늘어남](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/Hikari-pool-time-out)<br>**
-- **[추천 피드, 피드 태그 검색 시 검색 결과에 따라 중복된 피드가 생김](https://github.com/PerDayOneSpoon/PerDayOneSpoon-BE/wiki/EC2-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%82%AC%EC%9A%A9%EB%9F%89%EC%9C%BC%EB%A1%9C-%EC%9D%B8%ED%95%B4-%EC%84%9C%EB%B2%84-%EB%8B%A4%EC%9A%B4)<br>**
+- **[무한스크롤 시 페이지 당 피드가 무한으로 늘어남](https://github.com/Hanghae99-DoBlock/BE/wiki/%EB%AC%B4%ED%95%9C%EC%8A%A4%ED%81%AC%EB%A1%A4-%EC%8B%9C-%ED%8E%98%EC%9D%B4%EC%A7%80-%EB%8B%B9-%ED%94%BC%EB%93%9C%EA%B0%80-%EB%AC%B4%ED%95%9C%EC%9C%BC%EB%A1%9C-%EB%8A%98%EC%96%B4%EB%82%A8)<br>**
+- **[추천 피드, 피드 태그 검색 시 검색 결과에 따라 중복된 피드가 생김](https://github.com/Hanghae99-DoBlock/BE/wiki/%EC%B6%94%EC%B2%9C-%ED%94%BC%EB%93%9C,-%ED%94%BC%EB%93%9C-%ED%83%9C%EA%B7%B8-%EA%B2%80%EC%83%89-%EC%8B%9C-%EA%B2%80%EC%83%89-%EA%B2%B0%EA%B3%BC%EC%97%90-%EB%94%B0%EB%9D%BC-%EC%A4%91%EB%B3%B5%EB%90%9C-%ED%94%BC%EB%93%9C%EA%B0%80-%EC%83%9D%EA%B9%80)<br>**
+- **[피드 300 개 이상 시 피드 목록 조회 속도가 느림](https://github.com/Hanghae99-DoBlock/BE/wiki/%ED%94%BC%EB%93%9C-300-%EA%B0%9C-%EC%9D%B4%EC%83%81-%EC%8B%9C-%ED%94%BC%EB%93%9C-%EB%AA%A9%EB%A1%9D-%EC%A1%B0%ED%9A%8C-%EC%86%8D%EB%8F%84%EA%B0%80-%EB%8A%90%EB%A6%BC)<br>**
