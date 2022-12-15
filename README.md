@@ -363,8 +363,7 @@
 ## 📜 API
 
 
-
-<summary><strong><a href="https://legendary-scaffold-c21.notion.site/a7f31d0b36c344ed9cb4b9d89ce5a18c?v=56734b61f9264de9ab271b251c76eaa0">📃 API 명세서 바로가기<a/></strong></summary>
+[📃 API 명세서 바로가기](https://legendary-scaffold-c21.notion.site/a7f31d0b36c344ed9cb4b9d89ce5a18c?v=56734b61f9264de9ab271b251c76eaa0)
 
 
 <br>
